@@ -3,13 +3,13 @@ a {
 }
 
 h1 {
-  font-family: Staatliches;
+  font-family: 'Arvo', Serif;
+  /* font-weight: 300; */
   font-size: 120px;
 }
 
 #category {
-  font-family: Staatliches;
-  font-weight: 500;
+  font-family: 'Arvo', Serif;
 }
 
 #title {
@@ -20,7 +20,6 @@ h1 {
 }
 
 #banner {
-  margin: 20px;
   height: 800px;
 }
 
@@ -32,10 +31,34 @@ h1 {
 
 .uk-navbar-container {
   background: #fff !important;
-  font-family: Staatliches;
+  font-family: 'Arvo', Serif;
 }
 
 img:hover {
   opacity: 1;
   transition: opacity 0.25s cubic-bezier(0.39, 0.575, 0.565, 1);
+}
+
+.uk-navbar-nav>li>a{
+  font-family: 'Arvo', Serif;
+  text-transform: lowercase;
+}
+
+.uk-card-body {
+  font-family: 'Arvo', Serif;
+}
+
+html {
+  font-family:  'Lato', Sans-Serif;
+}
+
+#social {
+  text-align: center;
+}
+
+#social a {
+  color: #666;
+  font-size:25px;
+  margin:0 20px;
+  display: inline-block;
 }

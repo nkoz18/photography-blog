@@ -4,6 +4,7 @@ import { fetchAPI } from "../../lib/api"
 import Layout from "../../components/layout"
 import NextImage from "../../components/image"
 import Seo from "../../components/seo"
+import Gallery from "../../components/gallery"
 import { getStrapiMedia } from "../../lib/media"
 
 const Article = ({ article, categories }) => {
@@ -19,14 +20,10 @@ const Article = ({ article, categories }) => {
   return (
     <Layout categories={categories.data}>
       <Seo seo={seo} />
-      <div
-        id="banner"
-        className="uk-height-medium uk-flex uk-flex-center uk-flex-middle uk-background-cover uk-light uk-padding uk-margin"
-        data-src={imageUrl}
-        data-srcset={imageUrl}
-        data-uk-img
-      >
-        <h1>{article.attributes.title}</h1>
+      <div className="uk-section">
+        <div className="uk-container uk-container-small">
+          <Gallery images={article.attributes.images} />
+        </div>
       </div>
       <div className="uk-section">
         <div className="uk-container uk-container-small">

@@ -1,6 +1,7 @@
 import React from "react"
 import Articles from "../components/articles"
 import Layout from "../components/layout"
+import Footer from "../components/footer" 
 import Seo from "../components/seo"
 import { fetchAPI } from "../lib/api"
 
@@ -10,10 +11,11 @@ const Home = ({ articles, categories, homepage }) => {
       <Seo seo={homepage.attributes.seo} />
       <div className="uk-section">
         <div className="uk-container uk-container-large">
-          <h1>{homepage.attributes.hero.title}</h1>
+          {/* <h1>{homepage.attributes.hero.title}</h1> */}
           <Articles articles={articles} />
         </div>
       </div>
+      <Footer></Footer>
     </Layout>
   )
 }
@@ -42,3 +44,4 @@ export async function getStaticProps() {
 }
 
 export default Home
+
