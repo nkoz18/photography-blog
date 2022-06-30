@@ -29,6 +29,10 @@ h1 {
   line-height: 1.75;
 }
 
+.uk-navbar, .uk-navbar-nav li a{
+  color: #ff007f;
+}
+
 .uk-navbar-container {
   background: #fff !important;
   font-family: 'Arvo', Serif;
@@ -57,7 +61,7 @@ html {
 }
 
 #social a {
-  color: #666;
+  color: #ff007f;
   font-size:25px;
   margin:0 20px;
   display: inline-block;
