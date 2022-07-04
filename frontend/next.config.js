@@ -4,7 +4,7 @@
 const nextConfig = {
   images: {
     loader: "default",
-    domains: ["localhost"],
+    domains: ["localhost", "http://18.237.233.149:1337/"],
   },
 }
 
