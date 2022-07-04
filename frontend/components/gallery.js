@@ -6,12 +6,20 @@ const Gallery = ({ images }) => {
   let gallery = images.data.map((image, index) => {
     return (
       <a
-        class="uk-inline"
+        className="uk-inline"
         href={getStrapiImageUrl(image)}
         data-caption={image.attributes.caption}
         key={index}
       >
-        <img src={getStrapiImageUrl(image)} width="1800" height="1200" alt="" />
+        <picture>
+          <source srcSet={getStrapiImageUrl(image)} type="image/webp" />
+          <img
+            src={getStrapiImageUrl(image)}
+            width="1800"
+            height="1200"
+            alt={image.attributes.caption}
+          />
+        </picture>
       </a>
     )
   })
@@ -19,7 +27,7 @@ const Gallery = ({ images }) => {
   return (
     <div
       uk-grid="masonry: true"
-      class=".uk-child-width-expand uk-child-width-1-3@m"
+      className=".uk-child-width-expand uk-child-width-1-3@m"
       uk-lightbox="animation: fade"
     >
       {gallery}
