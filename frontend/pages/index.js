@@ -34,7 +34,7 @@ export async function getStaticProps() {
 
     return {
       props: {
-        articles: articlesRes.data,
+        articles: articlesRes.data.reverse(),
         categories: categoriesRes.data,
         homepage: homepageRes.data,
       },
