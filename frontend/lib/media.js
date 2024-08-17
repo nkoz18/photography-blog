@@ -6,7 +6,6 @@ export function getStrapiMedia(media) {
   return imageUrl
 }
 
-
 export function getStrapiImageUrl(image) {
   const { url } = image.attributes
   const imageUrl = url.startsWith("/") ? getStrapiURL(url) : url

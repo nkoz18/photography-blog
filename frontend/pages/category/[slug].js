@@ -51,7 +51,7 @@ export async function getStaticProps({ params }) {
       category: matchingCategories.data[0],
       categories: allCategories,
     },
-    revalidate: 1,
+    revalidate: 10,
   }
 }
 

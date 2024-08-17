@@ -19,25 +19,30 @@ const Home = ({ articles, categories, homepage }) => {
 }
 
 export async function getStaticProps() {
-  // Run API calls in parallel
-  const [articlesRes, categoriesRes, homepageRes] = await Promise.all([
-    fetchAPI("/articles", { populate: "*" }),
-    fetchAPI("/categories", { populate: "*" }),
-    fetchAPI("/homepage", {
-      populate: {
-        hero: "*",
-        seo: { populate: "*" },
-      },
-    }),
-  ])
+  try {
+    // Run API calls in parallel
+    const [articlesRes, categoriesRes, homepageRes] = await Promise.all([
+      fetchAPI("/articles", { populate: "*" }),
+      fetchAPI("/categories", { populate: "*" }),
+      fetchAPI("/homepage", {
+        populate: {
+          hero: "*",
+          seo: { populate: "*" },
+        },
+      }),
+    ])
 
-  return {
-    props: {
-      articles: articlesRes.data,
-      categories: categoriesRes.data,
-      homepage: homepageRes.data,
-    },
-    revalidate: 1,
+    return {
+      props: {
+        articles: articlesRes.data.reverse(),
+        categories: categoriesRes.data,
+        homepage: homepageRes.data,
+      },
+      revalidate: 10,
+    }
+  } catch (err) {
+    console.log(err)
+    return { notFound: true }
   }
 }
 
