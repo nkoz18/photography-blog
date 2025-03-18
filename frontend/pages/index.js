@@ -18,7 +18,7 @@ const Home = ({ articles, categories, homepage }) => {
   )
 }
 
-export async function getStaticProps() {
+export async function getServerSideProps() {
   try {
     // Run API calls in parallel
     const [articlesRes, categoriesRes, homepageRes] = await Promise.all([
@@ -37,8 +37,8 @@ export async function getStaticProps() {
         articles: articlesRes.data.reverse(),
         categories: categoriesRes.data,
         homepage: homepageRes.data,
-      },
-      revalidate: 10,
+      }
+      // No revalidate needed for SSR
     }
   } catch (err) {
     console.log(err)
