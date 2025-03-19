@@ -39,7 +39,7 @@ const Gallery = ({ images }) => {
           >
             <picture>
               <source srcSet={imageUrl} type="image/webp" />
-              <img
+              <Image
                 src={imageUrl}
                 alt={caption}
                 loading="lazy" 
