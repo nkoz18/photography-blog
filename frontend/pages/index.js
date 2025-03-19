@@ -22,12 +22,33 @@ export async function getServerSideProps() {
   try {
     // Run API calls in parallel
     const [articlesRes, categoriesRes, homepageRes] = await Promise.all([
-      fetchAPI("/articles", { populate: "*" }),
-      fetchAPI("/categories", { populate: "*" }),
+      fetchAPI("/articles", { 
+        populate: {
+            image: {
+                fields: ["url", "alternativeText", "caption"]
+            },
+            category: {
+                fields: ["name", "slug"]
+            }
+        }
+      }),
+      fetchAPI("/categories", { 
+        populate: {
+            fields: ["name", "slug"]
+        }
+      }),
       fetchAPI("/homepage", {
         populate: {
-          hero: "*",
-          seo: { populate: "*" },
+          hero: {
+            populate: "*" // Populate all fields within hero (if needed)
+          },
+          seo: { 
+            populate: {
+                shareImage: {
+                    fields: ["url"]
+                }
+            } 
+        },
         },
       }),
     ])

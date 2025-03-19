@@ -26,10 +26,6 @@ const MyApp = ({ Component, pageProps }) => {
   )
 }
 
-// getInitialProps disables automatic static optimization for pages that don't
-// have getStaticProps. So article, category and home pages still get SSG.
-// Hopefully we can replace this with getStaticProps once this issue is fixed:
-// https://github.com/vercel/next.js/discussions/10949
 MyApp.getInitialProps = async (ctx) => {
   try {
     // Calls page's `getInitialProps` and fills `appProps.pageProps`
@@ -37,9 +33,15 @@ MyApp.getInitialProps = async (ctx) => {
     //Fetch global site settings from Strapi
     const globalRes = await fetchAPI("/global", {
       populate: {
-        favicon: "",
+        favicon: {
+          fields: ["url"] // Only fetch the 'url' field of the favicon
+        },
         defaultSeo: {
-          populate: "",
+          populate: {
+              shareImage:{
+                fields: ["url"]
+              }
+          }
         },
       },
     })

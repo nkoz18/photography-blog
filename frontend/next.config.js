@@ -1,9 +1,3 @@
-console.log('NEXT CONFIG says NODE_ENV =', process.env.NODE_ENV);
-console.log('Will use:', process.env.NODE_ENV === 'development' 
-  ? 'http://127.0.0.1:1337' 
-  : 'http://34.220.121.179:1337'
-);
-
 const nextConfig = {
   images: {
     loader: "default",

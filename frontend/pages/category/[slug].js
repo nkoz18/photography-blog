@@ -27,11 +27,22 @@ export async function getServerSideProps({ params }) {
     filters: { slug: params.slug },
     populate: {
       articles: {
-        populate: "*",
+        populate: {
+            image: {
+                fields: ["url", "alternativeText", "caption"]
+            },
+            category: {
+                fields: ["name", "slug"]
+            }
+        }
       },
     },
   })
-  const allCategories = await fetchAPI("/categories")
+  const allCategories = await fetchAPI("/categories", {
+    populate: {
+        fields: ["name", "slug"]
+    }
+  });
 
   return {
     props: {

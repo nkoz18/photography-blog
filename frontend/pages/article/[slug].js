@@ -18,7 +18,6 @@ const Article = ({ article, categories }) => {
   return (
     <Layout categories={categories.data}>
       <Seo seo={seo} />
-      
       {/* Cover Image - Full Width */}
       <div className="uk-section uk-section-small uk-padding-remove-vertical">
         <div className="uk-container uk-container-large">
@@ -29,19 +28,18 @@ const Article = ({ article, categories }) => {
           )}
         </div>
       </div>
-      
       {/* Article Title and Content */}
       <div className="uk-section">
         <div className="uk-container uk-container-large">
           <h1 className="uk-article-title">{article.attributes.title}</h1>
-          
+
           <div className="uk-text-meta uk-margin-bottom">
-            <Moment format="MMM Do YYYY">
+            <Moment format="MMM Do, YYYY">
               {article.attributes.published_at}
             </Moment>
             {" by "}{article.attributes.author.data.attributes.name}
           </div>
-          
+
           <div className="uk-article-content">
             <ReactMarkdown
               source={article.attributes.content}
@@ -50,7 +48,7 @@ const Article = ({ article, categories }) => {
           </div>
         </div>
       </div>
-      
+
       {/* Gallery - Below Content */}
       <div className="uk-section">
         <div className="uk-container uk-container-large">
@@ -66,9 +64,30 @@ export async function getServerSideProps({ params }) {
     filters: {
       slug: params.slug,
     },
-    populate: "*",
+    populate: {
+        image: {
+            fields: ["url", "alternativeText", "caption", "width", "height"]
+        },
+        images: {
+            fields: ["url", "alternativeText", "caption", "width", "height"]
+        },
+        author: {
+            populate: {
+                picture: {
+                    fields: ["url"]
+                }
+            }
+        },
+        category: {
+            fields: ["name", "slug"]
+        }
+    },
   })
-  const categoriesRes = await fetchAPI("/categories")
+  const categoriesRes = await fetchAPI("/categories", {
+    populate: {
+        fields: ["name", "slug"]
+    }
+  })
 
   return {
     props: { article: articlesRes.data[0], categories: categoriesRes }
