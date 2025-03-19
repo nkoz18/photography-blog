@@ -21,11 +21,11 @@
       "targetField": "name",
       "required": true
     },
-    "articles": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::article.article",
-      "mappedBy": "category"
-    }
+"articles": {
+  "type": "relation",
+  "relation": "manyToMany",
+  "target": "api::article.article",
+  "mappedBy": "categories"
+}
   }
 }

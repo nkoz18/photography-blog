@@ -2,35 +2,37 @@ import React from "react"
 import { getStrapiImageUrl } from "../lib/media"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faDownload } from "@fortawesome/free-solid-svg-icons"
-import Image from './image';
+import Image from "./image"
 
 const Gallery = ({ images }) => {
-
-  if (!images.data) return null;
-
+  if (!images.data) return null
 
   // Handle direct download of the image
   const handleDownload = (e, imageUrl, caption) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault()
+    e.stopPropagation()
 
-    // Create a filename from the caption or use a default
-    const filename = caption ?
-      `${caption.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.jpg` :
-      `image-${new Date().getTime()}.jpg`;
+    const filename = caption
+      ? `${caption.replace(/[^a-z0-9]/gi, "-").toLowerCase()}.jpg`
+      : `image-${new Date().getTime()}.jpg`
 
-    // Create an anchor element and trigger download
-    const link = document.createElement('a');
-    link.href = imageUrl;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    fetch(imageUrl)
+      .then((response) => response.blob())
+      .then((blob) => {
+        const link = document.createElement("a")
+        link.href = URL.createObjectURL(blob)
+        link.setAttribute("download", filename)
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+      })
+      .catch((error) => console.error("Download error:", error))
   }
 
-  let gallery = images.data.map((image, index) => { //image is images.data[index]
+  let gallery = images.data.map((image, index) => {
+    //image is images.data[index]
 
-    const caption = image.attributes.caption || "";
+    const caption = image.attributes.caption || ""
 
     return (
       <div key={index}>
@@ -45,21 +47,35 @@ const Gallery = ({ images }) => {
               <Image image={{ data: image }} />
             </picture>
           </a>
+          <div className="gallery-item">
+            <a
+              className="uk-inline"
+              href={getStrapiImageUrl(image)}
+              data-caption={caption}
+              style={{ position: "relative", display: "block" }} // Ensures correct positioning
+            >
+              <picture>
+                <source srcSet={getStrapiImageUrl(image)} type="image/webp" />
+                <Image image={image} />
+              </picture>
 
-          {/* Download button overlay */}
-          <div
-            className="uk-position-top-right uk-margin-small-right uk-margin-small-top"
-            style={{ zIndex: 10 }}
-            onClick={(e) => handleDownload(e, getStrapiImageUrl(image), caption)} // Pass full URL here
-          >
-            <button className="uk-icon-button uk-button-secondary">
-              <FontAwesomeIcon icon={faDownload} />
-            </button>
+              {/* Download button placed inside "uk-inline" so it overlaps the image */}
+              <div className="download-button">
+                <button
+                  className="uk-icon-button uk-button-secondary"
+                  onClick={(e) =>
+                    handleDownload(e, getStrapiImageUrl(image), caption)
+                  }
+                >
+                  <FontAwesomeIcon icon={faDownload} />
+                </button>
+              </div>
+            </a>
           </div>
         </div>
       </div>
-    );
-  });
+    )
+  })
 
   return (
     <div className="uk-margin-large-top">
@@ -72,7 +88,7 @@ const Gallery = ({ images }) => {
         {gallery}
       </div>
     </div>
-  );
+  )
 }
 
-export default Gallery;
+export default Gallery

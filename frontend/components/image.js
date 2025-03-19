@@ -2,9 +2,10 @@ import { getStrapiMedia } from "../lib/media"
 import NextImage from "next/image"
 
 const Image = ({ image, style }) => {
-  if (!image || !image.data || !image.data.attributes) {
-    return <div style={style}>No Image</div>;
+  if (!image?.data?.attributes) {
+    return null; // ✅ Don't render anything if no image is available
   }
+
 
   const { url, alternativeText, width, height } = image.data.attributes;
   const imgWidth = width || 1000;

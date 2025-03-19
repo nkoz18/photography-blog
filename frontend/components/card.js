@@ -11,9 +11,6 @@ const Card = ({ article }) => {
             <NextImage image={article.attributes.image} />
           </div>
           <div className="uk-card-body">
-            <p id="category" className="uk-text-uppercase">
-              {article.attributes.category.name}
-            </p>
             <p id="title" className="uk-text-large">
               {article.attributes.title}
             </p>

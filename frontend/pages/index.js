@@ -20,51 +20,38 @@ const Home = ({ articles, categories, homepage }) => {
 
 export async function getServerSideProps() {
   try {
-    // Run API calls in parallel
     const [articlesRes, categoriesRes, homepageRes] = await Promise.all([
       fetchAPI("/articles", { 
         populate: {
-            image: {
-                fields: ["url", "alternativeText", "caption"]
-            },
-            category: {
-                fields: ["name", "slug"]
-            }
+          image: { fields: ["url", "alternativeText", "caption"] },
+          category: { fields: ["name", "slug"] },
         }
       }),
       fetchAPI("/categories", { 
         populate: {
-            fields: ["name", "slug"]
+          fields: ["name", "slug"]
         }
       }),
       fetchAPI("/homepage", {
         populate: {
-          hero: {
-            populate: "*" // Populate all fields within hero (if needed)
-          },
-          seo: { 
-            populate: {
-                shareImage: {
-                    fields: ["url"]
-                }
-            } 
-        },
+          hero: { populate: "*" },
+          seo: { populate: { shareImage: { fields: ["url"] } } }
         },
       }),
-    ])
+    ]);
 
     return {
       props: {
-        articles: articlesRes.data.reverse(),
+        articles: articlesRes.data.reverse(), // ✅ Ensures newest articles are first
         categories: categoriesRes.data,
         homepage: homepageRes.data,
-      }
-      // No revalidate needed for SSR
-    }
+      },
+    };
   } catch (err) {
-    console.log(err)
-    return { notFound: true }
+    console.log(err);
+    return { notFound: true };
   }
 }
+
 
 export default Home

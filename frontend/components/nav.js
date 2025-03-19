@@ -16,15 +16,14 @@ const Nav = ({ categories }) => {
         </div>
         <div className="uk-navbar-right">
           <ul className="uk-navbar-nav">
-            {categories.map((category) => {
-              return (
+            {categories?.length > 0 &&
+              categories.map((category) => (
                 <li key={category.id}>
                   <Link href={`/category/${category.attributes.slug}`}>
-                    <a className="uk-link-reset">{category.attributes.name}</a>
+                    {category.attributes.name}
                   </Link>
                 </li>
-              )
-            })}
+              ))}
           </ul>
         </div>
       </nav>

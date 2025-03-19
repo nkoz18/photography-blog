@@ -66,3 +66,47 @@ html {
   margin:0 20px;
   display: inline-block;
 }
+
+.article-cover-image {
+  width: 100vw; /* Full viewport width */
+  max-height: 990px; /* Adjust as needed */
+  overflow: hidden; /* Ensures no scrollbars */
+}
+
+.article-cover-image img {
+  width: 100%;
+  height: auto; /* Maintain aspect ratio */
+  object-fit: cover; /* Ensures it fills the space */
+}
+
+/* Ensure gallery-item covers the whole image */
+.gallery-item {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.gallery-item {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.download-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  z-index: 10; /* Ensures button is above the image */
+}
+
+.gallery-item:hover .download-button {
+  opacity: 1;
+}
+
+/* Ensure the image container has position relative so absolute elements (download button) align properly */
+.uk-inline {
+  position: relative;
+  display: block;
+}
