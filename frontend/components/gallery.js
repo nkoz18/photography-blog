@@ -2,6 +2,7 @@ import React from "react"
 import { getStrapiImageUrl } from "../lib/media"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faDownload } from "@fortawesome/free-solid-svg-icons"
+import Image from './image'; 
 
 const Gallery = ({ images }) => {
   if (!images.data) return null

@@ -1,15 +1,14 @@
 {
     "extends": [
-      "next/core-web-vitals"
+      "next",
+      "next/core-web-vitals",
+      // "plugin:prettier/recommended" // <-- remove or comment out
+    ],
+    "plugins": [
+      // "prettier" // <-- remove or comment out
     ],
     "rules": {
-      "@next/next/no-img-element": "off",
-      "prettier/prettier": [
-        "warn",
-        {
-          "singleQuote": true,
-          "trailingComma": "es5"
-        }
-      ]
+      // "prettier/prettier": "error" <-- if you have it, remove it
     }
   }
+  
