@@ -18,37 +18,43 @@ const Article = ({ article, categories }) => {
   return (
     <Layout categories={categories.data}>
       <Seo seo={seo} />
-      <div className="uk-section">
-        <div className="uk-container uk-container-small">
-          <Gallery images={article.attributes.images} />
+      
+      {/* Cover Image - Full Width */}
+      <div className="uk-section uk-section-small uk-padding-remove-vertical">
+        <div className="uk-container uk-container-large">
+          {article.attributes.image && (
+            <div className="uk-width-1-1">
+              <NextImage image={article.attributes.image} />
+            </div>
+          )}
         </div>
       </div>
+      
+      {/* Article Title and Content */}
       <div className="uk-section">
-        <div className="uk-container uk-container-small">
-          <ReactMarkdown
-            source={article.attributes.content}
-            escapeHtml={false}
-          />
-          <hr className="uk-divider-small" />
-          <div className="uk-grid-small uk-flex-left" data-uk-grid="true">
-            {/* <div>
-              {article.attributes.author.picture && (
-                <NextImage
-                  image={article.attributes.author.data.attributes.picture}
-                />
-              )}
-            </div> */}
-            <div className="uk-width-expand">
-              <p className="uk-margin-remove-bottom">
-                By {article.attributes.author.data.attributes.name}
-              </p>
-              <p className="uk-text-meta uk-margin-remove-top">
-                <Moment format="MMM Do YYYY">
-                  {article.attributes.published_at}
-                </Moment>
-              </p>
-            </div>
+        <div className="uk-container uk-container-large">
+          <h1 className="uk-article-title">{article.attributes.title}</h1>
+          
+          <div className="uk-text-meta uk-margin-bottom">
+            <Moment format="MMM Do YYYY">
+              {article.attributes.published_at}
+            </Moment>
+            {" by "}{article.attributes.author.data.attributes.name}
           </div>
+          
+          <div className="uk-article-content">
+            <ReactMarkdown
+              source={article.attributes.content}
+              escapeHtml={false}
+            />
+          </div>
+        </div>
+      </div>
+      
+      {/* Gallery - Below Content */}
+      <div className="uk-section">
+        <div className="uk-container uk-container-large">
+          <Gallery images={article.attributes.images} />
         </div>
       </div>
     </Layout>
@@ -66,7 +72,6 @@ export async function getServerSideProps({ params }) {
 
   return {
     props: { article: articlesRes.data[0], categories: categoriesRes }
-    // Remove revalidate
   }
 }
 

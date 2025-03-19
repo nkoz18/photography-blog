@@ -12,7 +12,7 @@ const Footer = () => {
       <div className="uk-container-large uk-align-center">
         <div id="social">
           <a
-            href="https://www.instagram.com/hotstatenikita/"
+            href="https://www.instagram.com/pixel.shifter/"
             target="_blank"
             rel="noreferrer"
           >
