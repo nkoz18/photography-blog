@@ -37,11 +37,11 @@ MyApp.getInitialProps = async (ctx) => {
     //Fetch global site settings from Strapi
     const globalRes = await fetchAPI("/global", {
       populate: {
-        favicon: "*",
+        favicon: "",
         defaultSeo: {
-          populate: "*",
+          populate: "",
         },
-      },\
+      },
     })
     // Pass the data to our page via props
     return { ...appProps, pageProps: { global: globalRes.data } }
