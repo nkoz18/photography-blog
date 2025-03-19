@@ -102,3 +102,24 @@ dist
 
 # TernJS port file
 .tern-port
+
+### NextJS ###
+
+# Next build dir
+**/frontend/.next.*
+
+### react ###
+.DS_*
+*.log
+logs
+**/*.backup.*
+**/*.back.*
+
+node_modules
+bower_components
+
+*.sublime*
+
+psd
+thumb
+sketch
