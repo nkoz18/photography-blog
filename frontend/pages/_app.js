@@ -18,6 +18,18 @@ const MyApp = ({ Component, pageProps }) => {
           rel="shortcut icon"
           href={getStrapiMedia(global.attributes.favicon)}
         />
+
+        {/* Added Google Fonts - Barriecito, Kirang Haerang, Bangers, and IBM Plex Mono */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="true"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Barriecito&family=Bangers&family=IBM+Plex+Mono&family=Kirang+Haerang&display=swap&family=Permanent+Marker&display=swap"
+          rel="stylesheet"
+        />
       </Head>
       <GlobalContext.Provider value={global.attributes}>
         <Component {...pageProps} />
@@ -34,14 +46,14 @@ MyApp.getInitialProps = async (ctx) => {
     const globalRes = await fetchAPI("/global", {
       populate: {
         favicon: {
-          fields: ["url"] // Only fetch the 'url' field of the favicon
+          fields: ["url"], // Only fetch the 'url' field of the favicon
         },
         defaultSeo: {
           populate: {
-              shareImage:{
-                fields: ["url"]
-              }
-          }
+            shareImage: {
+              fields: ["url"],
+            },
+          },
         },
       },
     })

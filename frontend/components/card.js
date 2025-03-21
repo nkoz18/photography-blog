@@ -1,24 +1,44 @@
-import React from "react"
-import Link from "next/link"
-import NextImage from "./image"
+import React from "react";
+import Link from "next/link";
+import Image from "./image";
 
-const Card = ({ article }) => {
+const Card = ({ article, className }) => {
+  const imageUrl = article.attributes.image?.data 
+    ? article.attributes.image.data 
+    : null;
+  
+  // Added defensive check for categories
+  const category = article.attributes.category?.data 
+    ? article.attributes.category.data
+    : (article.attributes.categories?.data?.length 
+        ? article.attributes.categories.data[0] 
+        : null);
+
   return (
-    <Link href={`/article/${article.attributes.slug}`}>
-      <a className="uk-link-reset">
-        <div className="uk-card uk-card-muted">
-          <div className="uk-card-media-top">
-            <NextImage image={article.attributes.image} />
+    <div className={`article-item ${className || ""}`}>
+      <Link href={`/article/${article.attributes.slug}`}>
+        <a className="uk-link-reset">
+          <div className="article-image">
+            {imageUrl && (
+              <Image image={article.attributes.image} />
+            )}
           </div>
-          <div className="uk-card-body">
-            <p id="title" className="uk-text-large">
+          
+          <div className="article-content">
+            {category && (
+              <p id="category" className="uk-text-uppercase">
+                {category.attributes.name}
+              </p>
+            )}
+            
+            <h3 id="title">
               {article.attributes.title}
-            </p>
+            </h3>
           </div>
-        </div>
-      </a>
-    </Link>
-  )
-}
+        </a>
+      </Link>
+    </div>
+  );
+};
 
-export default Card
+export default Card;

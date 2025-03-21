@@ -1,22 +1,134 @@
+/* Sticky footer styles - more robust implementation */
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.content-wrapper {
+  flex: 1 0 auto; /* This makes it grow to fill available space */
+  width: 100%; /* Ensure full width */
+}
+
+#footer, footer {
+  flex-shrink: 0; /* Prevents footer from shrinking */
+  width: 100%;
+  padding: 20px 0;
+}
+
+/* Make sure all parent containers don't interfere with the flex layout */
+#__next {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Navbar container styling - ensures it matches content width */
+.uk-navbar-container {
+  background: #fff !important;
+  width: 100%;
+}
+
+/* Make nav container use full width of parent container */
+.uk-container-large {
+  max-width: 1400px;
+  padding-left: 15px;
+  padding-right: 15px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* Navbar layout improvement - better alignment */
+.uk-navbar {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.uk-navbar-left {
+  margin-right: auto; /* Pushes it to the left */
+}
+
+.uk-navbar-right {
+  margin-left: auto; /* Pushes it to the right */
+}
+
+/* Logo styling - updated for larger box and correct font */
+.site-logo {
+  font-family: 'Barriecito', cursive !important;
+  font-size: 32px !important;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+}
+
+.logo-silky {
+  background-color: #ff007f;
+  color: white;
+  padding: 4px 8px; /* Increased padding for bigger box */
+  margin-right: 5px;
+}
+
+.logo-truth {
+  color: #ff007f;
+}
+
+/* Navigation link styling */
+.nav-link {
+  font-family: 'Kirang Haerang', cursive !important;
+  color: #ff007f !important;
+  transition: color 0.3s ease;
+  font-size: 18px; /* Reduced to create contrast with logo */
+}
+
+.nav-link:hover {
+  color: #888888 !important;
+}
+
+.uk-navbar-left a{
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+
 a {
   text-decoration: none;
 }
 
 h1 {
-  font-family: 'Arvo', Serif;
-  /* font-weight: 300; */
+  font-family: 'Kirang Haerang', cursive !important;
   font-size: 120px;
 }
 
-#category {
-  font-family: 'Arvo', Serif;
+/* Category page heading - smaller with added spacing */
+.uk-section h1:not(.uk-article-title) {
+  font-size: 60px;
+  margin-bottom: 40px; /* Added vertical spacing below category page H1 */
 }
 
+#category {
+  font-family: 'Kirang Haerang', cursive !important;
+  font-size: 16px;
+}
+
+/* Increased title size for home and category pages */
 #title {
   letter-spacing: 0.4px;
-  font-size: 22px;
-  font-size: 1.375rem;
-  line-height: 1.13636;
+  font-size: 40px; /* Increased from 28px to 40px */
+  line-height: 1.2;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  font-family: 'Kirang Haerang', cursive !important;
+}
+
+/* Article title styling with Bangers font */
+.uk-article-title {
+  font-family: 'Kirang Haerang', cursive !important;
 }
 
 #banner {
@@ -24,18 +136,12 @@ h1 {
 }
 
 #editor {
-  font-size: 16px;
-  font-size: 1rem;
+  font-size: 18px;
   line-height: 1.75;
 }
 
 .uk-navbar, .uk-navbar-nav li a{
   color: #ff007f;
-}
-
-.uk-navbar-container {
-  background: #fff !important;
-  font-family: 'Arvo', Serif;
 }
 
 img:hover {
@@ -44,16 +150,13 @@ img:hover {
 }
 
 .uk-navbar-nav>li>a{
-  font-family: 'Arvo', Serif;
   text-transform: lowercase;
-}
-
-.uk-card-body {
-  font-family: 'Arvo', Serif;
+  font-size: 18px;
 }
 
 html {
-  font-family:  'Lato', Sans-Serif;
+  font-family: 'IBM Plex Mono', monospace, Sans-Serif;
+  font-size: 18px;
 }
 
 #social {
@@ -67,46 +170,202 @@ html {
   display: inline-block;
 }
 
+/* Image loading and fade-in effects */
+.image-container {
+  position: relative;
+  width: 100%;
+  min-height: 100px;
+  margin-bottom: 15px;
+  display: block;
+}
+
+.image-loader {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f5f5f5; /* This is the color to match for your loader gif */
+  z-index: 1;
+  background-image: url('/loader.gif');
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 50px 50px;
+}
+
+.image-transition {
+  transition: opacity 0.3s ease-in-out;
+}
+
+.image-loading {
+  opacity: 0;
+}
+
+.image-loaded {
+  opacity: 1;
+}
+
+/* Custom divider replacing uk-divider-icon */
+.uk-divider-icon {
+  background-image: url('/divider_1200x60.png') !important;
+  background-repeat: no-repeat !important;
+  background-position: center center !important;
+  background-size: contain !important;
+  height: 60px !important;
+  border: none !important;
+  margin-bottom: 100px !important;
+  margin-top: 50px !important;
+  position: relative !important;
+}
+
+/* Remove default uk-divider-icon styling */
+.uk-divider-icon::before,
+.uk-divider-icon::after {
+  display: none !important;
+}
+
+/* Article cover image styling */
 .article-cover-image {
-  width: 100vw; /* Full viewport width */
-  max-height: 990px; /* Adjust as needed */
-  overflow: hidden; /* Ensures no scrollbars */
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  max-height: 600px;
+  overflow: hidden;
+  margin-bottom: 30px;
 }
 
 .article-cover-image img {
   width: 100%;
-  height: auto; /* Maintain aspect ratio */
-  object-fit: cover; /* Ensures it fills the space */
+  min-height: 300px;
+  height: auto;
+  object-fit: cover;
 }
 
-/* Ensure gallery-item covers the whole image */
+/* Article content styling */
+.uk-article-content, p {
+  font-size: 18px;
+  line-height: 1.8;
+  font-family: 'IBM Plex Mono', monospace !important;
+}
+
+/* Fixed article title size to be more reasonable */
+.uk-article-title {
+  font-size: 48px;
+  line-height: 1.2;
+  margin-bottom: 40px;
+  font-weight: bold;
+}
+
+/* Fix for lightbox captions */
+.uk-lightbox-caption {
+  display: none !important;
+}
+
+/* Gallery styling */
 .gallery-item {
   position: relative;
   display: inline-block;
   width: 100%;
 }
 
-.gallery-item {
-  position: relative;
-  display: inline-block;
-  width: 100%;
+.gallery-item-wrapper {
+  margin-bottom: 20px;
 }
 
+.gallery-item img {
+  width: 100%;
+  height: auto;
+}
+
+/* Download button - now hidden per requirements */
 .download-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
-  z-index: 10; /* Ensures button is above the image */
+  display: none;
 }
 
-.gallery-item:hover .download-button {
-  opacity: 1;
+/* Fix for the homepage spacing issue */
+.uk-grid > *:first-child {
+  margin-top: 0;
 }
 
-/* Ensure the image container has position relative so absolute elements (download button) align properly */
-.uk-inline {
-  position: relative;
-  display: block;
+/* Remove card styling and shadows */
+.uk-card {
+  background: none !important;
+  box-shadow: none !important;
+}
+
+.uk-card-body {
+  padding: 0;
+  font-family: 'IBM Plex Mono', monospace, Sans-Serif;
+}
+
+/* Article item styling */
+.article-item {
+  margin-bottom: 40px;
+}
+
+.article-content {
+  padding: 0;
+}
+
+/* Footer styling */
+#footer {
+  flex-shrink: 0;
+  padding: 20px 0;
+}
+
+/* Mobile responsive fixes */
+@media (max-width: 1200px) {
+  #title {
+    font-size: 36px; /* Responsive scaling for #title */
+  }
+}
+
+@media (max-width: 768px) {
+  .uk-child-width-1-1\@s > * {
+    width: 100% !important;
+  }
+  
+  .uk-grid > * > * {
+    width: 100% !important;
+  }
+  
+  /* Force all images to take full width on mobile */
+  .uk-grid > * img {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  h1 {
+    font-size: 50px;
+  }
+  
+  #title {
+    font-size: 30px;
+  }
+  
+  .uk-article-title {
+    font-size: 36px;
+  }
+  
+  .uk-section h1:not(.uk-article-title) {
+    font-size: 40px; /* Smaller category heading on mobile */
+    margin-bottom: 25px;
+  }
+}
+
+@media (max-width: 480px) {
+  #title {
+    font-size: 26px;
+  }
+  
+  .uk-article-title {
+    font-size: 30px;
+  }
+  
+  h1 {
+    font-size: 40px;
+  }
 }
