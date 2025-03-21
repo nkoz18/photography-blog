@@ -10,6 +10,17 @@ class MyDocument extends Document {
             rel="stylesheet"
             href="https://fonts.googleapis.com/css?family=Arvo|Lato"
           />
+          {/* Added Google Fonts - Barriecito, Kirang Haerang, Bangers, and IBM Plex Mono */}
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link
+            rel="preconnect"
+            href="https://fonts.gstatic.com"
+            crossOrigin="true"
+          />
+          <link
+            href="https://fonts.googleapis.com/css2?family=Barriecito&family=Bangers&family=IBM+Plex+Mono&family=Kirang+Haerang&display=swap&family=Permanent+Marker&display=swap"
+            rel="stylesheet"
+          />
           <link
             rel="stylesheet"
             href="https://cdn.jsdelivr.net/npm/uikit@3.2.3/dist/css/uikit.min.css"

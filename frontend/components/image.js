@@ -28,6 +28,7 @@ const Image = ({ image, style }) => {
     <div className="image-container">
       {isLoading && <div className="image-loader"></div>}
       {imgSrc && (
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={imgSrc}
           alt={alternativeText || ""}
