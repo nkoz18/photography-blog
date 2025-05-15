@@ -1,0 +1,7 @@
+# Cursor Ignore Configuration
+# This file controls what files Cursor will ignore (similar to .gitignore)
+# Use ! to negate patterns and explicitly include files that would otherwise be ignored
+
+# Explicitly include .env files for AI to have access
+!**/.env
+!**/photography-blog/backend/.env 

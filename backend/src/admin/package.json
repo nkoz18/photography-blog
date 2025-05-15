@@ -1,0 +1,16 @@
+{
+  "name": "admin-extensions",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Strapi admin extensions for photography blog",
+  "dependencies": {
+    "@strapi/design-system": "^1.2.7",
+    "@strapi/helper-plugin": "^4.2.0",
+    "@strapi/icons": "^1.2.7",
+    "prop-types": "^15.8.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-intl": "^5.20.2",
+    "styled-components": "^5.3.3"
+  }
+}

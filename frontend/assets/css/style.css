@@ -1,0 +1,560 @@
+/* Sticky footer styles - more robust implementation */
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.content-wrapper {
+  flex: 1 0 auto; /* This makes it grow to fill available space */
+  width: 100%; /* Ensure full width */
+}
+
+#footer,
+footer {
+  flex-shrink: 0; /* Prevents footer from shrinking */
+  width: 100%;
+  padding: 20px 0;
+}
+
+/* Make sure all parent containers don't interfere with the flex layout */
+#__next {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Navbar container styling - ensures it matches content width */
+.uk-navbar-container {
+  background: #fff !important;
+  width: 100%;
+}
+
+/* Make nav container use full width of parent container */
+.uk-container-large {
+  max-width: 1400px;
+  padding-left: 15px;
+  padding-right: 15px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* Navbar layout improvement - better alignment */
+.uk-navbar {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.uk-navbar-left {
+  margin-right: auto; /* Pushes it to the left */
+}
+
+.uk-navbar-right {
+  margin-left: auto; /* Pushes it to the right */
+}
+
+/* Logo styling - updated for larger box and correct font */
+.site-logo {
+  font-family: "Barriecito", cursive !important;
+  font-size: 32px !important;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+}
+
+.logo-silky {
+  background-color: #ff007f;
+  color: white;
+  padding: 4px 8px; /* Increased padding for bigger box */
+  margin-right: 5px;
+}
+
+.logo-truth {
+  color: #ff007f;
+}
+
+/* Navigation link styling */
+.nav-link {
+  font-family: "Kirang Haerang", cursive !important;
+  color: #ff007f !important;
+  transition: color 0.3s ease;
+  font-size: 18px; /* Reduced to create contrast with logo */
+}
+
+.nav-link:hover {
+  color: #888888 !important;
+}
+
+.uk-navbar-left a {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+a {
+  text-decoration: none;
+}
+
+h1 {
+  font-family: "Kirang Haerang", cursive !important;
+  font-size: 120px;
+}
+
+/* Category page heading - smaller with added spacing */
+.uk-section h1:not(.uk-article-title) {
+  font-size: 60px;
+  margin-bottom: 40px; /* Added vertical spacing below category page H1 */
+}
+
+#category {
+  font-family: "Kirang Haerang", cursive !important;
+  font-size: 16px;
+}
+
+/* Increased title size for home and category pages */
+#title {
+  letter-spacing: 0.4px;
+  font-size: 40px; /* Increased from 28px to 40px */
+  line-height: 1.2;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  font-family: "Kirang Haerang", cursive !important;
+}
+
+/* Article title styling with Bangers font */
+.uk-article-title {
+  font-family: "Kirang Haerang", cursive !important;
+}
+
+#banner {
+  height: 800px;
+}
+
+#editor {
+  font-size: 18px;
+  line-height: 1.75;
+}
+
+.uk-navbar,
+.uk-navbar-nav li a {
+  color: #ff007f;
+}
+
+img:hover {
+  opacity: 1;
+  transition: opacity 0.25s cubic-bezier(0.39, 0.575, 0.565, 1);
+}
+
+.uk-navbar-nav > li > a {
+  text-transform: lowercase;
+  font-size: 18px;
+}
+
+html {
+  font-family: "IBM Plex Mono", monospace, Sans-Serif;
+  font-size: 18px;
+}
+
+#social {
+  text-align: center;
+}
+
+#social a {
+  color: #ff007f;
+  font-size: 25px;
+  margin: 0 20px;
+  display: inline-block;
+}
+
+/* Image loading and fade-in effects */
+.image-container {
+  position: relative;
+  width: 100%;
+  min-height: 100px;
+  margin-bottom: 15px;
+  display: block;
+}
+
+.image-loader {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f5f5f5; /* This is the color to match for your loader gif */
+  z-index: 1;
+  background-image: url("/loader.gif");
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 50px 50px;
+}
+
+.image-transition {
+  transition: opacity 0.3s ease-in-out;
+}
+
+.image-loading {
+  opacity: 0;
+}
+
+.image-loaded {
+  opacity: 1;
+}
+
+/* Custom divider replacing uk-divider-icon */
+.uk-divider-icon {
+  background-image: url("/divider_1200x60.png") !important;
+  background-repeat: no-repeat !important;
+  background-position: center center !important;
+  background-size: contain !important;
+  height: 60px !important;
+  border: none !important;
+  margin-bottom: 100px !important;
+  margin-top: 50px !important;
+  position: relative !important;
+}
+
+/* Remove default uk-divider-icon styling */
+.uk-divider-icon::before,
+.uk-divider-icon::after {
+  display: none !important;
+}
+
+/* Article cover image styling - enhanced for focal points */
+.article-cover-image {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  max-height: 600px;
+  overflow: hidden;
+  margin-bottom: 30px;
+  position: relative;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.article-cover-image img {
+  width: 100%;
+  height: 500px; /* Fixed height for consistent presentation */
+  object-fit: cover !important; /* This ensures the image fills the container */
+  display: block;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Force object-position to be respected */
+img.image-transition {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  object-fit: cover !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Image container fixes for focal points */
+.image-container {
+  position: relative;
+  width: 100%;
+  min-height: 100px;
+  margin-bottom: 15px;
+  display: block;
+}
+
+/* When inside article cover, use special styling */
+.article-cover-image .image-container {
+  height: 500px !important;
+  padding-bottom: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+/* Article content styling */
+.uk-article-content,
+p {
+  font-size: 18px;
+  line-height: 1.8;
+  font-family: "IBM Plex Mono", monospace !important;
+}
+
+/* Fixed article title size to be more reasonable */
+.uk-article-title {
+  font-size: 48px;
+  line-height: 1.2;
+  margin-bottom: 40px;
+  font-weight: bold;
+}
+
+/* Fix for lightbox captions */
+.uk-lightbox-caption {
+  display: none !important;
+}
+
+/* Gallery improvements */
+.gallery-item-wrapper {
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+}
+
+.gallery-item {
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.gallery-item img {
+  width: 100%;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.gallery-item:hover img {
+  transform: scale(1.03);
+}
+
+.gallery-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 12px;
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.gallery-item:hover .gallery-caption {
+  opacity: 1;
+}
+
+/* Display size classes */
+.gallery-size-small {
+  width: 25%;
+}
+
+.gallery-size-medium {
+  width: 33.333%;
+}
+
+.gallery-size-large {
+  width: 50%;
+}
+
+.gallery-size-full {
+  width: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 960px) {
+  .gallery-size-small {
+    width: 33.333%;
+  }
+
+  .gallery-size-medium {
+    width: 50%;
+  }
+
+  .gallery-size-large,
+  .gallery-size-full {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .gallery-size-small,
+  .gallery-size-medium {
+    width: 50%;
+  }
+
+  .gallery-size-large,
+  .gallery-size-full {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .gallery-size-small,
+  .gallery-size-medium,
+  .gallery-size-large,
+  .gallery-size-full {
+    width: 100%;
+  }
+}
+
+/* Add a nice hover effect for the gallery items */
+.gallery-item-wrapper {
+  cursor: pointer;
+}
+
+.gallery-item-wrapper:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Space between gallery items */
+.uk-grid > .gallery-item-wrapper {
+  padding-left: 15px;
+}
+
+/* Article item styling */
+.article-item {
+  margin-bottom: 40px;
+}
+
+.article-content {
+  padding: 0;
+}
+
+/* Footer styling */
+#footer {
+  flex-shrink: 0;
+  padding: 20px 0;
+}
+
+/* Mobile responsive fixes */
+@media (max-width: 1200px) {
+  #title {
+    font-size: 36px; /* Responsive scaling for #title */
+  }
+}
+
+@media (max-width: 768px) {
+  .uk-child-width-1-1\@s > * {
+    width: 100% !important;
+  }
+
+  .uk-grid > * > * {
+    width: 100% !important;
+  }
+
+  /* Force all images to take full width on mobile */
+  .uk-grid > * img {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  h1 {
+    font-size: 50px;
+  }
+
+  #title {
+    font-size: 30px;
+  }
+
+  .uk-article-title {
+    font-size: 36px;
+  }
+
+  .uk-section h1:not(.uk-article-title) {
+    font-size: 40px; /* Smaller category heading on mobile */
+    margin-bottom: 25px;
+  }
+
+  /* Adjust cover image height on mobile */
+  .article-cover-image img {
+    height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  #title {
+    font-size: 26px;
+  }
+
+  .uk-article-title {
+    font-size: 30px;
+  }
+
+  h1 {
+    font-size: 40px;
+  }
+
+  /* Further reduce cover image height on small screens */
+  .article-cover-image img {
+    height: 250px;
+  }
+}
+
+/* PhotoSwipe Gallery Styles - React Photo Gallery version */
+.photo-gallery-container {
+  margin-top: 40px;
+  width: 100%;
+}
+
+.photo-gallery-wrapper {
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Remove all hover animations and transformations */
+.gallery-item-no-hover {
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Static caption that's always visible */
+.gallery-caption-static {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+/* PhotoSwipe Customizations */
+.pswp__top-bar {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.pswp__caption {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.pswp__button--download {
+  background-position: 0 -44px;
+}
+
+/* Fix for UK lightbox captions that may interfere with PhotoSwipe */
+.uk-lightbox-caption {
+  display: none !important;
+}
+
+/* Disable all the transform and hover effects from the previous implementation */
+.gallery-item-wrapper:hover,
+.gallery-item:hover img,
+.gallery-item-wrapper:hover {
+  transform: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Make sure the PhotoSwipe UI elements work properly */
+.pswp__img {
+  object-fit: contain;
+}
+
+/* Reset styling for article page images */
+.uk-article-title + div img,
+.uk-article-content img,
+.article-cover-image img {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
