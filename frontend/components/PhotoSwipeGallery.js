@@ -4,9 +4,11 @@ import { Gallery as PhotoSwipeGallery, Item } from "react-photoswipe-gallery"
 import Masonry, { ResponsiveMasonry } from "react-responsive-masonry"
 import { getStrapiURL } from "../lib/api"
 import Image from "next/image"
+import { getRandomDivider } from "../lib/randomAssets"
 
 const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
   const [galleryPhotos, setGalleryPhotos] = useState([])
+  const [dividerSvg, setDividerSvg] = useState("")
 
   // Get Strapi Image URL helper function
   const getImageUrl = useCallback((image) => {
@@ -115,6 +117,9 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
   useEffect(() => {
     const photos = processImages()
     setGalleryPhotos(photos)
+
+    // Select a random divider
+    setDividerSvg(getRandomDivider())
   }, [processImages])
 
   // Return null if no images to display
@@ -127,7 +132,9 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
       className="photo-gallery-container uk-margin-large-top"
       style={{ width: "100%" }}
     >
-      <hr className="uk-divider-icon" />
+      <div className="random-divider-container">
+        <img src={dividerSvg} alt="Divider" className="uk-divider-icon" />
+      </div>
       <PhotoSwipeGallery
         withDownloadButton
         options={{

@@ -9,16 +9,37 @@ const Image = ({ image, style, alt }) => {
   const [imgSrc, setImgSrc] = useState("")
 
   useEffect(() => {
+    // Debug log the full image data
+    console.log("Image component - Full image data:", image?.data?.attributes)
+
+    // Log provider_metadata specifically
+    if (image?.data?.attributes?.provider_metadata) {
+      console.log(
+        "Image component - provider_metadata:",
+        image.data.attributes.provider_metadata
+      )
+
+      // Log focal point if it exists in provider_metadata
+      if (image.data.attributes.provider_metadata.focalPoint) {
+        console.log(
+          "Image component - Found focal point in provider_metadata:",
+          image.data.attributes.provider_metadata.focalPoint
+        )
+      }
+    }
+
     // Only set the image source after component mounts
-    // This ensures proper hydration in Next.js
     if (image?.data?.attributes) {
-      // Check if image has focal point data
-      if (image.data.attributes.formats?.focalPoint) {
-        // Use getFocalPointImageUrl when focal point is available
+      // Check for focal point data
+      if (
+        image.data.attributes.provider_metadata?.focalPoint ||
+        image.data.attributes.formats?.focalPoint
+      ) {
+        // Use focal point image URL
         const src = getFocalPointImageUrl(image.data)
         setImgSrc(src)
       } else {
-        // Use regular media URL when no focal point
+        // Use regular media URL
         const src = getStrapiMedia(image)
         setImgSrc(src)
       }
@@ -26,27 +47,25 @@ const Image = ({ image, style, alt }) => {
   }, [image])
 
   if (!image?.data?.attributes) {
-    return null // Don't render anything if no image is available
+    return null
   }
 
-  const { alternativeText, formats } = image.data.attributes
+  const { alternativeText } = image.data.attributes
 
-  // Check if the image has focal point data
-  const hasFocalPoint = formats && formats.focalPoint
-  const focalPointStyle = hasFocalPoint
-    ? getFocalPointStyle(formats.focalPoint)
-    : {}
+  // Get focal point from wherever it exists
+  const focalPoint =
+    image.data.attributes.formats?.focalPoint ||
+    image.data.attributes.provider_metadata?.focalPoint
 
-  // Merge any provided styles with focal point styles
-  const combinedStyle = {
-    ...focalPointStyle,
-    ...style,
+  // Log the focal point we're using
+  if (focalPoint) {
+    console.log("Image component - Using focal point:", focalPoint)
   }
 
   // Check if image is in an article cover
-  const isArticleCover = image?.data?.attributes?.width > 1000 // Assuming larger images are cover images
+  const isArticleCover = image?.data?.attributes?.width > 1000
 
-  // Use provided alt text or fallback to image's alternativeText
+  // Use provided alt text or fallback
   const altText = alt || alternativeText || ""
 
   return (
@@ -56,7 +75,7 @@ const Image = ({ image, style, alt }) => {
       }`}
       style={{
         position: "relative",
-        paddingBottom: isArticleCover ? 0 : "56.25%", // Only use aspect ratio for non-cover images
+        paddingBottom: isArticleCover ? 0 : "56.25%",
         height: isArticleCover ? "100%" : 0,
         overflow: "hidden",
         maxWidth: "100%",
@@ -73,48 +92,20 @@ const Image = ({ image, style, alt }) => {
           }`}
           onLoad={() => setIsLoading(false)}
           style={{
-            ...combinedStyle,
             position: "absolute",
             top: 0,
             left: 0,
             width: "100%",
             height: "100%",
-            objectFit: "cover", // Force this to override any potential conflicting styles
-            objectPosition: hasFocalPoint
-              ? `${formats.focalPoint.x}% ${formats.focalPoint.y}%`
-              : "50% 50%", // Ensure objectPosition is directly set
+            objectFit: "cover",
+            objectPosition: focalPoint
+              ? `${focalPoint.x}% ${focalPoint.y}%`
+              : "50% 50%",
           }}
         />
       )}
     </div>
   )
-}
-
-/**
- * Generates CSS object-position style based on focal point coordinates
- */
-function getFocalPointStyle(focalPoint) {
-  if (
-    !focalPoint ||
-    typeof focalPoint.x !== "number" ||
-    typeof focalPoint.y !== "number"
-  ) {
-    console.log("No valid focal point data, using default styles")
-    return {
-      objectFit: "cover",
-      objectPosition: "50% 50%",
-    }
-  }
-
-  // Log that we're applying focal point
-  console.log(`Applying focal point: x=${focalPoint.x}%, y=${focalPoint.y}%`)
-
-  // Convert focal point percentages to CSS object-position
-  // This ensures the focal point stays visible during cropping
-  return {
-    objectFit: "cover",
-    objectPosition: `${focalPoint.x}% ${focalPoint.y}%`,
-  }
 }
 
 export default Image

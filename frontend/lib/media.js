@@ -35,7 +35,7 @@ export function getStrapiImageUrl(image) {
 export function getFocalPointImageUrl(image, width, height) {
   if (!image || !image.attributes) return null
 
-  const { url, formats } = image.attributes
+  const { url, formats, provider_metadata } = image.attributes
 
   if (!url) {
     console.warn("No URL found in image data for focal point")
@@ -44,13 +44,33 @@ export function getFocalPointImageUrl(image, width, height) {
 
   const baseUrl = url.startsWith("/") ? getStrapiURL(url) : url
 
-  // If no formats or focal point, return regular image URL
-  if (!formats || !formats.focalPoint) {
+  // Check multiple locations for focal point data
+  let focalPoint = null
+
+  // First check formats
+  if (formats && formats.focalPoint) {
+    focalPoint = formats.focalPoint
+  }
+  // Then check provider_metadata
+  else if (provider_metadata && provider_metadata.focalPoint) {
+    focalPoint = provider_metadata.focalPoint
+  }
+  // Last check for direct focalPoint property
+  else if (image.attributes.focalPoint) {
+    focalPoint = image.attributes.focalPoint
+  }
+
+  // If no focal point found, return regular image URL
+  if (!focalPoint) {
+    console.log("No focal point found, returning regular URL")
     return baseUrl
   }
 
+  // Log found focal point
+  console.log("Applied focal point to URL:", focalPoint)
+
   // Extract focal point coordinates
-  const { x, y } = formats.focalPoint
+  const { x, y } = focalPoint
 
   // Add focal point parameters to URL
   // Format depends on your image provider/CDN

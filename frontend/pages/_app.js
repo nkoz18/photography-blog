@@ -4,6 +4,12 @@ import "../assets/css/style.css"
 import { createContext } from "react"
 import { fetchAPI } from "../lib/api"
 import { getStrapiMedia } from "../lib/media"
+import dynamic from "next/dynamic"
+
+// Dynamically import KonamiEasterEgg with no SSR
+const KonamiEasterEgg = dynamic(() => import("../components/KonamiEasterEgg"), {
+  ssr: false,
+})
 
 // Store Strapi Global object in context
 export const GlobalContext = createContext({})
@@ -42,6 +48,7 @@ const MyApp = ({ Component, pageProps }) => {
       </Head>
       <GlobalContext.Provider value={global.attributes}>
         <Component {...pageProps} />
+        <KonamiEasterEgg />
       </GlobalContext.Provider>
     </>
   )

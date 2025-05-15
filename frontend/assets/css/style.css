@@ -8,6 +8,10 @@ body {
   display: flex;
   flex-direction: column;
   margin: 0;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  transition: background-color var(--transition-time) ease,
+    color var(--transition-time) ease;
 }
 
 .content-wrapper {
@@ -63,7 +67,7 @@ footer {
 /* Logo styling - updated for larger box and correct font */
 .site-logo {
   font-family: "Barriecito", cursive !important;
-  font-size: 32px !important;
+  font-size: 40px !important; /* Increased from 32px to 40px */
   line-height: 1;
   display: flex;
   align-items: center;
@@ -72,8 +76,8 @@ footer {
 .logo-silky {
   background-color: #ff007f;
   color: white;
-  padding: 4px 8px; /* Increased padding for bigger box */
-  margin-right: 5px;
+  padding: 6px 10px; /* Increased padding for bigger box */
+  margin-right: 6px; /* Slightly increased margin */
 }
 
 .logo-truth {
@@ -83,7 +87,7 @@ footer {
 /* Navigation link styling */
 .nav-link {
   font-family: "Kirang Haerang", cursive !important;
-  color: #ff007f !important;
+  color: var(--color-secondary) !important;
   transition: color 0.3s ease;
   font-size: 18px; /* Reduced to create contrast with logo */
 }
@@ -101,9 +105,17 @@ a {
   text-decoration: none;
 }
 
-h1 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.uk-article-title,
+#title {
   font-family: "Kirang Haerang", cursive !important;
-  font-size: 120px;
+  color: var(--color-text);
+  transition: color var(--transition-time) ease;
 }
 
 /* Category page heading - smaller with added spacing */
@@ -212,15 +224,26 @@ html {
 
 /* Custom divider replacing uk-divider-icon */
 .uk-divider-icon {
-  background-image: url("/divider_1200x60.png") !important;
+  background-image: none !important;
   background-repeat: no-repeat !important;
   background-position: center center !important;
   background-size: contain !important;
-  height: 60px !important;
-  border: none !important;
-  margin-bottom: 100px !important;
-  margin-top: 50px !important;
+  height: 120px !important; /* Doubled from 60px */
+  margin: 40px auto !important;
   position: relative !important;
+  border: none !important;
+}
+
+/* Container for random SVG dividers */
+.random-divider-container {
+  text-align: center;
+  margin: 30px 0;
+}
+
+.random-divider-container img {
+  height: 120px; /* Doubled from 60px */
+  max-width: 100%;
+  display: inline-block;
 }
 
 /* Remove default uk-divider-icon styling */
@@ -286,6 +309,8 @@ p {
   font-size: 18px;
   line-height: 1.8;
   font-family: "IBM Plex Mono", monospace !important;
+  color: var(--color-text);
+  transition: color var(--transition-time) ease;
 }
 
 /* Fixed article title size to be more reasonable */
@@ -557,4 +582,319 @@ p {
 .article-cover-image img {
   border-radius: 0 !important;
   box-shadow: none !important;
+}
+
+/* ============= DARK MODE STYLES ============= */
+
+/* CSS variables for theme colors */
+:root {
+  --color-background: #ffffff;
+  --color-text: #333333;
+  --color-primary: #ff007f;
+  --color-secondary: #ff007f;
+  --color-accent: #444444;
+  --color-border: #dddddd;
+  --image-grayscale: 0%;
+  --image-opacity: 100%;
+  --navbar-bg: #ffffff;
+  --card-bg: #ffffff;
+  --footer-bg: #ffffff;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --logo-bg: #ff007f;
+  --logo-text: #ffffff;
+  --logo-secondary: #ff007f;
+  --transition-time: 0.3s;
+}
+
+/* Dark mode variables */
+.dark-mode {
+  --color-background: #1f2023;
+  --color-text: #efefef;
+  --color-primary: #ff007f;
+  --color-secondary: #ff007f;
+  --color-accent: #d0d0d0;
+  --color-border: #444444;
+  --image-grayscale: 10%;
+  --image-opacity: 90%;
+  --navbar-bg: #1f2023;
+  --card-bg: #1f2023;
+  --footer-bg: #1f2023;
+  --shadow-color: rgba(0, 0, 0, 0.4);
+  --logo-bg: #ff007f;
+  --logo-text: #ffffff;
+  --logo-secondary: #ff007f;
+}
+
+/* Apply variables to elements - with smooth transitions */
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  transition: background-color var(--transition-time) ease,
+    color var(--transition-time) ease;
+}
+
+.uk-navbar-container {
+  background: var(--navbar-bg) !important;
+  transition: background-color var(--transition-time) ease;
+}
+
+.logo-silky {
+  background-color: var(--logo-bg);
+  color: var(--logo-text);
+  transition: background-color var(--transition-time) ease,
+    color var(--transition-time) ease;
+}
+
+.logo-truth {
+  color: var(--logo-secondary);
+  transition: color var(--transition-time) ease;
+}
+
+.nav-link,
+.uk-navbar-nav li a {
+  color: var(--color-secondary) !important;
+  transition: color var(--transition-time) ease;
+}
+
+/* Card and container backgrounds */
+.uk-card,
+.article-item,
+.gallery-item {
+  background: var(--card-bg);
+  transition: background-color var(--transition-time) ease;
+}
+
+#footer,
+footer {
+  background: var(--footer-bg);
+  transition: background-color var(--transition-time) ease;
+}
+
+/* Image adjustments in dark mode */
+.dark-mode img,
+.dark-mode video {
+  filter: grayscale(var(--image-grayscale)) opacity(var(--image-opacity));
+  transition: filter var(--transition-time) ease;
+}
+
+/* Link colors in dark mode */
+.dark-mode a:not(.uk-button):not(.nav-link):not(.site-logo) {
+  color: var(--color-primary);
+  transition: color var(--transition-time) ease;
+}
+
+.dark-mode a:not(.uk-button):not(.nav-link):not(.site-logo):hover {
+  color: var(--color-secondary);
+}
+
+/* ============= HAMBURGER MENU STYLES ============= */
+
+/* Style the container */
+.nav-container {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Style the hamburger button */
+.hamburger-menu-container {
+  display: none; /* Hidden on desktop */
+  position: relative;
+  z-index: 101;
+  margin-right: 0; /* Removed margin-right */
+}
+
+.hamburger-menu-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 60px; /* Doubled from 30px */
+  padding: 0;
+  position: relative;
+  width: 60px; /* Doubled from 30px */
+}
+
+/* Style for the custom menu icon */
+.menu-icon {
+  width: 60px; /* Doubled from 30px */
+  height: 60px; /* Doubled from 30px */
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Animation for active state - removed rotation */
+.hamburger-menu-button.is-active .menu-icon {
+  /* transform: rotate(90deg); - removed rotation */
+}
+
+/* X icon shown when menu is active */
+.menu-icon-close {
+  position: absolute;
+  width: 60px; /* Doubled from 30px */
+  height: 60px; /* Doubled from 30px */
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  pointer-events: none; /* Prevent it from receiving hover events */
+  top: 0;
+  left: 0;
+}
+
+/* Only show X when menu is active - hide by default */
+.hamburger-menu-button .menu-icon {
+  opacity: 1;
+}
+
+.hamburger-menu-button .menu-icon-close {
+  opacity: 0;
+}
+
+/* Show X and hide normal icon when active */
+.hamburger-menu-button.is-active .menu-icon {
+  opacity: 0;
+}
+
+.hamburger-menu-button.is-active .menu-icon-close {
+  opacity: 1;
+}
+
+/* Legacy styles for hamburger lines - can be removed if not needed for fallback */
+.hamburger-menu-button span {
+  display: none; /* Hide the original hamburger lines */
+}
+
+/* Animated hamburger icon - can be removed if not needed for fallback */
+.hamburger-menu-button.is-active span:nth-child(1) {
+  transform: translateY(10px) rotate(45deg);
+}
+
+.hamburger-menu-button.is-active span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger-menu-button.is-active span:nth-child(3) {
+  transform: translateY(-10px) rotate(-45deg);
+}
+
+/* Mobile navigation styles */
+@media (max-width: 768px) {
+  /* Show hamburger menu on mobile */
+  .hamburger-menu-container {
+    display: block;
+  }
+
+  /* Hide the navbar by default on mobile */
+  .nav-links {
+    position: fixed;
+    top: -100%;
+    left: 0;
+    width: 100%;
+    height: auto;
+    max-height: 80vh;
+    background-color: var(--navbar-bg);
+    box-shadow: 0 5px 15px var(--shadow-color);
+    padding: 20px;
+    transition: top 0.3s ease;
+    z-index: 100;
+    overflow-y: auto;
+    text-align: center;
+  }
+
+  /* Show the navbar when menu is open */
+  .nav-links.is-open {
+    top: 0;
+  }
+
+  /* Adjust the navbar list to be vertical on mobile */
+  .nav-links .uk-navbar-nav {
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .nav-links .uk-navbar-nav li {
+    width: 100%;
+    text-align: center;
+  }
+
+  .nav-links .uk-navbar-nav li a {
+    padding: 10px 0;
+    font-size: 24px;
+    width: 100%;
+    display: block;
+    text-align: center;
+  }
+
+  /* Style the dark mode toggle on mobile - make it appear with other nav links */
+  .dark-mode-toggle-container {
+    display: none;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+  .site-logo {
+    font-size: 24px !important;
+  }
+}
+
+/* Make all text-containing elements transition properly */
+p,
+li,
+blockquote,
+.uk-article-meta {
+  color: var(--color-text);
+  transition: color var(--transition-time) ease;
+}
+
+h1 {
+  font-size: 120px;
+}
+
+h1.uk-article-title {
+  font-size: 48px;
+  line-height: 1.2;
+  margin-bottom: 40px;
+  font-weight: bold;
+}
+
+/* Remove the dark mode toggle container styles since they're no longer needed */
+.dark-mode-toggle-container {
+  display: none;
+}
+
+/* Dark mode toggle styling */
+.dark-mode-toggle {
+  cursor: pointer;
+  font-family: "Kirang Haerang", cursive !important;
+  font-size: 18px;
+  text-transform: lowercase;
+}
+
+.dark-toggle-inner {
+  display: inline-block;
+  background-color: var(--color-text);
+  color: var(--color-background);
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+/* Make sure the dark mode toggle appears properly in mobile menu */
+@media (max-width: 768px) {
+  .nav-links .uk-navbar-nav li a.dark-mode-toggle {
+    display: inline-block;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .dark-toggle-inner {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 20px;
+  }
 }

@@ -1,6 +1,7 @@
 import React, { useEffect } from "react"
 import { getStrapiImageUrl } from "../lib/media"
 import Image from "./image"
+import { getRandomDivider } from "../lib/randomAssets"
 
 const Gallery = ({ images, galleryData }) => {
   // Fix: Move useEffect outside the conditional return to follow React Hooks rules
@@ -109,9 +110,14 @@ const Gallery = ({ images, galleryData }) => {
 
 // Helper function to render the gallery layout
 const renderGalleryLayout = (galleryItems) => {
+  // Get a random divider for this gallery
+  const dividerSvg = getRandomDivider()
+
   return (
     <div className="uk-margin-large-top">
-      <hr className="uk-divider-icon" />
+      <div className="random-divider-container">
+        <img src={dividerSvg} alt="Divider" className="uk-divider-icon" />
+      </div>
       <div
         className="uk-grid uk-child-width-1-3@m uk-child-width-1-2@s uk-child-width-1-1@xs"
         uk-grid="masonry: true"

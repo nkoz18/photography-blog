@@ -30,15 +30,51 @@ const Article = ({ article, categories }) => {
       console.log("Article images:", article.attributes.images)
     }
 
-    // Log focal point data if available
-    if (article.attributes.image?.data?.attributes?.formats?.focalPoint) {
+    // Log complete image data for debugging
+    console.log(
+      "Complete image data:",
+      article.attributes.image?.data?.attributes
+    )
+
+    // Log provider_metadata specifically if exists
+    if (article.attributes.image?.data?.attributes?.provider_metadata) {
       console.log(
-        "Focal point data:",
-        article.attributes.image.data.attributes.formats.focalPoint
+        "Provider metadata:",
+        article.attributes.image.data.attributes.provider_metadata
       )
+    }
+
+    // Log focal point data if available from any source
+    const imageData = article.attributes.image?.data?.attributes
+    let focalPoint = null
+
+    // Check in formats
+    if (imageData?.formats?.focalPoint) {
+      focalPoint = imageData.formats.focalPoint
+      console.log("Found focal point in formats:", focalPoint)
+    }
+    // Check in provider_metadata
+    else if (imageData?.provider_metadata?.focalPoint) {
+      focalPoint = imageData.provider_metadata.focalPoint
+      console.log("Found focal point in provider_metadata:", focalPoint)
+
+      // Add to formats for consistency
+      if (!imageData.formats) {
+        imageData.formats = {}
+      }
+      imageData.formats.focalPoint = focalPoint
+    }
+    // Check direct property
+    else if (imageData?.focalPoint) {
+      focalPoint = imageData.focalPoint
+      console.log("Found focal point as direct property:", focalPoint)
+    }
+
+    if (focalPoint) {
+      console.log("Focal point data:", focalPoint)
       console.log(
         "Image will use focal point positioning at:",
-        `${article.attributes.image.data.attributes.formats.focalPoint.x}% ${article.attributes.image.data.attributes.formats.focalPoint.y}%`
+        `${focalPoint.x}% ${focalPoint.y}%`
       )
     } else {
       console.log("No focal point data found for the featured image")
@@ -109,6 +145,7 @@ export async function getServerSideProps({ params }) {
             "width",
             "height",
             "formats",
+            "provider_metadata",
           ],
         },
         images: {
@@ -119,6 +156,7 @@ export async function getServerSideProps({ params }) {
             "width",
             "height",
             "formats",
+            "provider_metadata",
           ],
         },
         gallery: {
@@ -131,6 +169,7 @@ export async function getServerSideProps({ params }) {
                 "width",
                 "height",
                 "formats",
+                "provider_metadata",
               ],
             },
             gallery_items: {
@@ -143,6 +182,7 @@ export async function getServerSideProps({ params }) {
                     "width",
                     "height",
                     "formats",
+                    "provider_metadata",
                   ],
                 },
               },
