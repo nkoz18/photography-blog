@@ -6,9 +6,17 @@ applications:
           commands:
             - rm -rf node_modules
             - npm ci
+            - echo "Node version:" && node -v
+            - echo "NPM version:" && npm -v
         build:
           commands:
-            - npm run deploy
+            - echo "Starting build process..."
+            - echo "Environment variables: NEXT_PUBLIC_STRAPI_API_URL=$NEXT_PUBLIC_STRAPI_API_URL API_URL=$API_URL NODE_ENV=$NODE_ENV USE_CLOUD_BACKEND=$USE_CLOUD_BACKEND"
+            - npm run build
+            - echo "Next build completed, starting export..."
+            - npm run export || (echo "Export failed" && ls -la .next && exit 1)
+            - echo "Export completed, checking output..."
+            - ls -la out
       artifacts:
         baseDirectory: out
         files:
