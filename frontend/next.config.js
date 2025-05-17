@@ -18,11 +18,11 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_STRAPI_API_URL:
       process.env.USE_CLOUD_BACKEND === "true"
-        ? "https://34.220.121.179:1337" // Changed to HTTPS
+        ? "http://34.220.121.179:1337" // Changed back to HTTP
         : "http://127.0.0.1:1337",
     API_URL:
       process.env.USE_CLOUD_BACKEND === "true"
-        ? "https://34.220.121.179:1337" // Changed to HTTPS
+        ? "http://34.220.121.179:1337" // Changed back to HTTP
         : "http://127.0.0.1:1337",
   },
   // Remove exportPathMap causing issues
@@ -32,14 +32,14 @@ const nextConfig = {
         source: "/uploads/:path*",
         destination:
           process.env.USE_CLOUD_BACKEND === "true"
-            ? "https://34.220.121.179:1337/uploads/:path*" // Changed to HTTPS
+            ? "http://34.220.121.179:1337/uploads/:path*" // Changed back to HTTP
             : "http://127.0.0.1:1337/uploads/:path*",
       },
       {
         source: "/api/:path*",
         destination:
           process.env.USE_CLOUD_BACKEND === "true"
-            ? "https://34.220.121.179:1337/api/:path*" // Changed to HTTPS
+            ? "http://34.220.121.179:1337/api/:path*" // Changed back to HTTP
             : "http://127.0.0.1:1337/api/:path*",
       },
     ]

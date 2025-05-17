@@ -16,6 +16,17 @@ const KonamiEasterEgg = () => {
   const imageRef = useRef(null)
   const animationActiveRef = useRef(false) // Track if animation is active
 
+  // Konami code gesture tracking
+  const gestureQueueRef = useRef([])
+  const swipeStartXRef = useRef(null)
+  const swipeStartYRef = useRef(null)
+  const swipeEndXRef = useRef(null)
+  const swipeEndYRef = useRef(null)
+  const swipeDraggingRef = useRef(false)
+  const lastGestureTimeRef = useRef(0)
+  const gestureTimeoutRef = useRef(null)
+  const expectedButtonRef = useRef(null) // Tracks whether next tap should be B or A
+
   // Available characters
   const availableCharacters = [
     "silky",
@@ -34,17 +45,180 @@ const KonamiEasterEgg = () => {
   const BOB_AMPLITUDE = 30 // Max pixels to move up/down
   const BOB_FREQUENCY = 0.004 // Controls speed of bobbing
 
+  // Gesture configuration
+  const SWIPE_TIMEOUT = 2000 // Time in ms before gesture sequence resets
+  const SWIPE_MIN_DISTANCE = 30 // Minimum distance in pixels to consider as swipe
+
+  // Gesture types
+  const GESTURE = {
+    UP: "UP",
+    DOWN: "DOWN",
+    LEFT: "LEFT",
+    RIGHT: "RIGHT",
+    A: "A",
+    B: "B",
+  }
+
+  // The Konami Code sequence as gestures
+  const KONAMI_SEQUENCE = [
+    GESTURE.UP,
+    GESTURE.UP,
+    GESTURE.DOWN,
+    GESTURE.DOWN,
+    GESTURE.LEFT,
+    GESTURE.RIGHT,
+    GESTURE.LEFT,
+    GESTURE.RIGHT,
+    GESTURE.B,
+    GESTURE.A,
+  ]
+
+  // Add a gesture to the queue and check for Konami code
+  const addGestureToQueue = (gesture) => {
+    const currentTime = new Date().getTime()
+
+    // Reset if too much time passed since last gesture
+    if (currentTime - lastGestureTimeRef.current > SWIPE_TIMEOUT) {
+      gestureQueueRef.current = []
+      expectedButtonRef.current = null // Reset expected button on timeout
+    }
+
+    // Clear any existing timeout
+    if (gestureTimeoutRef.current) {
+      clearTimeout(gestureTimeoutRef.current)
+    }
+
+    // Update expected button after directional gestures
+    if (
+      gestureQueueRef.current.length === 8 &&
+      gesture !== GESTURE.UP &&
+      gesture !== GESTURE.DOWN &&
+      gesture !== GESTURE.LEFT &&
+      gesture !== GESTURE.RIGHT
+    ) {
+      // If we have 8 gestures and this isn't a directional one,
+      // we expect button B first, then A
+      if (expectedButtonRef.current === null) {
+        // First tap after directions should be B
+        expectedButtonRef.current = GESTURE.B
+        gesture = GESTURE.B
+        console.log("First tap after directions - registering as B")
+      } else if (expectedButtonRef.current === GESTURE.B) {
+        // Second tap after B should be A
+        expectedButtonRef.current = GESTURE.A
+        gesture = GESTURE.A
+        console.log("Second tap after B - registering as A")
+      } else {
+        // Reset if we get more taps after A
+        expectedButtonRef.current = null
+        console.log("Extra tap detected - resetting sequence")
+      }
+    }
+
+    // Add new gesture to queue
+    gestureQueueRef.current.push(gesture)
+    lastGestureTimeRef.current = currentTime
+
+    // Limit queue size to match Konami sequence length
+    if (gestureQueueRef.current.length > KONAMI_SEQUENCE.length) {
+      gestureQueueRef.current.shift()
+    }
+
+    console.log("Current gesture sequence:", gestureQueueRef.current.join(", "))
+
+    // Set timeout to reset sequence
+    gestureTimeoutRef.current = setTimeout(() => {
+      console.log("Gesture sequence timeout - resetting")
+      gestureQueueRef.current = []
+      expectedButtonRef.current = null // Reset on timeout
+    }, SWIPE_TIMEOUT)
+
+    // Check if sequence matches Konami code
+    if (
+      gestureQueueRef.current.length === KONAMI_SEQUENCE.length &&
+      gestureQueueRef.current.every((g, i) => g === KONAMI_SEQUENCE[i])
+    ) {
+      console.log("Konami code gesture sequence detected!")
+      gestureQueueRef.current = [] // Reset after successful detection
+      expectedButtonRef.current = null // Reset expected button
+      triggerEasterEgg()
+    }
+  }
+
   useEffect(() => {
-    // Initialize Konami code listener
+    // Initialize Konami code keyboard listener
     const easterEgg = new Konami(() => {
-      console.log("Konami code entered!")
+      console.log("Konami code entered from keyboard!")
       triggerEasterEgg()
     })
 
-    // Add proper touch support for mobile devices that follows Konami pattern
-    // This implementation intentionally doesn't do anything. We'll rely on the
-    // konami.js library to handle touch events properly, as it already has that
-    // functionality built in.
+    // Detect if device is mobile
+    const isMobileDevice =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        typeof navigator !== "undefined" ? navigator.userAgent : ""
+      )
+
+    // Touch event handlers for mobile Konami code
+    const handleTouchStart = (event) => {
+      swipeDraggingRef.current = false
+      swipeStartXRef.current = event.touches[0].clientX
+      swipeStartYRef.current = event.touches[0].clientY
+    }
+
+    const handleTouchMove = (event) => {
+      if (!swipeStartXRef.current || !swipeStartYRef.current) {
+        return
+      }
+      swipeDraggingRef.current = true
+      swipeEndXRef.current = event.touches[0].clientX
+      swipeEndYRef.current = event.touches[0].clientY
+    }
+
+    const handleTouchEnd = (event) => {
+      if (swipeDraggingRef.current) {
+        // This was a swipe
+        const xDiff = swipeStartXRef.current - swipeEndXRef.current
+        const yDiff = swipeStartYRef.current - swipeEndYRef.current
+
+        // Minimum swipe distance to consider it intentional
+        if (
+          Math.abs(xDiff) < SWIPE_MIN_DISTANCE &&
+          Math.abs(yDiff) < SWIPE_MIN_DISTANCE
+        ) {
+          // Too small of a movement, ignore
+          swipeDraggingRef.current = false
+          swipeStartXRef.current = null
+          swipeStartYRef.current = null
+          return
+        }
+
+        const isHorizontal = Math.abs(xDiff) > Math.abs(yDiff)
+
+        if (isHorizontal) {
+          // Horizontal swipe
+          addGestureToQueue(xDiff > 0 ? GESTURE.LEFT : GESTURE.RIGHT)
+        } else {
+          // Vertical swipe
+          addGestureToQueue(yDiff > 0 ? GESTURE.UP : GESTURE.DOWN)
+        }
+      } else {
+        // This was a tap - will be processed as B or A based on sequence
+        addGestureToQueue("TAP") // Send a generic tap, addGestureToQueue will determine if it's B or A
+      }
+
+      // Reset touch tracking
+      swipeDraggingRef.current = false
+      swipeStartXRef.current = null
+      swipeStartYRef.current = null
+    }
+
+    // Add touch listeners for mobile
+    if (isMobileDevice && typeof document !== "undefined") {
+      document.addEventListener("touchstart", handleTouchStart, false)
+      document.addEventListener("touchmove", handleTouchMove, false)
+      document.addEventListener("touchend", handleTouchEnd, false)
+      console.log("Mobile device detected - Konami gesture detection enabled")
+    }
 
     // Preload images to test if they're accessible
     availableCharacters.forEach((character) => {
@@ -74,6 +248,18 @@ const KonamiEasterEgg = () => {
       // Stop all animations and clean up
       animationActiveRef.current = false
       setShowCharacter(false)
+
+      // Clean up touch detection for mobile
+      if (isMobileDevice && typeof document !== "undefined") {
+        document.removeEventListener("touchstart", handleTouchStart)
+        document.removeEventListener("touchmove", handleTouchMove)
+        document.removeEventListener("touchend", handleTouchEnd)
+      }
+
+      // Clear gesture timeout
+      if (gestureTimeoutRef.current) {
+        clearTimeout(gestureTimeoutRef.current)
+      }
 
       if (easterEgg && typeof easterEgg.disable === "function") {
         easterEgg.disable()
