@@ -9,14 +9,24 @@ const KonamiEasterEgg = () => {
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
   const [useFallback, setUseFallback] = useState(false)
+  const [currentCharacter, setCurrentCharacter] = useState("silky") // Default character
   const audioRef = useRef(null)
   const animationRef = useRef(null)
   const audioPlaying = useRef(false)
   const imageRef = useRef(null)
   const animationActiveRef = useRef(false) // Track if animation is active
 
-  // Image paths
-  const silkyImagePath = "/easter-egg/images/silky.png"
+  // Available characters
+  const availableCharacters = [
+    "silky",
+    "gucci",
+    "bulrog",
+    "gon",
+    "gman",
+    "mantis",
+  ]
+
+  // Fallback image path
   const fallbackImagePath = "/images/icons/hamburger.svg"
 
   // Animation configuration
@@ -31,48 +41,17 @@ const KonamiEasterEgg = () => {
       triggerEasterEgg()
     })
 
-    // Add touch support for mobile devices
-    const konamiCodeTouch = () => {
-      let touchCount = 0
-      let lastTouch = 0
-      const touchThreshold = 1500 // ms between touches
-
-      const handleTouch = () => {
-        const now = Date.now()
-        if (now - lastTouch > touchThreshold) {
-          touchCount = 0
-        }
-        touchCount++
-        lastTouch = now
-
-        if (touchCount >= 10) {
-          // Konami code is 10 inputs (8 directions + B + A)
-          triggerEasterEgg()
-          touchCount = 0
-        }
-      }
-
-      document.addEventListener("touchstart", handleTouch)
-
-      return () => {
-        document.removeEventListener("touchstart", handleTouch)
-      }
-    }
-
-    const cleanupTouch = konamiCodeTouch()
+    // Add proper touch support for mobile devices that follows Konami pattern
+    // This implementation intentionally doesn't do anything. We'll rely on the
+    // konami.js library to handle touch events properly, as it already has that
+    // functionality built in.
 
     // Preload images to test if they're accessible
-    const preloadImage = new Image()
-    preloadImage.onload = () => {
-      console.log("Preloaded silky.png successfully")
-      setImageError(false)
-    }
-    preloadImage.onerror = () => {
-      console.error("Failed to preload silky.png, will use fallback")
-      setImageError(true)
-      setUseFallback(true)
-    }
-    preloadImage.src = silkyImagePath
+    availableCharacters.forEach((character) => {
+      const preloadImage = new Image()
+      preloadImage.src = `/easter-egg/images/${character}.png`
+      console.log(`Preloading ${character}.png`)
+    })
 
     return () => {
       // Clean up animations
@@ -99,10 +78,13 @@ const KonamiEasterEgg = () => {
       if (easterEgg && typeof easterEgg.disable === "function") {
         easterEgg.disable()
       }
-
-      cleanupTouch()
     }
   }, [])
+
+  const selectRandomCharacter = () => {
+    const randomIndex = Math.floor(Math.random() * availableCharacters.length)
+    return availableCharacters[randomIndex]
+  }
 
   const triggerEasterEgg = () => {
     // Reset any ongoing animation
@@ -113,6 +95,11 @@ const KonamiEasterEgg = () => {
         animationRef.current = null
       }
     }
+
+    // Pick a random character
+    const character = selectRandomCharacter()
+    setCurrentCharacter(character)
+    console.log(`Selected character: ${character}`)
 
     // Start a new animation
     animationActiveRef.current = true
@@ -135,10 +122,7 @@ const KonamiEasterEgg = () => {
 
     setShowCharacter(true)
     console.log("Easter egg triggered - Character should show now")
-    console.log(
-      "Using image path:",
-      useFallback ? fallbackImagePath : silkyImagePath
-    )
+    console.log("Using character:", character)
     console.log(
       "Animation direction:",
       startFromRight ? "Right to Left" : "Left to Right"
@@ -154,6 +138,8 @@ const KonamiEasterEgg = () => {
     // Play sound
     if (audioRef.current) {
       try {
+        // Update audio source to match the current character
+        audioRef.current.src = `/easter-egg/sounds/${character}.mp3`
         audioRef.current.currentTime = 0
         const playPromise = audioRef.current.play()
 
@@ -243,7 +229,7 @@ const KonamiEasterEgg = () => {
   // This ensures the audio element isn't removed during playback
   return (
     <>
-      <audio ref={audioRef} src="/easter-egg/sounds/silky.mp3" preload="auto" />
+      <audio ref={audioRef} preload="auto" />
       {showCharacter && (
         <div
           style={{
@@ -255,10 +241,14 @@ const KonamiEasterEgg = () => {
             pointerEvents: "none", // Prevent character from blocking clicks
           }}
         >
-          {/* Use silky.png with fallback to hamburger.svg */}
+          {/* Display the randomly selected character */}
           <img
             ref={imageRef}
-            src={useFallback ? fallbackImagePath : silkyImagePath}
+            src={
+              useFallback
+                ? fallbackImagePath
+                : `/easter-egg/images/${currentCharacter}.png`
+            }
             alt="Easter Egg Character"
             onLoad={() => {
               console.log("Image loaded successfully!")

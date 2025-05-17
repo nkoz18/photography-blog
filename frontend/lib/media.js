@@ -12,6 +12,11 @@ export function getStrapiMedia(media) {
     return null
   }
 
+  // Use relative URLs if they start with /uploads
+  if (url.startsWith("/uploads")) {
+    return url
+  }
+
   const imageUrl = url.startsWith("/") ? getStrapiURL(url) : url
   return imageUrl
 }
@@ -28,6 +33,11 @@ export function getStrapiImageUrl(image) {
     return null
   }
 
+  // Use relative URLs if they start with /uploads
+  if (url.startsWith("/uploads")) {
+    return url
+  }
+
   const imageUrl = url.startsWith("/") ? getStrapiURL(url) : url
   return imageUrl
 }
@@ -42,7 +52,12 @@ export function getFocalPointImageUrl(image, width, height) {
     return null
   }
 
-  const baseUrl = url.startsWith("/") ? getStrapiURL(url) : url
+  // Use relative URLs if they start with /uploads
+  const baseUrl = url.startsWith("/uploads")
+    ? url
+    : url.startsWith("/")
+    ? getStrapiURL(url)
+    : url
 
   // Check multiple locations for focal point data
   let focalPoint = null
