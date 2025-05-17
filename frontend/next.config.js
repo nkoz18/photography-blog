@@ -14,32 +14,32 @@ const nextConfig = {
   },
   swcMinify: false,
   trailingSlash: true, // Helps with static export
-  assetPrefix: "https://www.silkytruth.com", // Add asset prefix for production
+  assetPrefix: "", // Remove asset prefix to allow relative URLs
   env: {
     NEXT_PUBLIC_STRAPI_API_URL:
       process.env.USE_CLOUD_BACKEND === "true"
-        ? "http://34.220.121.179:1337" // Changed back to HTTP
+        ? "/api" // Use relative path to avoid mixed content
         : "http://127.0.0.1:1337",
     API_URL:
       process.env.USE_CLOUD_BACKEND === "true"
-        ? "http://34.220.121.179:1337" // Changed back to HTTP
+        ? "/api" // Use relative path to avoid mixed content
         : "http://127.0.0.1:1337",
   },
-  // Remove exportPathMap causing issues
+  // Configure rewrites to handle API requests
   async rewrites() {
     return [
       {
         source: "/uploads/:path*",
         destination:
           process.env.USE_CLOUD_BACKEND === "true"
-            ? "http://34.220.121.179:1337/uploads/:path*" // Changed back to HTTP
+            ? "http://34.220.121.179:1337/uploads/:path*" // This will be proxied by Next.js
             : "http://127.0.0.1:1337/uploads/:path*",
       },
       {
         source: "/api/:path*",
         destination:
           process.env.USE_CLOUD_BACKEND === "true"
-            ? "http://34.220.121.179:1337/api/:path*" // Changed back to HTTP
+            ? "http://34.220.121.179:1337/api/:path*" // This will be proxied by Next.js
             : "http://127.0.0.1:1337/api/:path*",
       },
     ]

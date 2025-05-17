@@ -12,15 +12,19 @@ export function getStrapiMedia(media) {
     return null
   }
 
-  // For absolute URLs, return as is
+  // For absolute URLs, convert to relative URL if it's from our backend server
   if (url.startsWith("http")) {
+    // If URL is from our backend, convert to relative
+    if (url.includes("34.220.121.179:1337")) {
+      const relativePath = url.split("34.220.121.179:1337")[1]
+      return relativePath // This will work with our rewrite rules
+    }
     return url
   }
 
-  // Use full URL starting with the domain for /uploads paths
+  // For uploads paths - use relative URLs directly
   if (url.startsWith("/uploads")) {
-    // Use NEXT_PUBLIC_STRAPI_API_URL for uploads
-    return `${process.env.NEXT_PUBLIC_STRAPI_API_URL}${url}`
+    return url // Use relative URL directly - will be handled by rewrites
   }
 
   // For other relative URLs
@@ -40,15 +44,19 @@ export function getStrapiImageUrl(image) {
     return null
   }
 
-  // For absolute URLs, return as is
+  // For absolute URLs, convert to relative URL if it's from our backend server
   if (url.startsWith("http")) {
+    // If URL is from our backend, convert to relative
+    if (url.includes("34.220.121.179:1337")) {
+      const relativePath = url.split("34.220.121.179:1337")[1]
+      return relativePath // This will work with our rewrite rules
+    }
     return url
   }
 
-  // Use full URL starting with the domain for /uploads paths
+  // For uploads paths - use relative URLs directly
   if (url.startsWith("/uploads")) {
-    // Use NEXT_PUBLIC_STRAPI_API_URL for uploads
-    return `${process.env.NEXT_PUBLIC_STRAPI_API_URL}${url}`
+    return url // Use relative URL directly - will be handled by rewrites
   }
 
   // For other relative URLs
@@ -66,14 +74,22 @@ export function getFocalPointImageUrl(image, width, height) {
     return null
   }
 
-  // For absolute URLs, use as is
+  // Process URL to get base URL
   let baseUrl = ""
+
+  // For absolute URLs, convert to relative if from our backend
   if (url.startsWith("http")) {
-    baseUrl = url
+    // If URL is from our backend, convert to relative
+    if (url.includes("34.220.121.179:1337")) {
+      const relativePath = url.split("34.220.121.179:1337")[1]
+      baseUrl = relativePath // This will work with our rewrite rules
+    } else {
+      baseUrl = url
+    }
   }
-  // Use full URL starting with the domain for /uploads paths
+  // For uploads paths - use relative URLs directly
   else if (url.startsWith("/uploads")) {
-    baseUrl = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}${url}`
+    baseUrl = url // Use relative URL directly - will be handled by rewrites
   }
   // For other relative URLs
   else {
