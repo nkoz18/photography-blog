@@ -8,7 +8,7 @@ import qs from "qs"
 export function getStrapiURL(path = "") {
   // Use environment variable for the base URL, with a fallback
   const baseURL =
-    process.env.NEXT_PUBLIC_STRAPI_API_URL || "http://34.220.121.179:1337"
+    process.env.NEXT_PUBLIC_STRAPI_API_URL || "https://api.silkytruth.com"
 
   // Make sure path starts with a slash if it's not empty
   const normalizedPath = path && !path.startsWith("/") ? `/${path}` : path
@@ -47,7 +47,7 @@ export async function fetchAPI(path, urlParamsObject = {}, options = {}) {
 
   // Always use the full API URL, especially for static export
   const apiBaseUrl =
-    process.env.NEXT_PUBLIC_STRAPI_API_URL || "http://34.220.121.179:1337"
+    process.env.NEXT_PUBLIC_STRAPI_API_URL || "https://api.silkytruth.com"
 
   // Make sure path starts with /api
   const apiPath = path.startsWith("/api") ? path : `/api${path}`

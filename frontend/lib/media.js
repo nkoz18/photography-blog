@@ -15,7 +15,7 @@ export function getStrapiMedia(media) {
   // For client-side, make sure we include the full URL to the backend
   const isClient = typeof window !== "undefined"
   const backendUrl =
-    process.env.NEXT_PUBLIC_STRAPI_API_URL || "http://34.220.121.179:1337"
+    process.env.NEXT_PUBLIC_STRAPI_API_URL || "https://api.silkytruth.com"
 
   // For absolute URLs, return directly
   if (url.startsWith("http")) {
@@ -46,7 +46,7 @@ export function getStrapiImageUrl(image) {
 
   // For client-side, make sure we include the full URL to the backend
   const backendUrl =
-    process.env.NEXT_PUBLIC_STRAPI_API_URL || "http://34.220.121.179:1337"
+    process.env.NEXT_PUBLIC_STRAPI_API_URL || "https://api.silkytruth.com"
 
   // For absolute URLs, return directly
   if (url.startsWith("http")) {
@@ -75,7 +75,7 @@ export function getFocalPointImageUrl(image, width, height) {
 
   // For client-side, make sure we include the full URL to the backend
   const backendUrl =
-    process.env.NEXT_PUBLIC_STRAPI_API_URL || "http://34.220.121.179:1337"
+    process.env.NEXT_PUBLIC_STRAPI_API_URL || "https://api.silkytruth.com"
 
   // Process URL to get base URL
   let baseUrl = ""

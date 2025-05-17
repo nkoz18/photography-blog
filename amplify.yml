@@ -18,7 +18,7 @@ applications:
             - 'echo "Creating static 404.html page..."'
             - 'mkdir -p public'
             - 'echo "<html><head><title>Page Not Found</title></head><body><h1>404 - Page Not Found</h1><p>The page you are looking for does not exist or has been moved.</p><p><a href=\"/\">Go to homepage</a></p></body></html>" > public/404.html'
-            - 'cross-env USE_CLOUD_BACKEND=true NEXT_PUBLIC_STRAPI_API_URL=http://34.220.121.179:1337 STRAPI_API_URL=http://34.220.121.179:1337 npx next build'
+            - 'cross-env USE_CLOUD_BACKEND=true NEXT_PUBLIC_STRAPI_API_URL=https://api.silkytruth.com STRAPI_API_URL=https://api.silkytruth.com npx next build'
             - 'echo "Next build completed, checking output..."'
             - 'ls -la out'
       artifacts:
@@ -32,4 +32,4 @@ applications:
         - pattern: '**/*'
           headers:
             - key: 'Content-Security-Policy'
-              value: "default-src 'self' http://34.220.121.179:1337 https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' http://34.220.121.179:1337 data: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; font-src 'self' data: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.gstatic.com; connect-src 'self' http://34.220.121.179:1337;" 
+              value: "default-src 'self' https://api.silkytruth.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' https://api.silkytruth.com data: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; font-src 'self' data: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.gstatic.com; connect-src 'self' https://api.silkytruth.com;" 

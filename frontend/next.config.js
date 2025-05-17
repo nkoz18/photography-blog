@@ -9,6 +9,7 @@ const nextConfig = {
       "34.220.121.179",
       "www.silkytruth.com",
       "silkytruth.com",
+      "api.silkytruth.com",
     ],
     unoptimized: true, // Need this for next export
   },
@@ -20,11 +21,11 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_STRAPI_API_URL:
       process.env.USE_CLOUD_BACKEND === "true"
-        ? "http://34.220.121.179:1337" // Direct connection to backend
+        ? "https://api.silkytruth.com" // Secure connection to backend
         : "http://127.0.0.1:1337",
     API_URL:
       process.env.USE_CLOUD_BACKEND === "true"
-        ? "http://34.220.121.179:1337" // Direct connection to backend
+        ? "https://api.silkytruth.com" // Secure connection to backend
         : "http://127.0.0.1:1337",
   },
   // We can't use rewrites with next export, so we're removing this
