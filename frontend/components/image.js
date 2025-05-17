@@ -3,10 +3,12 @@ import { getStrapiMedia, getFocalPointImageUrl } from "../lib/media"
 
 /**
  * Improved image component that handles focal points for better cropping
+ * and uses fetch + blob to avoid mixed content issues in HTTPS environments
  */
 const Image = ({ image, style, alt }) => {
   const [isLoading, setIsLoading] = useState(true)
   const [imgSrc, setImgSrc] = useState("")
+  const [blobUrl, setBlobUrl] = useState("")
 
   useEffect(() => {
     // Debug log the full image data
@@ -30,21 +32,51 @@ const Image = ({ image, style, alt }) => {
 
     // Only set the image source after component mounts
     if (image?.data?.attributes) {
+      let src = ""
+
       // Check for focal point data
       if (
         image.data.attributes.provider_metadata?.focalPoint ||
         image.data.attributes.formats?.focalPoint
       ) {
         // Use focal point image URL
-        const src = getFocalPointImageUrl(image.data)
-        setImgSrc(src)
+        src = getFocalPointImageUrl(image.data)
       } else {
         // Use regular media URL
-        const src = getStrapiMedia(image)
-        setImgSrc(src)
+        src = getStrapiMedia(image)
+      }
+
+      setImgSrc(src)
+
+      // Fetch the image and convert to blob URL to avoid mixed content issues
+      if (src && typeof window !== "undefined") {
+        const fetchImage = async () => {
+          try {
+            const response = await fetch(src, { mode: "cors" })
+            if (!response.ok) {
+              console.error("Failed to fetch image:", response.status)
+              return
+            }
+
+            const blob = await response.blob()
+            const objectUrl = URL.createObjectURL(blob)
+            setBlobUrl(objectUrl)
+          } catch (error) {
+            console.error("Error fetching image:", error)
+          }
+        }
+
+        fetchImage()
       }
     }
-  }, [image])
+
+    // Clean up blob URL on unmount
+    return () => {
+      if (blobUrl) {
+        URL.revokeObjectURL(blobUrl)
+      }
+    }
+  }, [image, blobUrl])
 
   if (!image?.data?.attributes) {
     return null
@@ -68,6 +100,9 @@ const Image = ({ image, style, alt }) => {
   // Use provided alt text or fallback
   const altText = alt || alternativeText || ""
 
+  // Use the blob URL if available, otherwise fall back to the original source
+  const displaySrc = blobUrl || imgSrc
+
   return (
     <div
       className={`image-container ${
@@ -82,10 +117,10 @@ const Image = ({ image, style, alt }) => {
       }}
     >
       {isLoading && <div className="image-loader"></div>}
-      {imgSrc && (
+      {displaySrc && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={imgSrc}
+          src={displaySrc}
           alt={altText}
           className={`image-transition ${
             isLoading ? "image-loading" : "image-loaded"

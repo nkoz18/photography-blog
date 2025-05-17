@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react"
+import React, { useEffect, useState, useCallback, useRef } from "react"
 import "photoswipe/dist/photoswipe.css"
 import { Gallery as PhotoSwipeGallery, Item } from "react-photoswipe-gallery"
 import Masonry, { ResponsiveMasonry } from "react-responsive-masonry"
@@ -9,6 +9,8 @@ import { getRandomDivider } from "../lib/randomAssets"
 const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
   const [galleryPhotos, setGalleryPhotos] = useState([])
   const [dividerSvg, setDividerSvg] = useState("")
+  const [blobUrls, setBlobUrls] = useState({})
+  const blobUrlsRef = useRef({})
 
   // Get Strapi Image URL helper function
   const getImageUrl = useCallback((image) => {
@@ -76,6 +78,37 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
     return ""
   }, [])
 
+  // Fetch and create blob URLs to avoid mixed content issues
+  const fetchImageAsBlob = useCallback(async (url, id) => {
+    if (!url || blobUrlsRef.current[id]) return blobUrlsRef.current[id]
+
+    try {
+      const response = await fetch(url, { mode: "cors" })
+      if (!response.ok) {
+        console.error("Failed to fetch image:", response.status)
+        return url
+      }
+
+      const blob = await response.blob()
+      const objectUrl = URL.createObjectURL(blob)
+
+      blobUrlsRef.current = {
+        ...blobUrlsRef.current,
+        [id]: objectUrl,
+      }
+
+      setBlobUrls((prev) => ({
+        ...prev,
+        [id]: objectUrl,
+      }))
+
+      return objectUrl
+    } catch (error) {
+      console.error("Error fetching image as blob:", error)
+      return url
+    }
+  }, [])
+
   // Process the images from gallery_items
   const processImages = useCallback(() => {
     let processedImages = []
@@ -91,16 +124,24 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
       ) {
         processedImages = galleryData.data.attributes.gallery_items
           .filter((item) => item && item.image && item.image.data)
-          .map((item) => {
+          .map((item, index) => {
             const image = item.image.data
             const width = image.attributes?.width || 1200
             const height = image.attributes?.height || 800
+            const src = getImageUrl(image)
+            const id = `gallery-${image.id || index}`
+
+            // Fetch the image as blob in the background
+            if (typeof window !== "undefined") {
+              fetchImageAsBlob(src, id)
+            }
 
             return {
-              src: getImageUrl(image),
+              id,
+              src,
               width,
               height,
-              original: getImageUrl(image),
+              original: src,
               alt: item.alt_text || image.attributes?.alternativeText || "",
               caption: item.caption || image.attributes?.caption || "",
             }
@@ -114,16 +155,24 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
       ) {
         processedImages = galleryData.gallery_items
           .filter((item) => item && item.image && item.image.data)
-          .map((item) => {
+          .map((item, index) => {
             const image = item.image.data
             const width = image.attributes?.width || 1200
             const height = image.attributes?.height || 800
+            const src = getImageUrl(image)
+            const id = `gallery-${image.id || index}`
+
+            // Fetch the image as blob in the background
+            if (typeof window !== "undefined") {
+              fetchImageAsBlob(src, id)
+            }
 
             return {
-              src: getImageUrl(image),
+              id,
+              src,
               width,
               height,
-              original: getImageUrl(image),
+              original: src,
               alt: item.alt_text || image.attributes?.alternativeText || "",
               caption: item.caption || image.attributes?.caption || "",
             }
@@ -131,15 +180,23 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
       }
       // Fallback: Legacy images field (for backwards compatibility)
       else if (images && images.data && images.data.length > 0) {
-        processedImages = images.data.map((image) => {
+        processedImages = images.data.map((image, index) => {
           const width = image.attributes?.width || 1200
           const height = image.attributes?.height || 800
+          const src = getImageUrl(image)
+          const id = `gallery-${image.id || index}`
+
+          // Fetch the image as blob in the background
+          if (typeof window !== "undefined") {
+            fetchImageAsBlob(src, id)
+          }
 
           return {
-            src: getImageUrl(image),
+            id,
+            src,
             width,
             height,
-            original: getImageUrl(image),
+            original: src,
             alt: image.attributes?.alternativeText || "",
             caption: image.attributes?.caption || "",
           }
@@ -152,7 +209,7 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
     }
 
     return processedImages
-  }, [galleryData, images, getImageUrl])
+  }, [galleryData, images, getImageUrl, fetchImageAsBlob])
 
   useEffect(() => {
     const photos = processImages()
@@ -160,11 +217,23 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
 
     // Select a random divider
     setDividerSvg(getRandomDivider())
+
+    // Clean up blob URLs when component unmounts
+    return () => {
+      Object.values(blobUrlsRef.current).forEach((url) => {
+        URL.revokeObjectURL(url)
+      })
+    }
   }, [processImages])
 
   // Return null if no images to display
   if (!galleryPhotos || galleryPhotos.length === 0) {
     return null
+  }
+
+  // Function to get the display URL (blob or original)
+  const getDisplayUrl = (photo) => {
+    return blobUrls[photo.id] || photo.src
   }
 
   return (
@@ -198,8 +267,8 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
               {galleryPhotos.map((photo, index) => (
                 <Item
                   key={`gallery-item-${index}`}
-                  original={photo.original || photo.src}
-                  thumbnail={photo.src}
+                  original={blobUrls[photo.id] || photo.original || photo.src}
+                  thumbnail={getDisplayUrl(photo)}
                   width={photo.width}
                   height={photo.height}
                   alt={photo.alt || "Gallery image"}
@@ -217,7 +286,7 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
                       }}
                     >
                       <Image
-                        src={photo.src}
+                        src={getDisplayUrl(photo)}
                         alt={photo.alt || "Gallery image"}
                         width={photo.width}
                         height={photo.height}

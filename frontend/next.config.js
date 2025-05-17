@@ -20,11 +20,11 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_STRAPI_API_URL:
       process.env.USE_CLOUD_BACKEND === "true"
-        ? process.env.STRAPI_API_URL || "http://34.220.121.179:1337" // Use the environment variable if available
+        ? "https://cors-anywhere.herokuapp.com/http://34.220.121.179:1337" // Use CORS proxy
         : "http://127.0.0.1:1337",
     API_URL:
       process.env.USE_CLOUD_BACKEND === "true"
-        ? process.env.STRAPI_API_URL || "http://34.220.121.179:1337" // Use the environment variable if available
+        ? "https://cors-anywhere.herokuapp.com/http://34.220.121.179:1337" // Use CORS proxy
         : "http://127.0.0.1:1337",
   },
   // We can't use rewrites with next export, so we're removing this
