@@ -8,7 +8,7 @@ import qs from "qs"
 export function getStrapiURL(path = "") {
   // Use environment variable for the base URL, with a fallback
   const baseURL =
-    process.env.NEXT_PUBLIC_STRAPI_API_URL || "http://127.0.0.1:1337"
+    process.env.NEXT_PUBLIC_STRAPI_API_URL || "http://34.220.121.179:1337"
 
   // Make sure path starts with a slash if it's not empty
   const normalizedPath = path && !path.startsWith("/") ? `/${path}` : path
@@ -45,60 +45,35 @@ export async function fetchAPI(path, urlParamsObject = {}, options = {}) {
   // Build request URL
   const queryString = qs.stringify(urlParamsObject)
 
-  // During static generation, we need to handle URLs differently
-  // Check if we're in a Node.js environment (during build)
-  const isServer = typeof window === "undefined"
-  const isStatic = isServer && process.env.NODE_ENV === "production"
+  // Always use the full API URL, especially for static export
+  const apiBaseUrl =
+    process.env.NEXT_PUBLIC_STRAPI_API_URL || "http://34.220.121.179:1337"
 
-  let requestUrl = ""
-  // When in static generation, use the proper backend URL
-  if (isStatic) {
-    // For static build, use the backend URL directly (not relative)
-    const apiBaseUrl =
-      process.env.STRAPI_API_URL || "http://34.220.121.179:1337"
-    requestUrl = `${apiBaseUrl}/api${path}${
-      queryString ? `?${queryString}` : ""
-    }`
-    console.log(`[Static Build] Fetching from: ${requestUrl}`)
-  }
-  // Regular client-side or development
-  else if (process.env.NEXT_PUBLIC_STRAPI_API_URL.startsWith("/")) {
-    // For relative API paths, the /api prefix is handled by Next.js rewrites
-    requestUrl = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}${path}${
-      queryString ? `?${queryString}` : ""
-    }`
-  } else {
-    // For absolute API URLs (like in dev mode)
-    requestUrl = `${getStrapiURL(
-      `/api${path}${queryString ? `?${queryString}` : ""}`
-    )}`
-  }
+  // Make sure path starts with /api
+  const apiPath = path.startsWith("/api") ? path : `/api${path}`
 
-  // Trigger API call
-  try {
+  // Construct full request URL
+  const requestUrl = `${apiBaseUrl}${apiPath}${
+    queryString ? `?${queryString}` : ""
+  }`
+
+  // Log the API request in development for debugging
+  if (process.env.NODE_ENV === "development" || typeof window !== "undefined") {
     console.log(`Fetching API: ${requestUrl}`)
+  }
+
+  try {
+    // Fetch data from Strapi
     const response = await fetch(requestUrl, mergedOptions)
 
-    // Handle response
     if (!response.ok) {
-      console.error(`API error: ${response.status} ${response.statusText}`)
-      console.error(`URL: ${requestUrl}`)
-
-      // Try to get more error details if possible
-      try {
-        const errorData = await response.text()
-        console.error(`Error details: ${errorData}`)
-      } catch (detailError) {
-        console.error(`Could not parse error details: ${detailError.message}`)
-      }
-
       throw new Error(`API request failed with status ${response.status}`)
     }
 
     const data = await response.json()
     return data
   } catch (error) {
-    console.error(`API fetch error for ${requestUrl}:`, error)
+    console.error(`Error fetching from ${requestUrl}:`, error)
     throw error
   }
 }

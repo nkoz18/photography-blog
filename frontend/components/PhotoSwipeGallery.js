@@ -15,6 +15,9 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
     if (!image) return ""
 
     try {
+      const backendUrl =
+        process.env.NEXT_PUBLIC_STRAPI_API_URL || "http://34.220.121.179:1337"
+
       // Handle different data structures
       if (image.attributes && image.attributes.url) {
         const { url } = image.attributes
@@ -24,24 +27,24 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
           return url
         }
 
-        // Use full URL starting with the domain for /uploads paths
+        // Always use full URL with backend domain
         if (url.startsWith("/uploads")) {
-          return `${process.env.NEXT_PUBLIC_STRAPI_API_URL}${url}`
+          return `${backendUrl}${url}`
         }
 
         // For other relative URLs
         return getStrapiURL(url)
       } else if (image.url) {
-        const url = image.url
+        const { url } = image
 
         // For absolute URLs, return as is
         if (url.startsWith("http")) {
           return url
         }
 
-        // Use full URL starting with the domain for /uploads paths
+        // Always use full URL with backend domain
         if (url.startsWith("/uploads")) {
-          return `${process.env.NEXT_PUBLIC_STRAPI_API_URL}${url}`
+          return `${backendUrl}${url}`
         }
 
         // For other relative URLs
@@ -58,9 +61,9 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
           return url
         }
 
-        // Use full URL starting with the domain for /uploads paths
+        // Always use full URL with backend domain
         if (url.startsWith("/uploads")) {
-          return `${process.env.NEXT_PUBLIC_STRAPI_API_URL}${url}`
+          return `${backendUrl}${url}`
         }
 
         // For other relative URLs
