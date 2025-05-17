@@ -132,7 +132,21 @@ const Article = ({ article, categories }) => {
   )
 }
 
-export async function getServerSideProps({ params }) {
+export async function getStaticPaths() {
+  // Get all articles from Strapi
+  const articlesRes = await fetchAPI("/articles", { fields: ["slug"] })
+
+  return {
+    paths: articlesRes.data.map((article) => ({
+      params: {
+        slug: article.attributes.slug,
+      },
+    })),
+    fallback: "blocking", // Show 404 if path doesn't exist
+  }
+}
+
+export async function getStaticProps({ params }) {
   const [articlesRes, categoriesRes] = await Promise.all([
     fetchAPI("/articles", {
       filters: { slug: params.slug },
@@ -202,6 +216,7 @@ export async function getServerSideProps({ params }) {
 
   return {
     props: { article: articlesRes.data[0], categories: categoriesRes.data },
+    revalidate: 60, // Revalidate these pages every 60 seconds
   }
 }
 
