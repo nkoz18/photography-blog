@@ -6,9 +6,14 @@ import qs from "qs"
  * @returns {string} Full Strapi URL
  */
 export function getStrapiURL(path = "") {
-  return `${
+  // Use environment variable for the base URL, with a fallback
+  const baseURL =
     process.env.NEXT_PUBLIC_STRAPI_API_URL || "http://127.0.0.1:1337"
-  }${path}`
+
+  // Make sure path starts with a slash if it's not empty
+  const normalizedPath = path && !path.startsWith("/") ? `/${path}` : path
+
+  return `${baseURL}${normalizedPath}`
 }
 
 /**

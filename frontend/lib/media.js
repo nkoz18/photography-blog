@@ -12,12 +12,19 @@ export function getStrapiMedia(media) {
     return null
   }
 
-  // Use relative URLs if they start with /uploads
-  if (url.startsWith("/uploads")) {
+  // For absolute URLs, return as is
+  if (url.startsWith("http")) {
     return url
   }
 
-  const imageUrl = url.startsWith("/") ? getStrapiURL(url) : url
+  // Use full URL starting with the domain for /uploads paths
+  if (url.startsWith("/uploads")) {
+    // Use NEXT_PUBLIC_STRAPI_API_URL for uploads
+    return `${process.env.NEXT_PUBLIC_STRAPI_API_URL}${url}`
+  }
+
+  // For other relative URLs
+  const imageUrl = getStrapiURL(url)
   return imageUrl
 }
 
@@ -33,12 +40,19 @@ export function getStrapiImageUrl(image) {
     return null
   }
 
-  // Use relative URLs if they start with /uploads
-  if (url.startsWith("/uploads")) {
+  // For absolute URLs, return as is
+  if (url.startsWith("http")) {
     return url
   }
 
-  const imageUrl = url.startsWith("/") ? getStrapiURL(url) : url
+  // Use full URL starting with the domain for /uploads paths
+  if (url.startsWith("/uploads")) {
+    // Use NEXT_PUBLIC_STRAPI_API_URL for uploads
+    return `${process.env.NEXT_PUBLIC_STRAPI_API_URL}${url}`
+  }
+
+  // For other relative URLs
+  const imageUrl = getStrapiURL(url)
   return imageUrl
 }
 
@@ -52,12 +66,19 @@ export function getFocalPointImageUrl(image, width, height) {
     return null
   }
 
-  // Use relative URLs if they start with /uploads
-  const baseUrl = url.startsWith("/uploads")
-    ? url
-    : url.startsWith("/")
-    ? getStrapiURL(url)
-    : url
+  // For absolute URLs, use as is
+  let baseUrl = ""
+  if (url.startsWith("http")) {
+    baseUrl = url
+  }
+  // Use full URL starting with the domain for /uploads paths
+  else if (url.startsWith("/uploads")) {
+    baseUrl = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}${url}`
+  }
+  // For other relative URLs
+  else {
+    baseUrl = getStrapiURL(url)
+  }
 
   // Check multiple locations for focal point data
   let focalPoint = null

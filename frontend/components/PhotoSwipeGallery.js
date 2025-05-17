@@ -18,16 +18,53 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
       // Handle different data structures
       if (image.attributes && image.attributes.url) {
         const { url } = image.attributes
-        return url.startsWith("/") ? getStrapiURL(url) : url
+
+        // For absolute URLs, return as is
+        if (url.startsWith("http")) {
+          return url
+        }
+
+        // Use full URL starting with the domain for /uploads paths
+        if (url.startsWith("/uploads")) {
+          return `${process.env.NEXT_PUBLIC_STRAPI_API_URL}${url}`
+        }
+
+        // For other relative URLs
+        return getStrapiURL(url)
       } else if (image.url) {
-        return image.url.startsWith("/") ? getStrapiURL(image.url) : image.url
+        const url = image.url
+
+        // For absolute URLs, return as is
+        if (url.startsWith("http")) {
+          return url
+        }
+
+        // Use full URL starting with the domain for /uploads paths
+        if (url.startsWith("/uploads")) {
+          return `${process.env.NEXT_PUBLIC_STRAPI_API_URL}${url}`
+        }
+
+        // For other relative URLs
+        return getStrapiURL(url)
       } else if (
         image.data &&
         image.data.attributes &&
         image.data.attributes.url
       ) {
         const { url } = image.data.attributes
-        return url.startsWith("/") ? getStrapiURL(url) : url
+
+        // For absolute URLs, return as is
+        if (url.startsWith("http")) {
+          return url
+        }
+
+        // Use full URL starting with the domain for /uploads paths
+        if (url.startsWith("/uploads")) {
+          return `${process.env.NEXT_PUBLIC_STRAPI_API_URL}${url}`
+        }
+
+        // For other relative URLs
+        return getStrapiURL(url)
       }
     } catch (err) {
       console.error("Error getting image URL:", err)
