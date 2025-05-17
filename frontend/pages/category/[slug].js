@@ -22,34 +22,65 @@ const Category = ({ category, categories }) => {
   )
 }
 
-export async function getServerSideProps({ params }) {
-  const matchingCategories = await fetchAPI("/categories", {
-    filters: { slug: params.slug },
-    populate: {
-      articles: {
-        populate: {
+export async function getStaticPaths() {
+  try {
+    // Get all categories from Strapi
+    const categoriesRes = await fetchAPI("/categories", {
+      fields: ["slug"],
+    })
+
+    return {
+      paths: categoriesRes.data.map((category) => ({
+        params: {
+          slug: category.attributes.slug,
+        },
+      })),
+      fallback: false, // Must be false for next export
+    }
+  } catch (error) {
+    console.error("Error in getStaticPaths:", error)
+    return {
+      paths: [],
+      fallback: false,
+    }
+  }
+}
+
+export async function getStaticProps({ params }) {
+  try {
+    const matchingCategories = await fetchAPI("/categories", {
+      filters: { slug: params.slug },
+      populate: {
+        articles: {
+          populate: {
             image: {
-                fields: ["url", "alternativeText", "caption"]
+              fields: ["url", "alternativeText", "caption"],
             },
             category: {
-                fields: ["name", "slug"]
-            }
-        }
+              fields: ["name", "slug"],
+            },
+          },
+        },
       },
-    },
-  })
-  const allCategories = await fetchAPI("/categories", {
-    populate: {
-        fields: ["name", "slug"]
-    }
-  });
+    })
+    const allCategories = await fetchAPI("/categories", {
+      populate: {
+        fields: ["name", "slug"],
+      },
+    })
 
-  return {
-    props: {
-      category: matchingCategories.data[0],
-      categories: allCategories,
+    return {
+      props: {
+        category: matchingCategories.data[0],
+        categories: allCategories,
+      },
+      revalidate: 60, // Revalidate every 60 seconds
     }
-    // Remove revalidate
+  } catch (error) {
+    console.error("Error in getStaticProps:", error)
+    return {
+      notFound: true,
+    }
   }
 }
 

@@ -15,35 +15,21 @@ const nextConfig = {
   swcMinify: false,
   trailingSlash: true, // Helps with static export
   assetPrefix: "", // Remove asset prefix to allow relative URLs
+  // Explicitly setting output to export
+  output: "export",
   env: {
     NEXT_PUBLIC_STRAPI_API_URL:
       process.env.USE_CLOUD_BACKEND === "true"
-        ? "/api" // Use relative path to avoid mixed content
+        ? process.env.STRAPI_API_URL || "http://34.220.121.179:1337" // Use the environment variable if available
         : "http://127.0.0.1:1337",
     API_URL:
       process.env.USE_CLOUD_BACKEND === "true"
-        ? "/api" // Use relative path to avoid mixed content
+        ? process.env.STRAPI_API_URL || "http://34.220.121.179:1337" // Use the environment variable if available
         : "http://127.0.0.1:1337",
   },
-  // Configure rewrites to handle API requests
-  async rewrites() {
-    return [
-      {
-        source: "/uploads/:path*",
-        destination:
-          process.env.USE_CLOUD_BACKEND === "true"
-            ? "http://34.220.121.179:1337/uploads/:path*" // This will be proxied by Next.js
-            : "http://127.0.0.1:1337/uploads/:path*",
-      },
-      {
-        source: "/api/:path*",
-        destination:
-          process.env.USE_CLOUD_BACKEND === "true"
-            ? "http://34.220.121.179:1337/api/:path*" // This will be proxied by Next.js
-            : "http://127.0.0.1:1337/api/:path*",
-      },
-    ]
-  },
+  // We can't use rewrites with next export, so we're removing this
+  // and will handle CORS and routing differently
+  distDir: ".next",
 }
 
 module.exports = nextConfig

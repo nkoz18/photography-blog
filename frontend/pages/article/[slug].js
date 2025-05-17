@@ -133,16 +133,24 @@ const Article = ({ article, categories }) => {
 }
 
 export async function getStaticPaths() {
-  // Get all articles from Strapi
-  const articlesRes = await fetchAPI("/articles", { fields: ["slug"] })
+  try {
+    // Get all articles from Strapi
+    const articlesRes = await fetchAPI("/articles", { fields: ["slug"] })
 
-  return {
-    paths: articlesRes.data.map((article) => ({
-      params: {
-        slug: article.attributes.slug,
-      },
-    })),
-    fallback: "blocking", // Show 404 if path doesn't exist
+    return {
+      paths: articlesRes.data.map((article) => ({
+        params: {
+          slug: article.attributes.slug,
+        },
+      })),
+      fallback: false, // Change from "blocking" to false for static export compatibility
+    }
+  } catch (error) {
+    console.error("Error in getStaticPaths:", error)
+    return {
+      paths: [],
+      fallback: false,
+    }
   }
 }
 
