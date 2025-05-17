@@ -12,7 +12,6 @@ applications:
             - 'echo "NPM version:" && npm -v'
         build:
           commands:
-            - cd frontend
             - 'echo "Starting build process..."'
             - 'echo "Environment variables: NEXT_PUBLIC_STRAPI_API_URL=$NEXT_PUBLIC_STRAPI_API_URL API_URL=$API_URL NODE_ENV=$NODE_ENV USE_CLOUD_BACKEND=$USE_CLOUD_BACKEND"'
             - 'echo "Creating static 404.html page..."'
