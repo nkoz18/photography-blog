@@ -2,14 +2,17 @@ version: 1
 applications:
   - appRoot: frontend
     frontend:
+      buildPath: '/'
       phases:
         preBuild:
           commands:
+            - cd frontend
             - npm ci
             - 'echo "Node version:" && node -v'
             - 'echo "NPM version:" && npm -v'
         build:
           commands:
+            - cd frontend
             - 'echo "Starting build process..."'
             - 'echo "Environment variables: NEXT_PUBLIC_STRAPI_API_URL=$NEXT_PUBLIC_STRAPI_API_URL API_URL=$API_URL NODE_ENV=$NODE_ENV USE_CLOUD_BACKEND=$USE_CLOUD_BACKEND"'
             - 'echo "Creating static 404.html page..."'
@@ -19,9 +22,9 @@ applications:
             - 'echo "Next build and export completed, checking output..."'
             - 'ls -la out'
       artifacts:
-        baseDirectory: out
+        baseDirectory: frontend/out
         files:
           - '**/*'
       cache:
         paths:
-          - node_modules/**/* 
+          - frontend/node_modules/**/* 
