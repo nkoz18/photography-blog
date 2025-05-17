@@ -1,7 +1,7 @@
 import App from "next/app"
 import Head from "next/head"
 import "../assets/css/style.css"
-import { createContext } from "react"
+import { createContext, useEffect, useState } from "react"
 import { fetchAPI } from "../lib/api"
 import { getStrapiMedia } from "../lib/media"
 import dynamic from "next/dynamic"
@@ -15,17 +15,59 @@ const KonamiEasterEgg = dynamic(() => import("../components/KonamiEasterEgg"), {
 export const GlobalContext = createContext({})
 
 const MyApp = ({ Component, pageProps }) => {
+  // State to store global data loaded client-side
+  const [clientGlobal, setClientGlobal] = useState(null)
+  const [loading, setLoading] = useState(false)
+
+  // Determine if we're in a static export
+  const isStaticExport = typeof window !== "undefined" && !pageProps?.global
+
   // Add fallback for global data if it's missing
-  const global = pageProps?.global || {
-    attributes: {
-      favicon: { data: null },
-      defaultSeo: {
-        metaTitle: "Silky Truth Photography",
-        metaDescription: "Beautiful photography from around the world",
-        shareImage: null,
-      },
-    },
-  }
+  const global =
+    isStaticExport && clientGlobal
+      ? clientGlobal
+      : pageProps?.global || {
+          attributes: {
+            favicon: { data: null },
+            defaultSeo: {
+              metaTitle: "Silky Truth Photography",
+              metaDescription: "Beautiful photography from around the world",
+              shareImage: null,
+            },
+          },
+        }
+
+  // In client-side, fetch global data if not available
+  useEffect(() => {
+    const loadGlobalData = async () => {
+      if (isStaticExport && !clientGlobal) {
+        try {
+          setLoading(true)
+          const globalRes = await fetchAPI("/global", {
+            populate: {
+              favicon: {
+                fields: ["url"],
+              },
+              defaultSeo: {
+                populate: {
+                  shareImage: {
+                    fields: ["url"],
+                  },
+                },
+              },
+            },
+          })
+          setClientGlobal(globalRes.data)
+        } catch (err) {
+          console.warn("Failed to fetch global data client-side:", err.message)
+        } finally {
+          setLoading(false)
+        }
+      }
+    }
+
+    loadGlobalData()
+  }, [isStaticExport, clientGlobal])
 
   // Safely get favicon URL without causing errors
   const getFaviconUrl = () => {
@@ -45,9 +87,10 @@ const MyApp = ({ Component, pageProps }) => {
       <Head>
         <link rel="shortcut icon" href={getFaviconUrl()} />
         <title>Silky Truth Photography</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <GlobalContext.Provider value={global.attributes}>
-        <Component {...pageProps} />
+        <Component {...pageProps} isStaticExport={isStaticExport} />
         <KonamiEasterEgg />
       </GlobalContext.Provider>
     </>
@@ -55,9 +98,20 @@ const MyApp = ({ Component, pageProps }) => {
 }
 
 MyApp.getInitialProps = async (ctx) => {
+  // Skip server-side data fetching during static export
+  const isStaticExport = process.env.NEXT_PHASE === "phase-export"
+
   try {
     // Calls page's `getInitialProps` and fills `appProps.pageProps`
     const appProps = await App.getInitialProps(ctx)
+
+    // Skip data fetching in static export mode
+    if (isStaticExport || !ctx.ctx.req) {
+      return {
+        ...appProps,
+        pageProps: { ...appProps.pageProps, global: null },
+      }
+    }
 
     try {
       //Fetch global site settings from Strapi

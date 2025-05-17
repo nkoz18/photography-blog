@@ -23,13 +23,7 @@ const nextConfig = {
         ? "http://34.220.121.179:1337"
         : "http://127.0.0.1:1337",
   },
-  // Add exportPathMap for static generation
-  exportPathMap: async function () {
-    return {
-      "/": { page: "/" },
-      "/404": { page: "/404" },
-    }
-  },
+  // Remove exportPathMap causing issues
   async rewrites() {
     // Only apply rewrites in development, not in static export
     if (process.env.NODE_ENV === "development") {
