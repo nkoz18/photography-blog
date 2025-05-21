@@ -35,13 +35,13 @@ export async function getStaticPaths() {
           slug: category.attributes.slug,
         },
       })),
-      fallback: false, // Must be false for next export
+      fallback: "blocking", // Changed from false to 'blocking' to generate new pages on demand
     }
   } catch (error) {
     console.error("Error in getStaticPaths:", error)
     return {
       paths: [],
-      fallback: false,
+      fallback: "blocking",
     }
   }
 }

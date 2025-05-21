@@ -143,13 +143,13 @@ export async function getStaticPaths() {
           slug: article.attributes.slug,
         },
       })),
-      fallback: false, // Change from "blocking" to false for static export compatibility
+      fallback: "blocking", // Changed from false to 'blocking' to generate new pages on demand
     }
   } catch (error) {
     console.error("Error in getStaticPaths:", error)
     return {
       paths: [],
-      fallback: false,
+      fallback: "blocking",
     }
   }
 }
