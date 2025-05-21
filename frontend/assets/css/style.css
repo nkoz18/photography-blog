@@ -272,6 +272,10 @@ html {
   display: block;
   border-radius: 0 !important;
   box-shadow: none !important;
+  object-position: var(
+    --focal-point,
+    center
+  ) !important; /* Use focal point CSS variable */
 }
 
 /* Force object-position to be respected */
@@ -284,6 +288,10 @@ img.image-transition {
   object-fit: cover !important;
   border-radius: 0 !important;
   box-shadow: none !important;
+  object-position: var(
+    --focal-point,
+    center
+  ) !important; /* Use focal point CSS variable */
 }
 
 /* Image container fixes for focal points */

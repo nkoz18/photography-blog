@@ -555,6 +555,7 @@ const KonamiEasterEgg = () => {
       <audio ref={audioRef} preload="auto" />
       {showCharacter && (
         <div
+          className="konami-character"
           style={{
             position: "fixed",
             zIndex: 9999,

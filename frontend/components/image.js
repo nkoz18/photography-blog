@@ -79,6 +79,10 @@ const Image = ({ image, style, alt }) => {
         height: isArticleCover ? "100%" : 0,
         overflow: "hidden",
         maxWidth: "100%",
+        // Set focal point as a CSS variable that can be used by our CSS
+        ...(focalPoint && {
+          "--focal-point": `${focalPoint.x}% ${focalPoint.y}%`,
+        }),
       }}
     >
       {isLoading && <div className="image-loader"></div>}
@@ -98,6 +102,7 @@ const Image = ({ image, style, alt }) => {
             width: "100%",
             height: "100%",
             objectFit: "cover",
+            // Keep this for backwards compatibility but CSS will override with variable
             objectPosition: focalPoint
               ? `${focalPoint.x}% ${focalPoint.y}%`
               : "50% 50%",
