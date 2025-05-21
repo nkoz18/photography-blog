@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react"
+import React, { useEffect, useState, useRef, useCallback } from "react"
 import Konami from "konami"
 
 const KonamiEasterEgg = () => {
@@ -27,7 +27,7 @@ const KonamiEasterEgg = () => {
   const lastGestureTimeRef = useRef(0)
   const gestureTimeoutRef = useRef(null)
   const expectedButtonRef = useRef(null) // Tracks whether next tap should be B or A
-  const debugModeRef = useRef(false) // Debug mode flag
+  const debugModeRef = useRef(true) // Debug mode enabled by default
 
   // Available characters
   const availableCharacters = [
@@ -76,7 +76,7 @@ const KonamiEasterEgg = () => {
   ]
 
   // Add a gesture to the queue and check for Konami code
-  const addGestureToQueue = (gesture) => {
+  const addGestureToQueue = useCallback((gesture) => {
     const currentTime = new Date().getTime()
 
     // For debugging
@@ -98,9 +98,10 @@ const KonamiEasterEgg = () => {
       clearTimeout(gestureTimeoutRef.current)
     }
 
-    // Update expected button after directional gestures
-    if (gestureQueueRef.current.length === 8 && gesture === "TAP") {
-      // If we have 8 gestures and this is a tap,
+    // Special handling for taps on mobile - if we already have 8 directional gestures
+    // and this is a tap, interpret it as B or A
+    if (gesture === "TAP" && gestureQueueRef.current.length >= 8) {
+      // If we have at least 8 gestures (all directions) and this is a tap,
       // we expect button B first, then A
       if (expectedButtonRef.current === null) {
         // First tap after directions should be B
@@ -158,18 +159,26 @@ const KonamiEasterEgg = () => {
     if (match) {
       if (debugModeRef.current) {
         console.log("Konami code gesture sequence detected!")
+        console.log("SEQUENCE COMPLETE:", gestureQueueRef.current.join(", "))
       }
       gestureQueueRef.current = [] // Reset after successful detection
       expectedButtonRef.current = null // Reset expected button
       triggerEasterEgg()
       return true
+    } else if (debugModeRef.current) {
+      console.log("Current sequence:", gestureQueueRef.current.join(", "))
+      console.log("Expected sequence:", KONAMI_SEQUENCE.join(", "))
+      console.log(
+        "Sequence progress:",
+        `${gestureQueueRef.current.length}/${KONAMI_SEQUENCE.length}`
+      )
     }
 
     return false
-  }
+  }, [])
 
   // Function to enable debug logging
-  const enableDebugMode = () => {
+  const enableDebugMode = useCallback(() => {
     debugModeRef.current = true
     console.log("Konami code debug mode enabled")
 
@@ -177,224 +186,10 @@ const KonamiEasterEgg = () => {
     console.log("Current sequence:", gestureQueueRef.current)
     console.log("Expected button:", expectedButtonRef.current)
     console.log("Mobile initialized:", mobileInitializedRef.current)
-  }
-
-  useEffect(() => {
-    // Enable debug mode with window.konamiDebug = true
-    if (typeof window !== "undefined") {
-      window.konamiDebug = enableDebugMode
-    }
-
-    // Initialize Konami code keyboard listener
-    const easterEgg = new Konami(() => {
-      console.log("Konami code entered from keyboard!")
-      triggerEasterEgg()
-    })
-
-    // Setup mobile detection and handlers
-    const setupMobileHandlers = () => {
-      if (mobileInitializedRef.current) return // Prevent double initialization
-
-      // Detect if device is mobile
-      const isMobileDevice =
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-          navigator.userAgent
-        )
-
-      if (!isMobileDevice) return // Only proceed for mobile devices
-
-      if (debugModeRef.current) {
-        console.log("Setting up mobile handlers for:", navigator.userAgent)
-      }
-
-      // Touch event handlers for mobile Konami code
-      const handleTouchStart = (event) => {
-        // Prevent default only for touch events that are part of a swipe
-        // This allows normal scrolling and tapping to still work
-
-        swipeDraggingRef.current = false
-        swipeStartXRef.current = event.touches[0].clientX
-        swipeStartYRef.current = event.touches[0].clientY
-
-        if (debugModeRef.current) {
-          console.log(
-            "Touch start:",
-            swipeStartXRef.current,
-            swipeStartYRef.current
-          )
-        }
-      }
-
-      const handleTouchMove = (event) => {
-        if (!swipeStartXRef.current || !swipeStartYRef.current) {
-          return
-        }
-
-        swipeDraggingRef.current = true
-        swipeEndXRef.current = event.touches[0].clientX
-        swipeEndYRef.current = event.touches[0].clientY
-
-        if (debugModeRef.current) {
-          console.log("Touch move:", swipeEndXRef.current, swipeEndYRef.current)
-        }
-      }
-
-      const handleTouchEnd = (event) => {
-        if (debugModeRef.current) {
-          console.log("Touch end, dragging:", swipeDraggingRef.current)
-        }
-
-        if (
-          swipeDraggingRef.current &&
-          swipeStartXRef.current !== null &&
-          swipeEndXRef.current !== null
-        ) {
-          // This was a swipe
-          const xDiff = swipeStartXRef.current - swipeEndXRef.current
-          const yDiff = swipeStartYRef.current - swipeEndYRef.current
-
-          if (debugModeRef.current) {
-            console.log("Swipe distances - X:", xDiff, "Y:", yDiff)
-          }
-
-          // Minimum swipe distance to consider it intentional
-          if (
-            Math.abs(xDiff) < SWIPE_MIN_DISTANCE &&
-            Math.abs(yDiff) < SWIPE_MIN_DISTANCE
-          ) {
-            // Too small of a movement, treat as tap instead
-            if (debugModeRef.current) {
-              console.log("Small movement detected, treating as tap")
-            }
-            addGestureToQueue("TAP")
-          } else {
-            const isHorizontal = Math.abs(xDiff) > Math.abs(yDiff)
-
-            if (isHorizontal) {
-              // Horizontal swipe
-              const gesture = xDiff > 0 ? GESTURE.LEFT : GESTURE.RIGHT
-              if (debugModeRef.current) {
-                console.log("Horizontal swipe detected:", gesture)
-              }
-              addGestureToQueue(gesture)
-            } else {
-              // Vertical swipe
-              const gesture = yDiff > 0 ? GESTURE.UP : GESTURE.DOWN
-              if (debugModeRef.current) {
-                console.log("Vertical swipe detected:", gesture)
-              }
-              addGestureToQueue(gesture)
-            }
-          }
-        } else if (swipeStartXRef.current !== null) {
-          // This was a tap with no movement
-          if (debugModeRef.current) {
-            console.log("Tap detected (no movement)")
-          }
-          addGestureToQueue("TAP")
-        }
-
-        // Reset touch tracking
-        swipeDraggingRef.current = false
-        swipeStartXRef.current = null
-        swipeStartYRef.current = null
-        swipeEndXRef.current = null
-        swipeEndYRef.current = null
-      }
-
-      // Add touch listeners with passive: false to allow preventDefault
-      document.addEventListener("touchstart", handleTouchStart, {
-        passive: true,
-      })
-      document.addEventListener("touchmove", handleTouchMove, { passive: true })
-      document.addEventListener("touchend", handleTouchEnd, { passive: true })
-
-      if (debugModeRef.current) {
-        console.log("Mobile gesture detection enabled")
-      } else {
-        console.log("Mobile device detected - Konami gesture detection enabled")
-      }
-
-      // Set cleanup function
-      const cleanup = () => {
-        document.removeEventListener("touchstart", handleTouchStart)
-        document.removeEventListener("touchmove", handleTouchMove)
-        document.removeEventListener("touchend", handleTouchEnd)
-
-        if (debugModeRef.current) {
-          console.log("Mobile handlers removed")
-        }
-      }
-
-      mobileInitializedRef.current = true
-      return cleanup
-    }
-
-    // Initialize mobile handlers after a short delay
-    const initTimeout = setTimeout(() => {
-      if (typeof window !== "undefined" && typeof navigator !== "undefined") {
-        const cleanup = setupMobileHandlers()
-        return () => {
-          if (cleanup) cleanup()
-        }
-      }
-    }, 1000)
-
-    // Preload images to test if they're accessible
-    availableCharacters.forEach((character) => {
-      const preloadImage = new Image()
-      preloadImage.src = `/easter-egg/images/${character}.png`
-      if (debugModeRef.current) {
-        console.log(`Preloading ${character}.png`)
-      }
-    })
-
-    return () => {
-      // Clean up animations
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current)
-        animationRef.current = null
-      }
-
-      // Ensure audio is stopped before unmounting
-      if (audioRef.current && audioPlaying.current) {
-        try {
-          audioRef.current.pause()
-          audioRef.current.currentTime = 0
-          audioPlaying.current = false
-        } catch (err) {
-          console.error("Error stopping audio:", err)
-        }
-      }
-
-      // Stop all animations and clean up
-      animationActiveRef.current = false
-      setShowCharacter(false)
-
-      // Clear timeouts
-      if (gestureTimeoutRef.current) {
-        clearTimeout(gestureTimeoutRef.current)
-      }
-
-      clearTimeout(initTimeout)
-
-      if (easterEgg && typeof easterEgg.disable === "function") {
-        easterEgg.disable()
-      }
-
-      // Remove global debug function
-      if (typeof window !== "undefined") {
-        window.konamiDebug = undefined
-      }
-    }
   }, [])
 
-  const selectRandomCharacter = () => {
-    const randomIndex = Math.floor(Math.random() * availableCharacters.length)
-    return availableCharacters[randomIndex]
-  }
-
-  const triggerEasterEgg = () => {
+  // Define triggerEasterEgg with useCallback to avoid dependency issues
+  const triggerEasterEgg = useCallback(() => {
     // Reset any ongoing animation
     if (animationActiveRef.current) {
       animationActiveRef.current = false
@@ -405,7 +200,10 @@ const KonamiEasterEgg = () => {
     }
 
     // Pick a random character
-    const character = selectRandomCharacter()
+    const character =
+      availableCharacters[
+        Math.floor(Math.random() * availableCharacters.length)
+      ]
     setCurrentCharacter(character)
     if (debugModeRef.current) {
       console.log(`Selected character: ${character}`)
@@ -539,10 +337,219 @@ const KonamiEasterEgg = () => {
 
     // Start animation
     animationRef.current = requestAnimationFrame(animate)
-  }
+  }, [availableCharacters, BOB_AMPLITUDE, BOB_FREQUENCY, MOVE_SPEED])
 
-  // Always render the audio element, even when character is not showing
-  // This ensures the audio element isn't removed during playback
+  useEffect(() => {
+    // Enable debug mode with window.konamiDebug = true
+    if (typeof window !== "undefined") {
+      window.konamiDebug = enableDebugMode
+    }
+
+    // Initialize Konami code keyboard listener
+    const easterEgg = new Konami(() => {
+      console.log("Konami code entered from keyboard!")
+      triggerEasterEgg()
+    })
+
+    // Setup mobile detection and handlers
+    const setupMobileHandlers = () => {
+      if (mobileInitializedRef.current) return null // Prevent double initialization
+
+      // Detect if device is mobile
+      const isMobileDevice =
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        )
+
+      // Force enable mobile detection for testing
+      // const isMobileDevice = true;
+
+      if (!isMobileDevice) {
+        console.log("Not a mobile device, skipping mobile handlers")
+        return null
+      }
+
+      console.log("Setting up mobile handlers for:", navigator.userAgent)
+
+      // Force enable debug mode for mobile
+      debugModeRef.current = true
+
+      // Touch event handlers for mobile Konami code
+      const handleTouchStart = (event) => {
+        swipeDraggingRef.current = false
+        swipeStartXRef.current = event.touches[0].clientX
+        swipeStartYRef.current = event.touches[0].clientY
+
+        if (debugModeRef.current) {
+          console.log(
+            "Touch start:",
+            swipeStartXRef.current,
+            swipeStartYRef.current
+          )
+        }
+      }
+
+      const handleTouchMove = (event) => {
+        if (!swipeStartXRef.current || !swipeStartYRef.current) {
+          return
+        }
+
+        swipeDraggingRef.current = true
+        swipeEndXRef.current = event.touches[0].clientX
+        swipeEndYRef.current = event.touches[0].clientY
+
+        if (debugModeRef.current) {
+          console.log("Touch move:", swipeEndXRef.current, swipeEndYRef.current)
+        }
+      }
+
+      const handleTouchEnd = (event) => {
+        if (debugModeRef.current) {
+          console.log("Touch end, dragging:", swipeDraggingRef.current)
+        }
+
+        if (
+          swipeDraggingRef.current &&
+          swipeStartXRef.current !== null &&
+          swipeEndXRef.current !== null
+        ) {
+          // This was a swipe
+          const xDiff = swipeStartXRef.current - swipeEndXRef.current
+          const yDiff = swipeStartYRef.current - swipeEndYRef.current
+
+          if (debugModeRef.current) {
+            console.log("Swipe distances - X:", xDiff, "Y:", yDiff)
+          }
+
+          // Minimum swipe distance to consider it intentional
+          if (
+            Math.abs(xDiff) < SWIPE_MIN_DISTANCE &&
+            Math.abs(yDiff) < SWIPE_MIN_DISTANCE
+          ) {
+            // Too small of a movement, treat as tap instead
+            if (debugModeRef.current) {
+              console.log("Small movement detected, treating as tap")
+            }
+            addGestureToQueue("TAP")
+          } else {
+            const isHorizontal = Math.abs(xDiff) > Math.abs(yDiff)
+
+            if (isHorizontal) {
+              // Horizontal swipe
+              const gesture = xDiff > 0 ? GESTURE.LEFT : GESTURE.RIGHT
+              if (debugModeRef.current) {
+                console.log("Horizontal swipe detected:", gesture)
+              }
+              addGestureToQueue(gesture)
+            } else {
+              // Vertical swipe
+              const gesture = yDiff > 0 ? GESTURE.UP : GESTURE.DOWN
+              if (debugModeRef.current) {
+                console.log("Vertical swipe detected:", gesture)
+              }
+              addGestureToQueue(gesture)
+            }
+          }
+        } else if (swipeStartXRef.current !== null) {
+          // This was a tap with no movement
+          if (debugModeRef.current) {
+            console.log("Tap detected (no movement)")
+          }
+          addGestureToQueue("TAP")
+        }
+
+        // Reset touch tracking
+        swipeDraggingRef.current = false
+        swipeStartXRef.current = null
+        swipeStartYRef.current = null
+        swipeEndXRef.current = null
+        swipeEndYRef.current = null
+      }
+
+      // Add touch listeners with passive: true to allow normal scrolling
+      document.addEventListener("touchstart", handleTouchStart, {
+        passive: true,
+      })
+      document.addEventListener("touchmove", handleTouchMove, { passive: true })
+      document.addEventListener("touchend", handleTouchEnd, { passive: true })
+
+      console.log("Mobile gesture detection enabled")
+
+      mobileInitializedRef.current = true
+
+      // Return cleanup function
+      return () => {
+        document.removeEventListener("touchstart", handleTouchStart)
+        document.removeEventListener("touchmove", handleTouchMove)
+        document.removeEventListener("touchend", handleTouchEnd)
+        console.log("Mobile handlers removed")
+      }
+    }
+
+    // Capture a reference to the audio element for proper cleanup
+    const audio = audioRef.current
+
+    // Initialize mobile handlers after a short delay
+    const initTimeout = setTimeout(() => {
+      if (typeof window !== "undefined" && typeof navigator !== "undefined") {
+        setupMobileHandlers()
+      }
+    }, 500)
+
+    // Preload images to test if they're accessible
+    availableCharacters.forEach((character) => {
+      const preloadImage = new Image()
+      preloadImage.src = `/easter-egg/images/${character}.png`
+      if (debugModeRef.current) {
+        console.log(`Preloading ${character}.png`)
+      }
+    })
+
+    return () => {
+      // Clean up animations
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+        animationRef.current = null
+      }
+
+      // Ensure audio is stopped before unmounting - using stored reference
+      if (audio && audioPlaying.current) {
+        try {
+          audio.pause()
+          audio.currentTime = 0
+          audioPlaying.current = false
+        } catch (err) {
+          console.error("Error stopping audio:", err)
+        }
+      }
+
+      // Stop all animations and clean up
+      animationActiveRef.current = false
+      setShowCharacter(false)
+
+      // Clear timeouts
+      if (gestureTimeoutRef.current) {
+        clearTimeout(gestureTimeoutRef.current)
+      }
+
+      clearTimeout(initTimeout)
+
+      if (easterEgg && typeof easterEgg.disable === "function") {
+        easterEgg.disable()
+      }
+
+      // Remove global debug function
+      if (typeof window !== "undefined") {
+        window.konamiDebug = undefined
+      }
+    }
+  }, [
+    addGestureToQueue,
+    enableDebugMode,
+    triggerEasterEgg,
+    availableCharacters,
+  ])
+
   return (
     <>
       <audio ref={audioRef} preload="auto" />
