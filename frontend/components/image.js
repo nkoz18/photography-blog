@@ -102,10 +102,10 @@ const Image = ({ image, style, alt }) => {
             width: "100%",
             height: "100%",
             objectFit: "cover",
-            // Keep this for backwards compatibility but CSS will override with variable
-            objectPosition: focalPoint
-              ? `${focalPoint.x}% ${focalPoint.y}%`
-              : "50% 50%",
+            // Remove inline objectPosition, let CSS variable handle it entirely
+            // objectPosition: focalPoint
+            //   ? `${focalPoint.x}% ${focalPoint.y}%`
+            //   : "50% 50%",
           }}
         />
       )}

@@ -284,7 +284,13 @@ const KonamiEasterEgg = () => {
 
     // Animation function
     const animate = (timestamp) => {
-      if (!animationActiveRef.current) return
+      if (debugModeRef.current) {
+        console.log(
+          `Animate called. animationActiveRef: ${animationActiveRef.current}, startTime: ${startTime}, currentPos: ${currentPos}`
+        );
+      }
+
+      if (!animationActiveRef.current) return;
 
       // Initialize start time
       if (!startTime) startTime = timestamp
@@ -568,36 +574,8 @@ const KonamiEasterEgg = () => {
           {/* Display the randomly selected character */}
           <img
             ref={imageRef}
-            src={
-              useFallback
-                ? fallbackImagePath
-                : `/easter-egg/images/${currentCharacter}.png`
-            }
+            src={`/easter-egg/images/${currentCharacter}.png`}
             alt="Easter Egg Character"
-            onLoad={() => {
-              if (debugModeRef.current) {
-                console.log("Image loaded successfully!")
-              }
-              setImageLoaded(true)
-              // Log dimensions to verify image is properly loaded
-              if (imageRef.current && debugModeRef.current) {
-                console.log(
-                  "Image dimensions:",
-                  imageRef.current.naturalWidth,
-                  "x",
-                  imageRef.current.naturalHeight
-                )
-              }
-            }}
-            onError={(e) => {
-              console.error("Image failed to load:", e.currentTarget.src)
-              if (!useFallback) {
-                if (debugModeRef.current) {
-                  console.log("Switching to fallback image")
-                }
-                setUseFallback(true)
-              }
-            }}
             style={{
               maxHeight: "240px",
               maxWidth: "240px",
