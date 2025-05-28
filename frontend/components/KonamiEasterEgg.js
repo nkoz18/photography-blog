@@ -51,7 +51,6 @@ const KonamiEasterEgg = () => {
   const [direction, setDirection] = useState(1) // 1 for right-to-left, -1 for left-to-right
   const [verticalOffset, setVerticalOffset] = useState(0) // For bobbing animation
   const [currentCharacter, setCurrentCharacter] = useState("silky") // Default character
-  const [debugGestureQueue, setDebugGestureQueue] = useState([]) // For debug display
   const [portalContainer, setPortalContainer] = useState(null)
   const audioRef = useRef(null)
   const animationRef = useRef(null)
@@ -70,7 +69,6 @@ const KonamiEasterEgg = () => {
   const lastGestureTimeRef = useRef(0)
   const gestureTimeoutRef = useRef(null)
   const expectedButtonRef = useRef(null) // Tracks whether next tap should be B or A
-  const debugModeRef = useRef(true) // Debug mode enabled by default
 
   // Fallback image path
   const fallbackImagePath = "/images/icons/hamburger.svg"
@@ -79,7 +77,6 @@ const KonamiEasterEgg = () => {
   useEffect(() => {
     if (typeof document !== 'undefined') {
       setPortalContainer(document.body)
-      console.log("Portal container set to document.body")
     }
   }, [])
 
@@ -87,16 +84,9 @@ const KonamiEasterEgg = () => {
   const addGestureToQueue = useCallback((gesture) => {
     const currentTime = new Date().getTime()
 
-    // For debugging
-    if (debugModeRef.current) {
-      console.log(`Adding gesture: ${gesture}`)
-    }
-
     // Reset if too much time passed since last gesture
     if (currentTime - lastGestureTimeRef.current > SWIPE_TIMEOUT) {
-      if (debugModeRef.current) {
-        console.log("Timeout exceeded, resetting sequence")
-      }
+
       gestureQueueRef.current = []
       expectedButtonRef.current = null // Reset expected button on timeout
       setDebugGestureQueue([]) // Clear debug display
@@ -116,22 +106,15 @@ const KonamiEasterEgg = () => {
         // First tap after directions should be B
         expectedButtonRef.current = GESTURE.B
         gesture = GESTURE.B
-        if (debugModeRef.current) {
-          console.log("First tap after directions - registering as B")
-        }
+
       } else if (expectedButtonRef.current === GESTURE.B) {
         // Second tap after B should be A
         expectedButtonRef.current = GESTURE.A
         gesture = GESTURE.A
-        if (debugModeRef.current) {
-          console.log("Second tap after B - registering as A")
-        }
+
       } else {
         // Reset if we get more taps after A
         expectedButtonRef.current = null
-        if (debugModeRef.current) {
-          console.log("Extra tap detected - resetting sequence")
-        }
       }
     }
 
@@ -144,21 +127,11 @@ const KonamiEasterEgg = () => {
       gestureQueueRef.current.shift()
     }
 
-    // Update debug display state
-    setDebugGestureQueue([...gestureQueueRef.current])
 
-    if (debugModeRef.current) {
-      console.log(
-        "Current gesture sequence:",
-        gestureQueueRef.current.join(", ")
-      )
-    }
 
     // Set timeout to reset sequence
     gestureTimeoutRef.current = setTimeout(() => {
-      if (debugModeRef.current) {
-        console.log("Gesture sequence timeout - resetting")
-      }
+
       gestureQueueRef.current = []
       expectedButtonRef.current = null // Reset on timeout
       setDebugGestureQueue([]) // Clear debug display
@@ -170,37 +143,16 @@ const KonamiEasterEgg = () => {
       gestureQueueRef.current.every((g, i) => g === KONAMI_SEQUENCE[i])
 
     if (match) {
-      if (debugModeRef.current) {
-        console.log("Konami code gesture sequence detected!")
-        console.log("SEQUENCE COMPLETE:", gestureQueueRef.current.join(", "))
-      }
       gestureQueueRef.current = [] // Reset after successful detection
       expectedButtonRef.current = null // Reset expected button
-      setDebugGestureQueue([]) // Clear debug display
       triggerEasterEgg()
       return true
-    } else if (debugModeRef.current) {
-      console.log("Current sequence:", gestureQueueRef.current.join(", "))
-      console.log("Expected sequence:", KONAMI_SEQUENCE.join(", "))
-      console.log(
-        "Sequence progress:",
-        `${gestureQueueRef.current.length}/${KONAMI_SEQUENCE.length}`
-      )
     }
 
     return false
   }, [])
 
-  // Function to enable debug logging
-  const enableDebugMode = useCallback(() => {
-    debugModeRef.current = true
-    console.log("Konami code debug mode enabled")
 
-    // Show current state
-    console.log("Current sequence:", gestureQueueRef.current)
-    console.log("Expected button:", expectedButtonRef.current)
-    console.log("Mobile initialized:", mobileInitializedRef.current)
-  }, [])
 
   // Define triggerEasterEgg with useCallback to avoid dependency issues
   const triggerEasterEgg = useCallback(() => {
@@ -219,9 +171,7 @@ const KonamiEasterEgg = () => {
         Math.floor(Math.random() * AVAILABLE_CHARACTERS.length)
       ]
     setCurrentCharacter(character)
-    if (debugModeRef.current) {
-      console.log(`Selected character: ${character}`)
-    }
+
 
     // Randomly decide starting side: true = start from right, false = start from left
     const startFromRight = Math.random() < 0.5
@@ -240,22 +190,6 @@ const KonamiEasterEgg = () => {
     setVerticalOffset(0)
 
     setShowCharacter(true)
-    console.log("Easter egg triggered - Character should show now")
-    console.log("showCharacter state set to true")
-    if (debugModeRef.current) {
-      console.log("Using character:", character)
-      console.log(
-        "Animation direction:",
-        startFromRight ? "Right to Left" : "Left to Right"
-      )
-      console.log("Starting position:", startPos)
-      console.log(
-        "Bobbing config - Amplitude:",
-        BOB_AMPLITUDE,
-        "Frequency:",
-        BOB_FREQUENCY
-      )
-    }
 
     // Play sound
     if (audioRef.current) {
@@ -269,9 +203,7 @@ const KonamiEasterEgg = () => {
           playPromise
             .then(() => {
               audioPlaying.current = true
-              if (debugModeRef.current) {
-                console.log("Audio playing successfully")
-              }
+
             })
             .catch((err) => {
               audioPlaying.current = false
@@ -298,9 +230,7 @@ const KonamiEasterEgg = () => {
     const animate = (timestamp) => {
       // Check if animation should continue - use a more reliable check
       if (!animationActiveRef.current) {
-        if (debugModeRef.current) {
-          console.log("Animation stopped - animationActiveRef is false")
-        }
+
         return;
       }
 
@@ -322,26 +252,14 @@ const KonamiEasterEgg = () => {
 
       frameCount++
 
-      // Log position occasionally
-      if (debugModeRef.current && frameCount % 60 === 0) {
-        console.log(
-          "Animation frame:",
-          frameCount,
-          "Position:",
-          Math.round(currentPos),
-          "Vertical:",
-          Math.round(bobOffset)
-        )
-      }
+
 
       // Check if character has moved off screen
       if (
         (startFromRight && currentPos < -100) || // Started right, moved left off screen
         (!startFromRight && currentPos > window.innerWidth + 100) // Started left, moved right off screen
       ) {
-        if (debugModeRef.current) {
-          console.log("Character moved off screen, ending animation")
-        }
+
         animationActiveRef.current = false
         setShowCharacter(false)
         return
@@ -357,9 +275,7 @@ const KonamiEasterEgg = () => {
     setTimeout(() => {
       // Set animation active flag right before starting
       animationActiveRef.current = true
-      if (debugModeRef.current) {
-        console.log("Setting animationActiveRef to true and starting animation")
-      }
+
       // Start animation
       animationRef.current = requestAnimationFrame(animate)
     }, 0)
@@ -367,14 +283,9 @@ const KonamiEasterEgg = () => {
   }, [])
 
   useEffect(() => {
-    // Enable debug mode with window.konamiDebug = true
-    if (typeof window !== "undefined") {
-      window.konamiDebug = enableDebugMode
-    }
-
     // Initialize Konami code keyboard listener
     const easterEgg = new Konami(() => {
-      console.log("Konami code entered from keyboard!")
+  
       triggerEasterEgg()
     })
 
@@ -388,32 +299,17 @@ const KonamiEasterEgg = () => {
           navigator.userAgent
         )
 
-      // Force enable mobile detection for testing
-      // const isMobileDevice = true;
-
       if (!isMobileDevice) {
-        console.log("Not a mobile device, skipping mobile handlers")
         return null
       }
 
-      console.log("Setting up mobile handlers for:", navigator.userAgent)
-
-      // Force enable debug mode for mobile
-      debugModeRef.current = true
+      // Setup mobile handlers
 
       // Touch event handlers for mobile Konami code
       const handleTouchStart = (event) => {
         swipeDraggingRef.current = false
         swipeStartXRef.current = event.touches[0].clientX
         swipeStartYRef.current = event.touches[0].clientY
-
-        if (debugModeRef.current) {
-          console.log(
-            "Touch start:",
-            swipeStartXRef.current,
-            swipeStartYRef.current
-          )
-        }
       }
 
       const handleTouchMove = (event) => {
@@ -425,15 +321,11 @@ const KonamiEasterEgg = () => {
         swipeEndXRef.current = event.touches[0].clientX
         swipeEndYRef.current = event.touches[0].clientY
 
-        if (debugModeRef.current) {
-          console.log("Touch move:", swipeEndXRef.current, swipeEndYRef.current)
-        }
+
       }
 
       const handleTouchEnd = (event) => {
-        if (debugModeRef.current) {
-          console.log("Touch end, dragging:", swipeDraggingRef.current)
-        }
+
 
         if (
           swipeDraggingRef.current &&
@@ -444,9 +336,7 @@ const KonamiEasterEgg = () => {
           const xDiff = swipeStartXRef.current - swipeEndXRef.current
           const yDiff = swipeStartYRef.current - swipeEndYRef.current
 
-          if (debugModeRef.current) {
-            console.log("Swipe distances - X:", xDiff, "Y:", yDiff)
-          }
+
 
           // Minimum swipe distance to consider it intentional
           if (
@@ -454,9 +344,7 @@ const KonamiEasterEgg = () => {
             Math.abs(yDiff) < SWIPE_MIN_DISTANCE
           ) {
             // Too small of a movement, treat as tap instead
-            if (debugModeRef.current) {
-              console.log("Small movement detected, treating as tap")
-            }
+
             addGestureToQueue("TAP")
           } else {
             const isHorizontal = Math.abs(xDiff) > Math.abs(yDiff)
@@ -466,28 +354,20 @@ const KonamiEasterEgg = () => {
               // When you swipe left (xDiff > 0), content moves right, so we register RIGHT
               // When you swipe right (xDiff < 0), content moves left, so we register LEFT
               const gesture = xDiff > 0 ? GESTURE.RIGHT : GESTURE.LEFT
-              if (debugModeRef.current) {
-                console.log("Horizontal swipe detected:", gesture)
-                console.log("(Swipe direction inverted for mobile)")
-              }
+
               addGestureToQueue(gesture)
             } else {
               // Vertical swipe - INVERTED for mobile
               // When you swipe up (yDiff > 0), content moves down, so we register DOWN
               // When you swipe down (yDiff < 0), content moves up, so we register UP
               const gesture = yDiff > 0 ? GESTURE.DOWN : GESTURE.UP
-              if (debugModeRef.current) {
-                console.log("Vertical swipe detected:", gesture)
-                console.log("(Swipe direction inverted for mobile)")
-              }
+
               addGestureToQueue(gesture)
             }
           }
         } else if (swipeStartXRef.current !== null) {
           // This was a tap with no movement
-          if (debugModeRef.current) {
-            console.log("Tap detected (no movement)")
-          }
+
           addGestureToQueue("TAP")
         }
 
@@ -506,8 +386,6 @@ const KonamiEasterEgg = () => {
       document.addEventListener("touchmove", handleTouchMove, { passive: true })
       document.addEventListener("touchend", handleTouchEnd, { passive: true })
 
-      console.log("Mobile gesture detection enabled")
-
       mobileInitializedRef.current = true
 
       // Return cleanup function
@@ -515,7 +393,7 @@ const KonamiEasterEgg = () => {
         document.removeEventListener("touchstart", handleTouchStart)
         document.removeEventListener("touchmove", handleTouchMove)
         document.removeEventListener("touchend", handleTouchEnd)
-        console.log("Mobile handlers removed")
+
       }
     }
 
@@ -529,14 +407,7 @@ const KonamiEasterEgg = () => {
       }
     }, 500)
 
-    // Preload images only once
-    if (debugModeRef.current) {
-      AVAILABLE_CHARACTERS.forEach((character) => {
-        const preloadImage = new Image()
-        preloadImage.src = `/easter-egg/images/${character}.png`
-        console.log(`Preloading ${character}.png`)
-      })
-    }
+
 
     return () => {
       // Clean up animations
@@ -571,35 +442,18 @@ const KonamiEasterEgg = () => {
         easterEgg.disable()
       }
 
-      // Remove global debug function
-      if (typeof window !== "undefined") {
-        window.konamiDebug = undefined
-      }
+
     }
-  }, [addGestureToQueue, enableDebugMode, triggerEasterEgg])
+  }, [addGestureToQueue, triggerEasterEgg])
 
   return (
     <>
       <audio ref={audioRef} preload="auto" />
       {showCharacter && portalContainer && (
         <>
-          {console.log("Rendering portal - showCharacter:", showCharacter, "portalContainer:", !!portalContainer, "position:", position, "currentCharacter:", currentCharacter)}
+
           {createPortal(
             <>
-              {/* Test element to verify portal is working */}
-              <div
-                style={{
-                  position: "fixed",
-                  top: "10px",
-                  right: "10px",
-                  backgroundColor: "red",
-                  color: "white",
-                  padding: "10px",
-                  zIndex: 999999,
-                }}
-              >
-                EASTER EGG ACTIVE: {currentCharacter}
-              </div>
               {/* Character element */}
               <div
                 className="konami-character"
@@ -616,8 +470,6 @@ const KonamiEasterEgg = () => {
                   visibility: "visible",
                   width: "240px",
                   height: "240px",
-                  backgroundColor: "rgba(255, 0, 0, 0.3)", // More visible debug background
-                  border: "2px solid red", // Debug border
                 }}
               >
                 <img
@@ -638,26 +490,10 @@ const KonamiEasterEgg = () => {
                     visibility: "visible",
                   }}
                   onError={(e) => {
-                    console.error(`Failed to load character image: ${currentCharacter}.png`)
-                    console.error("Image src:", e.target.src)
-                    console.error("Full URL would be:", window.location.origin + e.target.src)
-                    console.error("Check if the image exists at: /easter-egg/images/" + currentCharacter + ".png")
                     // Try fallback image
                     e.target.src = fallbackImagePath
                   }}
-                  onLoad={(e) => {
-                    console.log(`Character image loaded successfully: ${currentCharacter}.png`)
-                    console.log("Image element:", e.target)
-                    console.log("Image natural dimensions:", e.target.naturalWidth, "x", e.target.naturalHeight)
-                    console.log("Image display dimensions:", e.target.width, "x", e.target.height)
-                    console.log("showCharacter state:", showCharacter)
-                    console.log("Current position:", position)
-                    console.log("Parent div exists:", !!e.target.parentElement)
-                    // Log computed styles
-                    const computedStyle = window.getComputedStyle(e.target);
-                    console.log("Computed display:", computedStyle.display)
-                    console.log("Computed visibility:", computedStyle.visibility)
-                    console.log("Computed opacity:", computedStyle.opacity)
+
                   }}
                 />
               </div>
