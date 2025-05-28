@@ -234,6 +234,7 @@ const KonamiEasterEgg = () => {
 
     setShowCharacter(true)
     console.log("Easter egg triggered - Character should show now")
+    console.log("showCharacter state set to true")
     if (debugModeRef.current) {
       console.log("Using character:", character)
       console.log(
@@ -598,6 +599,10 @@ const KonamiEasterEgg = () => {
             display: "block",
             opacity: 1,
             visibility: "visible",
+            // Temporary debug background
+            backgroundColor: debugModeRef.current ? "rgba(255, 0, 255, 0.3)" : "transparent",
+            width: "240px",
+            height: "240px",
           }}
         >
           {/* Display the randomly selected character */}
@@ -608,24 +613,36 @@ const KonamiEasterEgg = () => {
             style={{
               maxHeight: "240px",
               maxWidth: "240px",
-              width: "auto",
-              height: "auto",
+              width: "auto !important",
+              height: "auto !important",
               filter: "drop-shadow(0 0 10px rgba(0,0,0,0.3))", // Add shadow for visibility
               transform: direction === 1 ? "scaleX(-1)" : "scaleX(1)", // Flip image based on direction
               // Force visibility
               display: "block",
               opacity: 1,
               visibility: "visible",
+              // Override any global CSS that might affect size
+              minWidth: "auto !important",
+              minHeight: "auto !important",
             }}
             onError={(e) => {
               console.error(`Failed to load character image: ${currentCharacter}.png`)
               console.error("Image src:", e.target.src)
               console.error("Full URL would be:", window.location.origin + e.target.src)
-              // Try with a fallback to see if the element is visible
-              e.target.style.backgroundColor = "#ff00ff"
+              // Make the div very visible to debug
+              const parentDiv = e.target.parentElement
+              if (parentDiv) {
+                parentDiv.style.backgroundColor = "#ff00ff"
+                parentDiv.style.width = "240px"
+                parentDiv.style.height = "240px"
+                parentDiv.style.border = "5px solid #00ff00"
+              }
+              // Also make the image show as a bright box
+              e.target.style.backgroundColor = "#ff0000"
               e.target.style.width = "240px"
               e.target.style.height = "240px"
               e.target.style.display = "block"
+              e.target.style.border = "5px solid #0000ff"
             }}
             onLoad={() => {
               console.log(`Character image loaded successfully: ${currentCharacter}.png`)
@@ -634,36 +651,6 @@ const KonamiEasterEgg = () => {
               console.log("Current position:", position)
             }}
           />
-        </div>
-      )}
-      
-      {/* Debug mode visual hint for mobile */}
-      {debugModeRef.current && typeof window !== "undefined" && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: "10px",
-            right: "10px",
-            backgroundColor: "rgba(0, 0, 0, 0.8)",
-            color: "white",
-            padding: "10px",
-            borderRadius: "5px",
-            fontSize: "12px",
-            zIndex: 10000,
-            maxWidth: "300px",
-          }}
-        >
-          <div>Konami Code:</div>
-          <div style={{ fontSize: "11px", marginBottom: "5px", opacity: 0.8 }}>
-            (Swipe in these directions)
-          </div>
-          <div>↓ ↓ ↑ ↑ → ← → ← TAP TAP</div>
-          <div style={{ marginTop: "5px", color: "#00ff00" }}>
-            Progress: {debugGestureQueue.length}/10
-          </div>
-          <div style={{ fontSize: "10px", marginTop: "5px" }}>
-            Current: {debugGestureQueue.slice(-3).join(" ")}
-          </div>
         </div>
       )}
     </>

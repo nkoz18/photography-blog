@@ -685,6 +685,25 @@ footer {
   transition: filter var(--transition-time) ease;
 }
 
+/* Exempt Konami easter egg character from dark mode filters */
+.dark-mode .konami-character img {
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+/* Ensure Konami character is always visible */
+.konami-character {
+  pointer-events: none;
+  z-index: 999999 !important;
+}
+
+.konami-character img {
+  filter: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+}
+
 /* Link colors in dark mode */
 .dark-mode a:not(.uk-button):not(.nav-link):not(.site-logo) {
   color: var(--color-primary);
