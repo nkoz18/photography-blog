@@ -1,13 +1,17 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import Link from "next/link"
 import { useDarkMode } from "../lib/useDarkMode"
-import { getCachedMenuIcon } from "../lib/randomAssets"
+import { getRandomMenuIcon } from "../lib/randomAssets"
 
 const Nav = ({ categories, isMenuOpen, toggleMenu }) => {
   const { isDarkMode, toggleDarkMode } = useDarkMode()
+  const [menuIconSrc, setMenuIconSrc] = useState("/images/icons/hamburger.svg") // Default fallback
 
-  // Get the cached menu icon to ensure consistency across page loads
-  const menuIconSrc = getCachedMenuIcon()
+  // Set a random menu icon on component mount
+  useEffect(() => {
+    setMenuIconSrc(getRandomMenuIcon())
+  }, [])
+
   // Path to the close icon
   const closeIconSrc = "/images/icons/close-x.svg"
 

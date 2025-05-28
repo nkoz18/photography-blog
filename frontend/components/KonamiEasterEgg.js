@@ -209,9 +209,6 @@ const KonamiEasterEgg = () => {
       console.log(`Selected character: ${character}`)
     }
 
-    // Start a new animation
-    animationActiveRef.current = true
-
     // Randomly decide starting side: true = start from right, false = start from left
     const startFromRight = Math.random() < 0.5
 
@@ -290,7 +287,13 @@ const KonamiEasterEgg = () => {
         );
       }
 
-      if (!animationActiveRef.current) return;
+      // Check if animation should continue - use a more reliable check
+      if (!animationActiveRef.current) {
+        if (debugModeRef.current) {
+          console.log("Animation stopped - animationActiveRef is false")
+        }
+        return;
+      }
 
       // Initialize start time
       if (!startTime) startTime = timestamp
@@ -341,8 +344,17 @@ const KonamiEasterEgg = () => {
       }
     }
 
-    // Start animation
-    animationRef.current = requestAnimationFrame(animate)
+    // Use setTimeout to ensure state updates have been processed before starting animation
+    setTimeout(() => {
+      // Set animation active flag right before starting
+      animationActiveRef.current = true
+      if (debugModeRef.current) {
+        console.log("Setting animationActiveRef to true and starting animation")
+      }
+      // Start animation
+      animationRef.current = requestAnimationFrame(animate)
+    }, 0)
+
   }, [availableCharacters, BOB_AMPLITUDE, BOB_FREQUENCY, MOVE_SPEED])
 
   useEffect(() => {
