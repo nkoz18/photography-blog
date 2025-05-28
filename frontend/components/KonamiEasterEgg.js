@@ -1,6 +1,49 @@
-import React, { useEffect, useState, useRef, useCallback } from "react"
-import ReactDOM from "react-dom"
+import React, { useEffect, useState, useRef, useCallback, useMemo } from "react"
+import { createPortal } from "react-dom"
 import Konami from "konami"
+
+// Move constants outside component to prevent recreating on every render
+const AVAILABLE_CHARACTERS = [
+  "silky",
+  "gucci", 
+  "bulrog",
+  "gon",
+  "gman",
+  "mantis",
+]
+
+// Animation configuration
+const MOVE_SPEED = 5 // Pixels to move per frame - adjust for speed
+const BOB_AMPLITUDE = 30 // Max pixels to move up/down
+const BOB_FREQUENCY = 0.004 // Controls speed of bobbing
+
+// Gesture configuration
+const SWIPE_TIMEOUT = 3000 // Increased time before gesture sequence resets (3 seconds)
+const SWIPE_MIN_DISTANCE = 20 // Reduced minimum distance for a swipe
+
+// Gesture types
+const GESTURE = {
+  UP: "UP",
+  DOWN: "DOWN",
+  LEFT: "LEFT",
+  RIGHT: "RIGHT",
+  A: "A",
+  B: "B",
+}
+
+// The Konami Code sequence as gestures
+const KONAMI_SEQUENCE = [
+  GESTURE.UP,
+  GESTURE.UP,
+  GESTURE.DOWN,
+  GESTURE.DOWN,
+  GESTURE.LEFT,
+  GESTURE.RIGHT,
+  GESTURE.LEFT,
+  GESTURE.RIGHT,
+  GESTURE.B,
+  GESTURE.A,
+]
 
 const KonamiEasterEgg = () => {
   const [showCharacter, setShowCharacter] = useState(false)
@@ -9,6 +52,7 @@ const KonamiEasterEgg = () => {
   const [verticalOffset, setVerticalOffset] = useState(0) // For bobbing animation
   const [currentCharacter, setCurrentCharacter] = useState("silky") // Default character
   const [debugGestureQueue, setDebugGestureQueue] = useState([]) // For debug display
+  const [portalContainer, setPortalContainer] = useState(null)
   const audioRef = useRef(null)
   const animationRef = useRef(null)
   const audioPlaying = useRef(false)
@@ -28,51 +72,16 @@ const KonamiEasterEgg = () => {
   const expectedButtonRef = useRef(null) // Tracks whether next tap should be B or A
   const debugModeRef = useRef(true) // Debug mode enabled by default
 
-  // Available characters
-  const availableCharacters = [
-    "silky",
-    "gucci",
-    "bulrog",
-    "gon",
-    "gman",
-    "mantis",
-  ]
-
   // Fallback image path
   const fallbackImagePath = "/images/icons/hamburger.svg"
 
-  // Animation configuration
-  const MOVE_SPEED = 5 // Pixels to move per frame - adjust for speed
-  const BOB_AMPLITUDE = 30 // Max pixels to move up/down
-  const BOB_FREQUENCY = 0.004 // Controls speed of bobbing
-
-  // Gesture configuration
-  const SWIPE_TIMEOUT = 3000 // Increased time before gesture sequence resets (3 seconds)
-  const SWIPE_MIN_DISTANCE = 20 // Reduced minimum distance for a swipe
-
-  // Gesture types
-  const GESTURE = {
-    UP: "UP",
-    DOWN: "DOWN",
-    LEFT: "LEFT",
-    RIGHT: "RIGHT",
-    A: "A",
-    B: "B",
-  }
-
-  // The Konami Code sequence as gestures
-  const KONAMI_SEQUENCE = [
-    GESTURE.UP,
-    GESTURE.UP,
-    GESTURE.DOWN,
-    GESTURE.DOWN,
-    GESTURE.LEFT,
-    GESTURE.RIGHT,
-    GESTURE.LEFT,
-    GESTURE.RIGHT,
-    GESTURE.B,
-    GESTURE.A,
-  ]
+  // Set portal container once component mounts
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      setPortalContainer(document.body)
+      console.log("Portal container set to document.body")
+    }
+  }, [])
 
   // Add a gesture to the queue and check for Konami code
   const addGestureToQueue = useCallback((gesture) => {
@@ -206,8 +215,8 @@ const KonamiEasterEgg = () => {
 
     // Pick a random character
     const character =
-      availableCharacters[
-        Math.floor(Math.random() * availableCharacters.length)
+      AVAILABLE_CHARACTERS[
+        Math.floor(Math.random() * AVAILABLE_CHARACTERS.length)
       ]
     setCurrentCharacter(character)
     if (debugModeRef.current) {
@@ -287,12 +296,6 @@ const KonamiEasterEgg = () => {
 
     // Animation function
     const animate = (timestamp) => {
-      if (debugModeRef.current) {
-        console.log(
-          `Animate called. animationActiveRef: ${animationActiveRef.current}, startTime: ${startTime}, currentPos: ${currentPos}`
-        );
-      }
-
       // Check if animation should continue - use a more reliable check
       if (!animationActiveRef.current) {
         if (debugModeRef.current) {
@@ -361,7 +364,7 @@ const KonamiEasterEgg = () => {
       animationRef.current = requestAnimationFrame(animate)
     }, 0)
 
-  }, [availableCharacters, BOB_AMPLITUDE, BOB_FREQUENCY, MOVE_SPEED])
+  }, [])
 
   useEffect(() => {
     // Enable debug mode with window.konamiDebug = true
@@ -526,14 +529,14 @@ const KonamiEasterEgg = () => {
       }
     }, 500)
 
-    // Preload images to test if they're accessible
-    availableCharacters.forEach((character) => {
-      const preloadImage = new Image()
-      preloadImage.src = `/easter-egg/images/${character}.png`
-      if (debugModeRef.current) {
+    // Preload images only once
+    if (debugModeRef.current) {
+      AVAILABLE_CHARACTERS.forEach((character) => {
+        const preloadImage = new Image()
+        preloadImage.src = `/easter-egg/images/${character}.png`
         console.log(`Preloading ${character}.png`)
-      }
-    })
+      })
+    }
 
     return () => {
       // Clean up animations
@@ -573,69 +576,95 @@ const KonamiEasterEgg = () => {
         window.konamiDebug = undefined
       }
     }
-  }, [
-    addGestureToQueue,
-    enableDebugMode,
-    triggerEasterEgg,
-    availableCharacters,
-  ])
+  }, [addGestureToQueue, enableDebugMode, triggerEasterEgg])
 
   return (
     <>
       <audio ref={audioRef} preload="auto" />
-      {showCharacter && typeof window !== "undefined" && ReactDOM.createPortal(
-        <div
-          className="konami-character"
-          style={{
-            position: "fixed",
-            zIndex: 99999, // Increased from 9999
-            top: "50%",
-            left: `${position}px`,
-            transform: `translateY(calc(-50% + ${verticalOffset}px))`,
-            pointerEvents: "none", // Prevent character from blocking clicks
-            // Force visibility
-            display: "block",
-            opacity: 1,
-            visibility: "visible",
-            width: "240px",
-            height: "240px",
-          }}
-        >
-          {/* Display the randomly selected character */}
-          <img
-            ref={imageRef}
-            src={`/easter-egg/images/${currentCharacter}.png`}
-            alt="Easter Egg Character"
-            style={{
-              maxHeight: "240px",
-              maxWidth: "240px",
-              width: "auto !important",
-              height: "auto !important",
-              filter: "drop-shadow(0 0 10px rgba(0,0,0,0.3))", // Add shadow for visibility
-              transform: direction === 1 ? "scaleX(-1)" : "scaleX(1)", // Flip image based on direction
-              // Force visibility
-              display: "block",
-              opacity: 1,
-              visibility: "visible",
-              // Override any global CSS that might affect size
-              minWidth: "auto !important",
-              minHeight: "auto !important",
-            }}
-            onError={(e) => {
-              console.error(`Failed to load character image: ${currentCharacter}.png`)
-              console.error("Image src:", e.target.src)
-              console.error("Full URL would be:", window.location.origin + e.target.src)
-              console.error("Check if the image exists at: /easter-egg/images/" + currentCharacter + ".png")
-            }}
-            onLoad={() => {
-              console.log(`Character image loaded successfully: ${currentCharacter}.png`)
-              console.log("Image dimensions:", imageRef.current?.width, "x", imageRef.current?.height)
-              console.log("showCharacter state:", showCharacter)
-              console.log("Current position:", position)
-            }}
-          />
-        </div>,
-        document.body
+      {showCharacter && portalContainer && (
+        <>
+          {console.log("Rendering portal - showCharacter:", showCharacter, "portalContainer:", !!portalContainer, "position:", position, "currentCharacter:", currentCharacter)}
+          {createPortal(
+            <>
+              {/* Test element to verify portal is working */}
+              <div
+                style={{
+                  position: "fixed",
+                  top: "10px",
+                  right: "10px",
+                  backgroundColor: "red",
+                  color: "white",
+                  padding: "10px",
+                  zIndex: 999999,
+                }}
+              >
+                EASTER EGG ACTIVE: {currentCharacter}
+              </div>
+              {/* Character element */}
+              <div
+                className="konami-character"
+                id="konami-character-container"
+                style={{
+                  position: "fixed",
+                  zIndex: 999999,
+                  top: "50%",
+                  left: `${position}px`,
+                  transform: `translateY(calc(-50% + ${verticalOffset}px))`,
+                  pointerEvents: "none",
+                  display: "block",
+                  opacity: 1,
+                  visibility: "visible",
+                  width: "240px",
+                  height: "240px",
+                  backgroundColor: "rgba(255, 0, 0, 0.3)", // More visible debug background
+                  border: "2px solid red", // Debug border
+                }}
+              >
+                <img
+                  ref={imageRef}
+                  src={`/easter-egg/images/${currentCharacter}.png`}
+                  alt="Easter Egg Character"
+                  style={{
+                    position: "relative",
+                    width: "240px",
+                    height: "240px",
+                    maxWidth: "240px",
+                    maxHeight: "240px",
+                    objectFit: "contain",
+                    filter: "drop-shadow(0 0 10px rgba(0,0,0,0.3))",
+                    transform: direction === 1 ? "scaleX(-1)" : "scaleX(1)",
+                    display: "block",
+                    opacity: 1,
+                    visibility: "visible",
+                  }}
+                  onError={(e) => {
+                    console.error(`Failed to load character image: ${currentCharacter}.png`)
+                    console.error("Image src:", e.target.src)
+                    console.error("Full URL would be:", window.location.origin + e.target.src)
+                    console.error("Check if the image exists at: /easter-egg/images/" + currentCharacter + ".png")
+                    // Try fallback image
+                    e.target.src = fallbackImagePath
+                  }}
+                  onLoad={(e) => {
+                    console.log(`Character image loaded successfully: ${currentCharacter}.png`)
+                    console.log("Image element:", e.target)
+                    console.log("Image natural dimensions:", e.target.naturalWidth, "x", e.target.naturalHeight)
+                    console.log("Image display dimensions:", e.target.width, "x", e.target.height)
+                    console.log("showCharacter state:", showCharacter)
+                    console.log("Current position:", position)
+                    console.log("Parent div exists:", !!e.target.parentElement)
+                    // Log computed styles
+                    const computedStyle = window.getComputedStyle(e.target);
+                    console.log("Computed display:", computedStyle.display)
+                    console.log("Computed visibility:", computedStyle.visibility)
+                    console.log("Computed opacity:", computedStyle.opacity)
+                  }}
+                />
+              </div>
+            </>,
+            portalContainer
+          )}
+        </>
       )}
     </>
   )
