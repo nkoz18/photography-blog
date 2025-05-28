@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from "react"
+import ReactDOM from "react-dom"
 import Konami from "konami"
 
 const KonamiEasterEgg = () => {
@@ -6,9 +7,6 @@ const KonamiEasterEgg = () => {
   const [position, setPosition] = useState(-100) // Start off-screen
   const [direction, setDirection] = useState(1) // 1 for right-to-left, -1 for left-to-right
   const [verticalOffset, setVerticalOffset] = useState(0) // For bobbing animation
-  const [imageLoaded, setImageLoaded] = useState(false)
-  const [imageError, setImageError] = useState(false)
-  const [useFallback, setUseFallback] = useState(false)
   const [currentCharacter, setCurrentCharacter] = useState("silky") // Default character
   const [debugGestureQueue, setDebugGestureQueue] = useState([]) // For debug display
   const audioRef = useRef(null)
@@ -585,7 +583,7 @@ const KonamiEasterEgg = () => {
   return (
     <>
       <audio ref={audioRef} preload="auto" />
-      {showCharacter && (
+      {showCharacter && typeof window !== "undefined" && ReactDOM.createPortal(
         <div
           className="konami-character"
           style={{
@@ -599,8 +597,6 @@ const KonamiEasterEgg = () => {
             display: "block",
             opacity: 1,
             visibility: "visible",
-            // Temporary debug background
-            backgroundColor: debugModeRef.current ? "rgba(255, 0, 255, 0.3)" : "transparent",
             width: "240px",
             height: "240px",
           }}
@@ -629,20 +625,7 @@ const KonamiEasterEgg = () => {
               console.error(`Failed to load character image: ${currentCharacter}.png`)
               console.error("Image src:", e.target.src)
               console.error("Full URL would be:", window.location.origin + e.target.src)
-              // Make the div very visible to debug
-              const parentDiv = e.target.parentElement
-              if (parentDiv) {
-                parentDiv.style.backgroundColor = "#ff00ff"
-                parentDiv.style.width = "240px"
-                parentDiv.style.height = "240px"
-                parentDiv.style.border = "5px solid #00ff00"
-              }
-              // Also make the image show as a bright box
-              e.target.style.backgroundColor = "#ff0000"
-              e.target.style.width = "240px"
-              e.target.style.height = "240px"
-              e.target.style.display = "block"
-              e.target.style.border = "5px solid #0000ff"
+              console.error("Check if the image exists at: /easter-egg/images/" + currentCharacter + ".png")
             }}
             onLoad={() => {
               console.log(`Character image loaded successfully: ${currentCharacter}.png`)
@@ -651,7 +634,8 @@ const KonamiEasterEgg = () => {
               console.log("Current position:", position)
             }}
           />
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )
