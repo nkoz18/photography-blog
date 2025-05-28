@@ -10,6 +10,7 @@ const KonamiEasterEgg = () => {
   const [imageError, setImageError] = useState(false)
   const [useFallback, setUseFallback] = useState(false)
   const [currentCharacter, setCurrentCharacter] = useState("silky") // Default character
+  const [debugGestureQueue, setDebugGestureQueue] = useState([]) // For debug display
   const audioRef = useRef(null)
   const animationRef = useRef(null)
   const audioPlaying = useRef(false)
@@ -91,6 +92,7 @@ const KonamiEasterEgg = () => {
       }
       gestureQueueRef.current = []
       expectedButtonRef.current = null // Reset expected button on timeout
+      setDebugGestureQueue([]) // Clear debug display
     }
 
     // Clear any existing timeout
@@ -135,6 +137,9 @@ const KonamiEasterEgg = () => {
       gestureQueueRef.current.shift()
     }
 
+    // Update debug display state
+    setDebugGestureQueue([...gestureQueueRef.current])
+
     if (debugModeRef.current) {
       console.log(
         "Current gesture sequence:",
@@ -149,6 +154,7 @@ const KonamiEasterEgg = () => {
       }
       gestureQueueRef.current = []
       expectedButtonRef.current = null // Reset on timeout
+      setDebugGestureQueue([]) // Clear debug display
     }, SWIPE_TIMEOUT)
 
     // Check if sequence matches Konami code
@@ -163,6 +169,7 @@ const KonamiEasterEgg = () => {
       }
       gestureQueueRef.current = [] // Reset after successful detection
       expectedButtonRef.current = null // Reset expected button
+      setDebugGestureQueue([]) // Clear debug display
       triggerEasterEgg()
       return true
     } else if (debugModeRef.current) {
@@ -453,17 +460,23 @@ const KonamiEasterEgg = () => {
             const isHorizontal = Math.abs(xDiff) > Math.abs(yDiff)
 
             if (isHorizontal) {
-              // Horizontal swipe
-              const gesture = xDiff > 0 ? GESTURE.LEFT : GESTURE.RIGHT
+              // Horizontal swipe - INVERTED for mobile
+              // When you swipe left (xDiff > 0), content moves right, so we register RIGHT
+              // When you swipe right (xDiff < 0), content moves left, so we register LEFT
+              const gesture = xDiff > 0 ? GESTURE.RIGHT : GESTURE.LEFT
               if (debugModeRef.current) {
                 console.log("Horizontal swipe detected:", gesture)
+                console.log("(Swipe direction inverted for mobile)")
               }
               addGestureToQueue(gesture)
             } else {
-              // Vertical swipe
-              const gesture = yDiff > 0 ? GESTURE.UP : GESTURE.DOWN
+              // Vertical swipe - INVERTED for mobile
+              // When you swipe up (yDiff > 0), content moves down, so we register DOWN
+              // When you swipe down (yDiff < 0), content moves up, so we register UP
+              const gesture = yDiff > 0 ? GESTURE.DOWN : GESTURE.UP
               if (debugModeRef.current) {
                 console.log("Vertical swipe detected:", gesture)
+                console.log("(Swipe direction inverted for mobile)")
               }
               addGestureToQueue(gesture)
             }
@@ -576,11 +589,15 @@ const KonamiEasterEgg = () => {
           className="konami-character"
           style={{
             position: "fixed",
-            zIndex: 9999,
+            zIndex: 99999, // Increased from 9999
             top: "50%",
             left: `${position}px`,
             transform: `translateY(calc(-50% + ${verticalOffset}px))`,
             pointerEvents: "none", // Prevent character from blocking clicks
+            // Force visibility
+            display: "block",
+            opacity: 1,
+            visibility: "visible",
           }}
         >
           {/* Display the randomly selected character */}
@@ -595,8 +612,58 @@ const KonamiEasterEgg = () => {
               height: "auto",
               filter: "drop-shadow(0 0 10px rgba(0,0,0,0.3))", // Add shadow for visibility
               transform: direction === 1 ? "scaleX(-1)" : "scaleX(1)", // Flip image based on direction
+              // Force visibility
+              display: "block",
+              opacity: 1,
+              visibility: "visible",
+            }}
+            onError={(e) => {
+              console.error(`Failed to load character image: ${currentCharacter}.png`)
+              console.error("Image src:", e.target.src)
+              console.error("Full URL would be:", window.location.origin + e.target.src)
+              // Try with a fallback to see if the element is visible
+              e.target.style.backgroundColor = "#ff00ff"
+              e.target.style.width = "240px"
+              e.target.style.height = "240px"
+              e.target.style.display = "block"
+            }}
+            onLoad={() => {
+              console.log(`Character image loaded successfully: ${currentCharacter}.png`)
+              console.log("Image dimensions:", imageRef.current?.width, "x", imageRef.current?.height)
+              console.log("showCharacter state:", showCharacter)
+              console.log("Current position:", position)
             }}
           />
+        </div>
+      )}
+      
+      {/* Debug mode visual hint for mobile */}
+      {debugModeRef.current && typeof window !== "undefined" && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: "10px",
+            right: "10px",
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+            color: "white",
+            padding: "10px",
+            borderRadius: "5px",
+            fontSize: "12px",
+            zIndex: 10000,
+            maxWidth: "300px",
+          }}
+        >
+          <div>Konami Code:</div>
+          <div style={{ fontSize: "11px", marginBottom: "5px", opacity: 0.8 }}>
+            (Swipe in these directions)
+          </div>
+          <div>↓ ↓ ↑ ↑ → ← → ← TAP TAP</div>
+          <div style={{ marginTop: "5px", color: "#00ff00" }}>
+            Progress: {debugGestureQueue.length}/10
+          </div>
+          <div style={{ fontSize: "10px", marginTop: "5px" }}>
+            Current: {debugGestureQueue.slice(-3).join(" ")}
+          </div>
         </div>
       )}
     </>
