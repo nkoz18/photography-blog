@@ -89,7 +89,6 @@ const KonamiEasterEgg = () => {
 
       gestureQueueRef.current = []
       expectedButtonRef.current = null // Reset expected button on timeout
-      setDebugGestureQueue([]) // Clear debug display
     }
 
     // Clear any existing timeout
@@ -134,7 +133,6 @@ const KonamiEasterEgg = () => {
 
       gestureQueueRef.current = []
       expectedButtonRef.current = null // Reset on timeout
-      setDebugGestureQueue([]) // Clear debug display
     }, SWIPE_TIMEOUT)
 
     // Check if sequence matches Konami code
