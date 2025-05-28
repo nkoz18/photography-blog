@@ -493,8 +493,6 @@ const KonamiEasterEgg = () => {
                     // Try fallback image
                     e.target.src = fallbackImagePath
                   }}
-
-                  }}
                 />
               </div>
             </>,
