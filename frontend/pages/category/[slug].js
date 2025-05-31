@@ -52,6 +52,11 @@ export async function getStaticProps({ params }) {
       filters: { slug: params.slug },
       populate: {
         articles: {
+          filters: {
+            publishedAt: {
+              $notNull: true,
+            },
+          },
           populate: {
             image: {
               fields: ["url", "alternativeText", "caption"],

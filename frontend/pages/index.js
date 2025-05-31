@@ -30,6 +30,11 @@ const Home = ({ articles, categories, homepage, isStaticExport }) => {
           // Fetch articles and categories which we know are available
           const [articlesRes, categoriesRes] = await Promise.all([
             fetchAPI("/articles", {
+              filters: {
+                publishedAt: {
+                  $notNull: true,
+                },
+              },
               populate: {
                 image: { fields: ["url", "alternativeText", "caption"] },
                 category: { fields: ["name", "slug"] },
@@ -132,6 +137,11 @@ export async function getStaticProps() {
     // Fetch articles and categories which we know are available
     const [articlesRes, categoriesRes] = await Promise.all([
       fetchAPI("/articles", {
+        filters: {
+          publishedAt: {
+            $notNull: true,
+          },
+        },
         populate: {
           image: { fields: ["url", "alternativeText", "caption"] },
           category: { fields: ["name", "slug"] },

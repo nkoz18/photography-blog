@@ -135,7 +135,14 @@ const Article = ({ article, categories }) => {
 export async function getStaticPaths() {
   try {
     // Get all articles from Strapi
-    const articlesRes = await fetchAPI("/articles", { fields: ["slug"] })
+    const articlesRes = await fetchAPI("/articles", { 
+      fields: ["slug"],
+      filters: {
+        publishedAt: {
+          $notNull: true,
+        },
+      },
+    })
 
     return {
       paths: articlesRes.data.map((article) => ({
@@ -157,7 +164,12 @@ export async function getStaticPaths() {
 export async function getStaticProps({ params }) {
   const [articlesRes, categoriesRes] = await Promise.all([
     fetchAPI("/articles", {
-      filters: { slug: params.slug },
+      filters: { 
+        slug: params.slug,
+        publishedAt: {
+          $notNull: true,
+        },
+      },
       populate: {
         image: {
           fields: [
