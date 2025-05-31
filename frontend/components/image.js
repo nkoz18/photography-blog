@@ -7,6 +7,7 @@ import { getStrapiMedia, getFocalPointImageUrl } from "../lib/media"
 const Image = ({ image, style, alt }) => {
   const [isLoading, setIsLoading] = useState(true)
   const [imgSrc, setImgSrc] = useState("")
+  const [hasError, setHasError] = useState(false)
 
   useEffect(() => {
     // Debug log the full image data
@@ -30,19 +31,10 @@ const Image = ({ image, style, alt }) => {
 
     // Only set the image source after component mounts
     if (image?.data?.attributes) {
-      // Check for focal point data
-      if (
-        image.data.attributes.provider_metadata?.focalPoint ||
-        image.data.attributes.formats?.focalPoint
-      ) {
-        // Use focal point image URL
-        const src = getFocalPointImageUrl(image.data)
-        setImgSrc(src)
-      } else {
-        // Use regular media URL
-        const src = getStrapiMedia(image)
-        setImgSrc(src)
-      }
+      // For now, always use regular media URL to avoid focal point URL issues
+      // TODO: Re-enable focal point URLs once backend supports them properly
+      const src = getStrapiMedia(image)
+      setImgSrc(src)
     }
   }, [image])
 
@@ -85,8 +77,20 @@ const Image = ({ image, style, alt }) => {
         }),
       }}
     >
-      {isLoading && <div className="image-loader"></div>}
-      {imgSrc && (
+      {isLoading && <div className="image-loader">Loading...</div>}
+      {hasError && (
+        <div className="image-error" style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          color: "#999",
+          fontSize: "14px"
+        }}>
+          Image failed to load
+        </div>
+      )}
+      {imgSrc && !hasError && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={imgSrc}
@@ -94,7 +98,25 @@ const Image = ({ image, style, alt }) => {
           className={`image-transition ${
             isLoading ? "image-loading" : "image-loaded"
           }`}
-          onLoad={() => setIsLoading(false)}
+          onLoad={() => {
+            setIsLoading(false)
+            setHasError(false)
+          }}
+          onError={(e) => {
+            console.error("Image failed to load:", imgSrc, e)
+            setIsLoading(false)
+            setHasError(true)
+            // Try to reload with a simpler URL without focal point params
+            if (imgSrc.includes('fp-x=')) {
+              const simpleUrl = getStrapiMedia(image)
+              if (simpleUrl !== imgSrc) {
+                console.log("Retrying with simple URL:", simpleUrl)
+                setImgSrc(simpleUrl)
+                setHasError(false)
+                setIsLoading(true)
+              }
+            }
+          }}
           style={{
             position: "absolute",
             top: 0,
