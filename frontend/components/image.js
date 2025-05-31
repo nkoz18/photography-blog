@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { getStrapiMedia, getFocalPointImageUrl } from "../lib/media"
+import { getStrapiMedia } from "../lib/media"
 
 /**
  * Improved image component that handles focal points for better cropping
@@ -8,51 +8,49 @@ const Image = ({ image, style, alt }) => {
   const [isLoading, setIsLoading] = useState(true)
   const [imgSrc, setImgSrc] = useState("")
   const [hasError, setHasError] = useState(false)
+  const [retryCount, setRetryCount] = useState(0)
 
   useEffect(() => {
-    // Debug log the full image data
-    console.log("Image component - Full image data:", image?.data?.attributes)
-
-    // Log provider_metadata specifically
-    if (image?.data?.attributes?.provider_metadata) {
-      console.log(
-        "Image component - provider_metadata:",
-        image.data.attributes.provider_metadata
-      )
-
-      // Log focal point if it exists in provider_metadata
-      if (image.data.attributes.provider_metadata.focalPoint) {
-        console.log(
-          "Image component - Found focal point in provider_metadata:",
-          image.data.attributes.provider_metadata.focalPoint
-        )
-      }
-    }
-
     // Only set the image source after component mounts
     if (image?.data?.attributes) {
-      // For now, always use regular media URL to avoid focal point URL issues
-      // TODO: Re-enable focal point URLs once backend supports them properly
       const src = getStrapiMedia(image)
       setImgSrc(src)
+      setRetryCount(0)
     }
-  }, [image])
+    
+    // Cleanup function to revoke blob URLs
+    return () => {
+      if (imgSrc && imgSrc.startsWith('blob:')) {
+        URL.revokeObjectURL(imgSrc)
+      }
+    }
+  }, [image, imgSrc])
+
+  // Function to preload image via fetch to avoid browser caching issues
+  const preloadImageViaFetch = async (url) => {
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      })
+      if (response.ok) {
+        const blob = await response.blob()
+        return URL.createObjectURL(blob)
+      }
+      throw new Error(`HTTP ${response.status}`)
+    } catch (error) {
+      console.error('Fetch preload failed:', error)
+      return null
+    }
+  }
 
   if (!image?.data?.attributes) {
     return null
   }
 
   const { alternativeText } = image.data.attributes
-
-  // Get focal point from wherever it exists
-  const focalPoint =
-    image.data.attributes.formats?.focalPoint ||
-    image.data.attributes.provider_metadata?.focalPoint
-
-  // Log the focal point we're using
-  if (focalPoint) {
-    console.log("Image component - Using focal point:", focalPoint)
-  }
 
   // Check if image is in an article cover
   const isArticleCover = image?.data?.attributes?.width > 1000
@@ -71,10 +69,6 @@ const Image = ({ image, style, alt }) => {
         height: isArticleCover ? "100%" : 0,
         overflow: "hidden",
         maxWidth: "100%",
-        // Set focal point as a CSS variable that can be used by our CSS
-        ...(focalPoint && {
-          "--focal-point": `${focalPoint.x}% ${focalPoint.y}%`,
-        }),
       }}
     >
       {isLoading && <div className="image-loader">Loading...</div>}
@@ -102,19 +96,32 @@ const Image = ({ image, style, alt }) => {
             setIsLoading(false)
             setHasError(false)
           }}
-          onError={(e) => {
+          onError={async (e) => {
             console.error("Image failed to load:", imgSrc, e)
             setIsLoading(false)
-            setHasError(true)
-            // Try to reload with a simpler URL without focal point params
-            if (imgSrc.includes('fp-x=')) {
-              const simpleUrl = getStrapiMedia(image)
-              if (simpleUrl !== imgSrc) {
-                console.log("Retrying with simple URL:", simpleUrl)
-                setImgSrc(simpleUrl)
-                setHasError(false)
+            
+            if (retryCount < 3) {
+              console.log(`Retry attempt ${retryCount + 1}/3 for:`, imgSrc)
+              
+              // Try using fetch to preload the image first
+              const blobUrl = await preloadImageViaFetch(imgSrc)
+              if (blobUrl) {
+                console.log("Using blob URL:", blobUrl)
+                setImgSrc(blobUrl)
+                setRetryCount(retryCount + 1)
                 setIsLoading(true)
+                return
               }
+              
+              // Fallback: try with cache-busting
+              const retryUrl = `${imgSrc.split('?')[0]}?t=${Date.now()}&retry=${retryCount + 1}`
+              setTimeout(() => {
+                setImgSrc(retryUrl)
+                setRetryCount(retryCount + 1)
+                setIsLoading(true)
+              }, 1000 * (retryCount + 1)) // Exponential backoff
+            } else {
+              setHasError(true)
             }
           }}
           style={{

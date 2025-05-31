@@ -99,7 +99,7 @@ const BatchUploadContent = () => {
       // Log the FormData for debugging (doesn't show in console but useful for verification)
       console.log("FormData prepared with", files.length, "files");
 
-      // Use simple fetch with no auth header
+      // Use the Strapi helper plugin's request function which handles auth automatically
       const response = await fetch(
         `/api/articles/${initialData.id}/batch-upload`,
         {

@@ -13,6 +13,8 @@ module.exports = createCoreController("api::article.article", ({ strapi }) => ({
   async batchUploadGalleryImages(ctx) {
     try {
       console.log("Batch upload endpoint called");
+      console.log("Request files:", ctx.request.files);
+      console.log("Request body keys:", Object.keys(ctx.request.body || {}));
 
       const { id } = ctx.params; // Article ID
 
@@ -32,11 +34,14 @@ module.exports = createCoreController("api::article.article", ({ strapi }) => ({
       });
 
       if (!article) {
+        console.log(`Article not found for ID: ${id}`);
         return ctx.notFound("Article not found");
       }
 
       // Check if files are in request
       if (!ctx.request.files || Object.keys(ctx.request.files).length === 0) {
+        console.log("No files found in request");
+        console.log("Available request keys:", Object.keys(ctx.request));
         return ctx.badRequest("No files to upload");
       }
 

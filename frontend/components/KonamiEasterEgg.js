@@ -47,7 +47,7 @@ const KONAMI_SEQUENCE = [
 
 const KonamiEasterEgg = () => {
   const [showCharacter, setShowCharacter] = useState(false)
-  const [position, setPosition] = useState(-100) // Start off-screen
+  const [position, setPosition] = useState(-300) // Start further off-screen
   const [direction, setDirection] = useState(1) // 1 for right-to-left, -1 for left-to-right
   const [verticalOffset, setVerticalOffset] = useState(0) // For bobbing animation
   const [currentCharacter, setCurrentCharacter] = useState("silky") // Default character
@@ -174,8 +174,8 @@ const KonamiEasterEgg = () => {
     // Randomly decide starting side: true = start from right, false = start from left
     const startFromRight = Math.random() < 0.5
 
-    // Set initial position based on direction
-    const startPos = startFromRight ? window.innerWidth + 100 : -100
+    // Set initial position based on direction - start further off-screen
+    const startPos = startFromRight ? window.innerWidth + 300 : -300
     setPosition(startPos)
 
     // Set direction based on starting position
@@ -254,8 +254,8 @@ const KonamiEasterEgg = () => {
 
       // Check if character has moved off screen
       if (
-        (startFromRight && currentPos < -100) || // Started right, moved left off screen
-        (!startFromRight && currentPos > window.innerWidth + 100) // Started left, moved right off screen
+        (startFromRight && currentPos < -300) || // Started right, moved left off screen
+        (!startFromRight && currentPos > window.innerWidth + 300) // Started left, moved right off screen
       ) {
 
         animationActiveRef.current = false

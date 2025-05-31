@@ -30,7 +30,19 @@ module.exports = ({ env }) => [
   "strapi::poweredBy",
   "strapi::logger",
   "strapi::query",
-  "strapi::body",
+  {
+    name: "strapi::body",
+    config: {
+      patchKoa: true,
+      multipart: true,
+      includeUnparsed: true,
+      formidable: {
+        maxFileSize: 1000 * 1024 * 1024, // 1GB
+        maxFieldsSize: 1000 * 1024 * 1024, // 1GB
+        maxFields: 1000,
+      },
+    },
+  },
   "strapi::session",
   "strapi::favicon",
   "strapi::public",

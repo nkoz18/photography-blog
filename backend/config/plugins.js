@@ -2,6 +2,7 @@ module.exports = ({ env }) => ({
   upload: {
     config: {
       provider: "local",
+      sizeLimit: 1000 * 1024 * 1024, // 1GB
     },
   },
   "users-permissions": {
