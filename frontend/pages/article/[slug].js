@@ -5,7 +5,8 @@ import Image from "../../components/image"
 import Seo from "../../components/seo"
 import dynamic from "next/dynamic"
 import { getStrapiMedia } from "../../lib/media"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
+import { useRouter } from "next/router"
 
 // Import PhotoSwipeGallery with dynamic import to avoid SSR issues
 const PhotoSwipeGallery = dynamic(
@@ -15,7 +16,11 @@ const PhotoSwipeGallery = dynamic(
   }
 )
 
-const Article = ({ article, categories }) => {
+const Article = ({ article: initialArticle, categories, isStaticExport }) => {
+  const router = useRouter()
+  const [article, setArticle] = useState(initialArticle)
+  const [loading, setLoading] = useState(false)
+  
   if (!article) {
     return { notFound: true } // 404 if article is missing
   }
@@ -81,6 +86,81 @@ const Article = ({ article, categories }) => {
     }
   }, [article])
 
+  // Fetch fresh article data client-side when in static export mode
+  useEffect(() => {
+    if (isStaticExport && router.query.slug) {
+      const fetchFreshData = async () => {
+        setLoading(true)
+        try {
+          const articlesRes = await fetchAPI("/articles", {
+            filters: {
+              slug: router.query.slug,
+              publishedAt: {
+                $notNull: true,
+              },
+            },
+            populate: {
+              image: {
+                fields: [
+                  "url",
+                  "alternativeText",
+                  "caption",
+                  "width",
+                  "height",
+                  "formats",
+                  "provider_metadata",
+                ],
+              },
+              images: {
+                fields: [
+                  "url",
+                  "alternativeText",
+                  "caption",
+                  "width",
+                  "height",
+                  "formats",
+                  "provider_metadata",
+                ],
+              },
+              gallery: {
+                populate: {
+                  gallery_items: {
+                    populate: {
+                      image: {
+                        fields: [
+                          "url",
+                          "alternativeText",
+                          "caption",
+                          "width",
+                          "height",
+                          "formats",
+                          "provider_metadata",
+                        ],
+                      },
+                    },
+                  },
+                },
+              },
+              author: { populate: { picture: { fields: ["url"] } } },
+              categories: { fields: ["name", "slug"] },
+            },
+          })
+          
+          if (articlesRes.data && articlesRes.data.length > 0) {
+            console.log("Fetched fresh article data:", articlesRes.data[0])
+            setArticle(articlesRes.data[0])
+          }
+        } catch (error) {
+          console.error("Error fetching fresh article data:", error)
+        } finally {
+          setLoading(false)
+        }
+      }
+      
+      fetchFreshData()
+    }
+  }, [isStaticExport, router.query.slug])
+
   const seo = {
     metaTitle: article.attributes.title,
     metaDescription: article.attributes.description,
@@ -122,10 +202,14 @@ const Article = ({ article, categories }) => {
           </div>
 
           {/* PhotoSwipe Gallery - Uses either new gallery component or legacy images */}
-          <PhotoSwipeGallery
-            galleryData={article.attributes.gallery}
-            images={article.attributes.images}
-          />
+          {loading && isStaticExport ? (
+            <div>Loading fresh gallery data...</div>
+          ) : (
+            <PhotoSwipeGallery
+              galleryData={article.attributes.gallery}
+              images={article.attributes.images}
+            />
+          )}
         </div>
       </div>
     </Layout>
@@ -234,8 +318,15 @@ export async function getStaticProps({ params }) {
     return { notFound: true }
   }
 
+  // Check if this is a static export
+  const isExport = process.env.NEXT_PHASE === "phase-export"
+  
   return {
-    props: { article: articlesRes.data[0], categories: categoriesRes.data },
+    props: { 
+      article: articlesRes.data[0], 
+      categories: categoriesRes.data,
+      isStaticExport: isExport || false
+    },
     revalidate: 60, // Revalidate these pages every 60 seconds
   }
 }
