@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button, Typography, Box, Alert } from "@strapi/design-system";
 import { Upload } from "@strapi/icons";
-import { useCMEditViewDataManager } from "@strapi/helper-plugin";
+import { useCMEditViewDataManager, auth } from "@strapi/helper-plugin";
 import styled from "styled-components";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -99,11 +99,17 @@ const BatchUploadContent = () => {
       // Log the FormData for debugging (doesn't show in console but useful for verification)
       console.log("FormData prepared with", files.length, "files");
 
+      // Get the auth token
+      const token = auth.getToken();
+      
       // Use the Strapi helper plugin's request function which handles auth automatically
       const response = await fetch(
         `/api/articles/${initialData.id}/batch-upload`,
         {
           method: "POST",
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
           body: formData,
         }
       );
@@ -111,14 +117,28 @@ const BatchUploadContent = () => {
       // Log the response
       console.log("Response status:", response.status);
 
+      if (!response.ok) {
+        // Try to get error message from response
+        let errorMessage = `Upload failed with status ${response.status}`;
+        const contentType = response.headers.get("content-type");
+        
+        if (contentType && contentType.includes("application/json")) {
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error?.message || errorData.message || errorMessage;
+          } catch (e) {
+            console.error("Failed to parse error response:", e);
+          }
+        } else {
+          // If it's HTML or text, just use the status text
+          errorMessage = `Server error: ${response.statusText || 'Unknown error'}`;
+        }
+        
+        throw new Error(errorMessage);
+      }
+
       const responseData = await response.json();
       console.log("Response data:", responseData);
-
-      if (!response.ok) {
-        throw new Error(
-          `Upload failed: ${response.status} - ${response.statusText}`
-        );
-      }
 
       setStatus({
         type: "success",

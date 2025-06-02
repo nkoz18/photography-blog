@@ -133,8 +133,8 @@ module.exports = createCoreController("api::article.article", ({ strapi }) => ({
         galleryData = updatedArticle.gallery;
       }
 
-      // Get any existing gallery items
-      const existingItems = galleryData?.gallery_items || [];
+      // Get any existing gallery items and filter out null/invalid ones
+      const existingItems = (galleryData?.gallery_items || []).filter(item => item && item.image);
 
       // Create new gallery items
       for (const file of uploadedFiles) {
@@ -150,8 +150,8 @@ module.exports = createCoreController("api::article.article", ({ strapi }) => ({
         galleryItems.push(galleryItemData);
       }
 
-      // Combine existing and new gallery items
-      const allItems = [...existingItems, ...galleryItems];
+      // Combine existing and new gallery items, filtering out any null/undefined items
+      const allItems = [...existingItems, ...galleryItems].filter(item => item && item.image);
 
       // Update the article with all gallery items
       const updatedArticle = await strapi.entityService.update(
