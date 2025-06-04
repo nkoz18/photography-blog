@@ -116,3 +116,6 @@ build
 
 # Next build dir
 \.next/*
+
+# Context files for Claude Code
+*.backup

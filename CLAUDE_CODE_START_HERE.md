@@ -1,0 +1,34 @@
+# Claude Code Quick Start
+
+## First Time Setup
+1. Run: `./init-claude-code.sh`
+2. Read: `project-context.md` - Check the top priority task
+3. Read: `strapi-cms-project-plan.md` - Follow Phase 0 first
+
+## Important Files
+- `project-context.md` - Current priorities and system info
+- `backend/BACKEND-CONTEXT.md` - Backend technical details  
+- `frontend/FRONTEND-CONTEXT.md` - Frontend deployment info
+- `strapi-cms-project-plan.md` - Detailed implementation plan
+
+## Critical Rules
+1. NEVER use placeholders - ask for specific values
+2. NEVER run `git push` - only provide the command
+3. ALWAYS update context files when making changes
+4. CHECK project-context.md before starting any work
+
+## Missing Information Needed
+Check project-context.md for [NEED VALUE] items:
+- EC2 IP address
+- SSH Key name
+- Strapi directory path on EC2
+- Process manager type (PM2 or systemd)
+- Node version on EC2
+- GitHub repository URL
+
+## Current Priority
+🔴 CRITICAL: Fix Batch Upload 401 Unauthorized Error
+- After backend deployment to EC2
+- Batch upload returns 401 error
+- Individual uploads work fine
+- See debugging steps in project-context.md
