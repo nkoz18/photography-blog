@@ -200,7 +200,7 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
           <ResponsiveMasonry
             columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3, 1200: 4 }}
           >
-            <Masonry gutter="15px">
+            <Masonry gutter="20px">
               {galleryPhotos.map((photo, index) => (
                 <Item
                   key={`gallery-item-${index}`}
@@ -215,44 +215,45 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
                     <div
                       ref={ref}
                       onClick={open}
-                      className="gallery-item"
+                      className="gallery-item-wrapper"
                       style={{
                         position: "relative",
                         cursor: "pointer",
                         overflow: "hidden",
                         borderRadius: "4px",
                         boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-                        transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                        transition: "box-shadow 0.3s ease",
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = "translateY(-5px)"
-                        e.currentTarget.style.boxShadow = "0 5px 15px rgba(0, 0, 0, 0.15)"
+                        e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)"
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = "translateY(0)"
                         e.currentTarget.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.1)"
                       }}
                     >
-                      <Image
-                        src={photo.src}
-                        alt={photo.alt || "Gallery image"}
-                        width={photo.width}
-                        height={photo.height}
+                      <div
                         style={{
+                          overflow: "hidden",
                           width: "100%",
-                          height: "auto",
-                          display: "block",
-                          transition: "transform 0.3s ease",
+                          height: "100%",
                         }}
-                        loading="lazy"
-                        unoptimized
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = "scale(1.03)"
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = "scale(1)"
-                        }}
-                      />
+                      >
+                        <Image
+                          src={photo.src}
+                          alt={photo.alt || "Gallery image"}
+                          width={photo.width}
+                          height={photo.height}
+                          className="gallery-image"
+                          style={{
+                            width: "100%",
+                            height: "auto",
+                            display: "block",
+                            transition: "transform 0.3s ease",
+                          }}
+                          loading="lazy"
+                          unoptimized
+                        />
+                      </div>
                     </div>
                   )}
                 </Item>

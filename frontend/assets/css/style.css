@@ -338,12 +338,7 @@ p {
   display: none !important;
 }
 
-/* Gallery improvements */
-.gallery-item-wrapper {
-  margin-bottom: 20px;
-  transition: all 0.3s ease;
-}
-
+/* Legacy gallery styles - kept for backwards compatibility */
 .gallery-item {
   position: relative;
   overflow: hidden;
@@ -355,10 +350,6 @@ p {
   width: 100%;
   display: block;
   transition: transform 0.3s ease;
-}
-
-.gallery-item:hover img {
-  transform: scale(1.03);
 }
 
 .gallery-caption {
@@ -432,15 +423,6 @@ p {
   }
 }
 
-/* Add a nice hover effect for the gallery items */
-.gallery-item-wrapper {
-  cursor: pointer;
-}
-
-.gallery-item-wrapper:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
 
 /* Space between gallery items */
 .uk-grid > .gallery-item-wrapper {
@@ -538,18 +520,18 @@ p {
 }
 
 /* Ensure consistent spacing in Masonry layout */
-.photo-gallery-wrapper .gallery-item {
+.photo-gallery-wrapper .gallery-item-wrapper {
   margin-bottom: 0 !important; /* Remove any default margin */
+  transform: translateY(0) !important; /* Prevent vertical movement */
 }
 
-/* Override any conflicting hover styles */
-.photo-gallery-wrapper .gallery-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+/* Subtle zoom effect on hover without movement */
+.photo-gallery-wrapper .gallery-item-wrapper:hover {
+  transform: translateY(0) !important; /* Keep position fixed */
 }
 
-.photo-gallery-wrapper .gallery-item img:hover {
-  transform: scale(1.03);
+.photo-gallery-wrapper .gallery-item-wrapper:hover .gallery-image {
+  transform: scale(1.05); /* Subtle zoom */
 }
 
 /* Remove all hover animations and transformations */
