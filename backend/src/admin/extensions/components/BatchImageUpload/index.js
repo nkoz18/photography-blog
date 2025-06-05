@@ -140,10 +140,44 @@ const BatchUploadContent = () => {
       const uploadedFiles = await response.json();
       console.log("Uploaded files:", uploadedFiles);
 
-      setStatus({
-        type: "success",
-        message: `Successfully uploaded ${uploadedFiles.length || 0} files! (Gallery attachment coming next)`,
-      });
+      // Now attach the uploaded files to the article gallery
+      const updateResponse = await fetch(
+        `/content-manager/collection-types/api::article.article/${initialData.id}`,
+        {
+          method: "PUT",
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            gallery: {
+              caption: initialData.gallery?.caption || `Gallery for ${initialData.title}`,
+              gallery_items: [
+                ...(initialData.gallery?.gallery_items || []),
+                ...uploadedFiles.map((file) => ({
+                  image: file.id,
+                  caption: file.name,
+                  alt_text: file.alternativeText || file.name,
+                  display_size: "medium",
+                }))
+              ]
+            }
+          }),
+        }
+      );
+
+      if (!updateResponse.ok) {
+        console.error("Failed to attach files to gallery:", updateResponse.status);
+        setStatus({
+          type: "warning",
+          message: `Uploaded ${uploadedFiles.length} files but failed to attach to gallery. Check manually.`,
+        });
+      } else {
+        setStatus({
+          type: "success",
+          message: `Successfully uploaded and attached ${uploadedFiles.length} images to gallery!`,
+        });
+      }
       setFiles([]);
 
       // Refresh the page after a short delay
