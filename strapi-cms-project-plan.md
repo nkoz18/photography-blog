@@ -16,7 +16,17 @@
 - [ ] Get process manager type (PM2 or systemd) from user
 - [ ] Verify local development environment is set up
 
-### 0.3 Documentation Access
+### 0.3 Test Configuration Setup
+- [ ] Get test configuration values from user:
+  - Backend URL (https://api.silkytruth.com)
+  - Frontend URL
+  - Test user email and password
+  - EC2 IP for SSH tests
+- [ ] Update test files with actual values (no placeholders)
+- [ ] Run baseline tests: `./run-tests-for-claude.sh`
+- [ ] Verify upload tests reproduce 401 error: `cd tests && node upload-tests.js`
+
+### 0.4 Documentation Access
 - [ ] Confirm access to Strapi v4 documentation
 - [ ] Confirm access to npm registry
 - [ ] Review existing debugging information in project-context.md
@@ -132,8 +142,10 @@ curl -X POST https://api.silkytruth.com/api/articles/1/batch-upload \
 
 ### 4.2 Test Fix Locally
 - Implement fix in local environment
-- Thoroughly test batch upload
+- Run tests: `./run-tests-for-claude.sh`
+- Specifically verify: `cd tests && node upload-tests.js` shows "✓ Batch upload successful"
 - Test edge cases (large files, multiple files)
+- Ensure NO existing tests are broken
 
 ---
 
@@ -158,9 +170,11 @@ npm run build
 ```
 
 ### 5.2 Verify Fix in Production
+- Run production tests: `./run-tests-for-claude.sh` (with production URLs)
 - Test batch upload through admin panel
 - Monitor logs for errors
 - Test with various file sizes and counts
+- Document test results in project-context.md
 
 ### 5.3 Update Documentation
 - Update debugging steps in project-context.md
@@ -194,9 +208,12 @@ npm run build
 ### CRITICAL RULES:
 1. **NO PLACEHOLDERS**: Never use placeholders like [VALUE] in actual commands. Always ask the user for specific values.
 2. **CHECK CONTEXT FIRST**: Always read project-context.md before starting work
-3. **UPDATE DOCUMENTATION**: Update context files whenever making architectural changes
-4. **NO GIT PUSH**: Never run `git push`. Only stage and commit changes.
-5. **TEST LOCALLY FIRST**: Always test fixes locally before deploying
+3. **TEST BEFORE AND AFTER**: Run `./run-tests-for-claude.sh` before making changes, then after
+4. **REPRODUCE 401 ERROR**: Use `cd tests && node upload-tests.js` to consistently reproduce the issue
+5. **UPDATE DOCUMENTATION**: Update context files whenever making architectural changes
+6. **NO GIT PUSH**: Never run `git push`. Only stage and commit changes.
+7. **TEST LOCALLY FIRST**: Always test fixes locally before deploying
+8. **NO BROKEN TESTS**: Never commit code that breaks existing tests
 
 ### Command Templates
 Replace these with actual values from the user:

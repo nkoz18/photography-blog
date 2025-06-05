@@ -158,7 +158,43 @@ AWS_BUCKET=[BUCKET_NAME]
 
 ---
 
+## Testing Status
+
+**Test Suite**: Implemented  
+**Last Test Run**: [Run ./run-tests-for-claude.sh to update]  
+**Test Results**: [To be updated]  
+**Critical Test**: Upload tests - reproduces 401 error
+
+### Test Commands
+```bash
+# Full test suite
+./run-tests-for-claude.sh
+
+# Just upload tests (reproduces 401 error)
+cd tests && node upload-tests.js
+
+# Smoke tests only
+./tests/smoke-tests.sh
+```
+
+### Test Configuration Required
+- [BACKEND_URL]: Backend URL (https://api.silkytruth.com)
+- [FRONTEND_URL]: Frontend URL  
+- [TEST_EMAIL]: Test user email for authentication
+- [TEST_PASSWORD]: Test user password
+- [EC2_IP]: EC2 instance IP for SSH tests
+
+---
+
 ## Recent Changes Log
+
+### 2025-01-06 - Added Testing Infrastructure
+- Created comprehensive test suite with upload-tests.js
+- Added run-tests-for-claude.sh main test runner
+- Set up smoke tests for health checks
+- Configured test logging to tests/logs/
+- Added npm test infrastructure
+- Tests will reproduce 401 error consistently
 
 ### 2025-01-06 - Initial Context Creation
 - Created project context documentation

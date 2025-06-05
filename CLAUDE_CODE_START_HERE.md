@@ -32,3 +32,33 @@ Check project-context.md for [NEED VALUE] items:
 - Batch upload returns 401 error
 - Individual uploads work fine
 - See debugging steps in project-context.md
+
+## Testing Requirements
+
+### ALWAYS RUN TESTS BEFORE AND AFTER CHANGES
+```bash
+# 1. Establish baseline before any changes
+./run-tests-for-claude.sh
+
+# 2. Reproduce the 401 error specifically
+cd tests && node upload-tests.js
+# This will show: "✗ Batch upload failed: 401"
+
+# 3. After making fixes, run tests again
+./run-tests-for-claude.sh
+# Goal: All tests pass, especially upload tests
+```
+
+### Critical Testing Rules
+1. **NEVER commit code that breaks existing tests**
+2. **ALWAYS test your changes immediately**
+3. **The upload test MUST reproduce the 401 error first**
+4. **Success = upload test shows "✓ Batch upload successful"**
+5. **Check tests/logs/ for detailed error information**
+
+### Test Configuration Needed
+Ask user for these values to replace in test files:
+- Backend URL (likely: https://api.silkytruth.com)
+- Frontend URL
+- Test user email and password for Strapi
+- EC2 IP address
