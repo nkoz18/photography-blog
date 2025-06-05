@@ -520,18 +520,23 @@ p {
 }
 
 /* Ensure consistent spacing in Masonry layout */
+.photo-gallery-wrapper {
+  overflow: visible !important;
+}
+
 .photo-gallery-wrapper .gallery-item-wrapper {
   margin-bottom: 0 !important; /* Remove any default margin */
   transform: translateY(0) !important; /* Prevent vertical movement */
+  background: var(--card-bg); /* Adapts to dark mode */
 }
 
-/* Subtle zoom effect on hover without movement */
+/* Very subtle zoom effect on hover without movement */
 .photo-gallery-wrapper .gallery-item-wrapper:hover {
   transform: translateY(0) !important; /* Keep position fixed */
 }
 
 .photo-gallery-wrapper .gallery-item-wrapper:hover .gallery-image {
-  transform: scale(1.05); /* Subtle zoom */
+  transform: scale(1.02); /* Very subtle zoom - only 2% */
 }
 
 /* Remove all hover animations and transformations */
