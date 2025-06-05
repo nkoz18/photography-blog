@@ -537,6 +537,21 @@ p {
   margin: 0 auto;
 }
 
+/* Ensure consistent spacing in Masonry layout */
+.photo-gallery-wrapper .gallery-item {
+  margin-bottom: 0 !important; /* Remove any default margin */
+}
+
+/* Override any conflicting hover styles */
+.photo-gallery-wrapper .gallery-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.photo-gallery-wrapper .gallery-item img:hover {
+  transform: scale(1.03);
+}
+
 /* Remove all hover animations and transformations */
 .gallery-item-no-hover {
   position: relative;

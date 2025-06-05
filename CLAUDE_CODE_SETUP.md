@@ -1,5 +1,7 @@
 # Development Environment Setup Guide
 
+> **Note**: For deployment instructions, see [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md)
+
 ## Setting Up Development Environment
 
 ### Option 1: Using sudo (Recommended)
@@ -38,15 +40,12 @@ export DEV_AUTO_APPROVE=true
 export DEV_SKIP_CONFIRMATIONS=true
 ```
 
-## Git Sync Workflow
+## Git Workflow
 
 ### Before Starting Work
 ```bash
 # Always pull latest changes first
 git pull origin master
-
-# Check if EC2 is out of sync
-ssh -i ~/.ssh/ec2-strapi-key-pair.pem ubuntu@44.246.84.130 "cd /home/ubuntu/photography-blog && git status"
 ```
 
 ### After Making Changes
@@ -55,20 +54,9 @@ ssh -i ~/.ssh/ec2-strapi-key-pair.pem ubuntu@44.246.84.130 "cd /home/ubuntu/phot
 git add .
 git commit -m "Description of changes"
 git push origin master
-
-# Update EC2 with latest changes
-ssh -i ~/.ssh/ec2-strapi-key-pair.pem ubuntu@44.246.84.130 "cd /home/ubuntu/photography-blog && git pull origin master && cd backend && pm2 restart photography-blog"
 ```
 
-### Emergency Sync Commands
-```bash
-# If local and remote are out of sync
-git fetch origin
-git reset --hard origin/master
-
-# If EC2 is out of sync
-ssh -i ~/.ssh/ec2-strapi-key-pair.pem ubuntu@44.246.84.130 "cd /home/ubuntu/photography-blog && git fetch origin && git reset --hard origin/master && cd backend && pm2 restart photography-blog"
-```
+For deployment steps, see PROJECT_OVERVIEW.md
 
 ## File Paths Reference
 
@@ -87,35 +75,16 @@ ssh -i ~/.ssh/ec2-strapi-key-pair.pem ubuntu@44.246.84.130 "cd /home/ubuntu/phot
 
 ## Common Operations
 
-### Deploy Single File
-```bash
-# Copy specific file to EC2
-scp -i ~/.ssh/ec2-strapi-key-pair.pem /local/path/file.js ubuntu@44.246.84.130:/home/ubuntu/photography-blog/backend/path/file.js
-
-# Restart backend
-ssh -i ~/.ssh/ec2-strapi-key-pair.pem ubuntu@44.246.84.130 "cd /home/ubuntu/photography-blog/backend && pm2 restart photography-blog"
-```
-
-### View Logs
-```bash
-# Real-time logs
-ssh -i ~/.ssh/ec2-strapi-key-pair.pem ubuntu@44.246.84.130 "pm2 logs photography-blog --lines 50"
-
-# Error logs only
-ssh -i ~/.ssh/ec2-strapi-key-pair.pem ubuntu@44.246.84.130 "pm2 logs photography-blog --err --lines 20"
-```
-
 ### Health Check
 ```bash
 # Check backend status
 curl -I https://api.silkytruth.com/api/articles
 
-# Check PM2 status
-ssh -i ~/.ssh/ec2-strapi-key-pair.pem ubuntu@44.246.84.130 "pm2 status"
-
-# Check disk space
-ssh -i ~/.ssh/ec2-strapi-key-pair.pem ubuntu@44.246.84.130 "df -h"
+# Check frontend
+curl -I https://www.silkytruth.com
 ```
+
+For SSH operations and deployment, see PROJECT_OVERVIEW.md
 
 ## Troubleshooting
 

@@ -62,11 +62,17 @@ npm run lint:fix     # Fix linting issues
    - Update endpoint: `/upload/updateFocalPoint/:id`
 
 2. **Batch Image Upload**:
-   - Endpoint: `POST /api/articles/:id/batch-upload`
-   - Controller: `backend/src/api/article/controllers/article.js`
-   - Handles multiple image uploads to article galleries
+   - Custom component: `backend/src/admin/extensions/components/BatchImageUpload/index.js`
+   - Uses standard `/upload` endpoint followed by content-manager API
+   - Attaches uploaded files to article galleries automatically
+   - Handles multiple image uploads with drag-and-drop interface
 
-3. **Konami Code Easter Egg**:
+3. **Dynamic Content Loading**:
+   - Frontend fetches fresh content from CMS on every page load
+   - CMS changes appear immediately without frontend redeployment
+   - Static export + client-side data fetching for optimal performance
+
+4. **Konami Code Easter Egg**:
    - Component: `frontend/components/KonamiEasterEgg.js`
    - Triggers character animations on specific sequence
    - Uses React Portal for rendering
@@ -100,22 +106,36 @@ Frontend uses:
 4. Always use environment variables for sensitive data
 5. The Easter egg should not interfere with normal site functionality
 
+## Recent Changes and Solutions
+
+### Batch Upload Authentication Fix
+- **Issue**: Batch upload failing with 401 Unauthorized errors
+- **Solution**: Implemented workaround using standard `/upload` endpoint + content-manager API
+- **Location**: `backend/src/admin/extensions/components/BatchImageUpload/index.js`
+- **Status**: ✅ Working - User successfully uploaded 100+ images
+
+### AWS S3 Storage Configuration  
+- **Issue**: Images being stored locally on EC2 instead of S3, causing disk space issues
+- **Solution**: Fixed environment variable naming (`AWS_BUCKET` → `AWS_BUCKET_NAME`)
+- **Location**: `backend/config/plugins.js`
+- **Status**: ✅ Working - All uploads now go to S3
+
+### Frontend Dynamic Content Loading
+- **Issue**: CMS changes required frontend redeployment to appear
+- **Solution**: Implemented client-side data fetching on page load
+- **Locations**: 
+  - `frontend/pages/article/[slug].js`
+  - `frontend/pages/index.js`
+- **Status**: ✅ Working - CMS changes appear immediately without redeployment
+
+### Disk Space Cleanup
+- **Issue**: EC2 instance at 98% disk usage from local image storage
+- **Solution**: Cleaned up local uploads directories, freed ~182MB
+- **Status**: ✅ Complete - Disk usage reduced to 86%
+
 ## Deployment Notification Rule
 
-**IMPORTANT**: Upon completing any changes to the codebase, always inform the user about deployment requirements:
-
-- **Frontend changes**: Require `git push` to trigger AWS Amplify deployment (builds take ~8 minutes)
-- **Backend changes**: Require SSH to EC2 instance to restart services:
-  ```bash
-  ssh -i ~/.ssh/ec2-strapi-key-pair.pem ubuntu@44.246.84.130
-  cd /home/ubuntu/photography-blog/backend
-  git pull origin master
-  npm install
-  npm run build
-  pm2 restart photography-blog
-  ```
-
-Always specify which deployment steps are needed for changes to take effect.
+**IMPORTANT**: Upon completing any changes to the codebase, always inform the user about deployment requirements. Refer to PROJECT_OVERVIEW.md for deployment instructions.
 
 ---
 

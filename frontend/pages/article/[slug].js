@@ -16,12 +16,12 @@ const PhotoSwipeGallery = dynamic(
   }
 )
 
-const Article = ({ article: initialArticle, categories, isStaticExport }) => {
+const Article = ({ article: staticArticle, categories }) => {
   const router = useRouter()
-  const [article, setArticle] = useState(initialArticle)
+  const [article, setArticle] = useState(staticArticle)
   const [loading, setLoading] = useState(false)
   
-  if (!article) {
+  if (!staticArticle) {
     return { notFound: true } // 404 if article is missing
   }
 
@@ -86,80 +86,81 @@ const Article = ({ article: initialArticle, categories, isStaticExport }) => {
     }
   }, [article])
 
-  // Fetch fresh article data client-side when in static export mode
+  // Always fetch fresh data from CMS on page load to show latest content
   useEffect(() => {
-    if (isStaticExport && router.query.slug) {
-      const fetchFreshData = async () => {
-        setLoading(true)
-        try {
-          const articlesRes = await fetchAPI("/articles", {
-            filters: {
-              slug: router.query.slug,
-              publishedAt: {
-                $notNull: true,
-              },
+    const fetchFreshData = async () => {
+      if (!router.query.slug) return
+      
+      setLoading(true)
+      try {
+        const articlesRes = await fetchAPI("/articles", {
+          filters: {
+            slug: router.query.slug,
+            publishedAt: {
+              $notNull: true,
             },
-            populate: {
-              image: {
-                fields: [
-                  "url",
-                  "alternativeText",
-                  "caption",
-                  "width",
-                  "height",
-                  "formats",
-                  "provider_metadata",
-                ],
-              },
-              images: {
-                fields: [
-                  "url",
-                  "alternativeText",
-                  "caption",
-                  "width",
-                  "height",
-                  "formats",
-                  "provider_metadata",
-                ],
-              },
-              gallery: {
-                populate: {
-                  gallery_items: {
-                    populate: {
-                      image: {
-                        fields: [
-                          "url",
-                          "alternativeText",
-                          "caption",
-                          "width",
-                          "height",
-                          "formats",
-                          "provider_metadata",
-                        ],
-                      },
+          },
+          populate: {
+            image: {
+              fields: [
+                "url",
+                "alternativeText", 
+                "caption",
+                "width",
+                "height",
+                "formats",
+                "provider_metadata",
+              ],
+            },
+            images: {
+              fields: [
+                "url",
+                "alternativeText",
+                "caption", 
+                "width",
+                "height",
+                "formats",
+                "provider_metadata",
+              ],
+            },
+            gallery: {
+              populate: {
+                gallery_items: {
+                  populate: {
+                    image: {
+                      fields: [
+                        "url",
+                        "alternativeText",
+                        "caption",
+                        "width",
+                        "height", 
+                        "formats",
+                        "provider_metadata",
+                      ],
                     },
                   },
                 },
               },
-              author: { populate: { picture: { fields: ["url"] } } },
-              categories: { fields: ["name", "slug"] },
             },
-          })
-          
-          if (articlesRes.data && articlesRes.data.length > 0) {
-            console.log("Fetched fresh article data:", articlesRes.data[0])
-            setArticle(articlesRes.data[0])
-          }
-        } catch (error) {
-          console.error("Error fetching fresh article data:", error)
-        } finally {
-          setLoading(false)
+            author: { populate: { picture: { fields: ["url"] } } },
+            categories: { fields: ["name", "slug"] },
+          },
+        })
+        
+        if (articlesRes.data && articlesRes.data.length > 0) {
+          console.log("Fetched fresh article data:", articlesRes.data[0])
+          setArticle(articlesRes.data[0])
         }
+      } catch (error) {
+        console.error("Error fetching fresh article data:", error)
+        // Keep static article data as fallback
+      } finally {
+        setLoading(false)
       }
-      
-      fetchFreshData()
     }
-  }, [isStaticExport, router.query.slug])
+    
+    fetchFreshData()
+  }, [router.query.slug])
 
   const seo = {
     metaTitle: article.attributes.title,
@@ -202,8 +203,10 @@ const Article = ({ article: initialArticle, categories, isStaticExport }) => {
           </div>
 
           {/* PhotoSwipe Gallery - Uses either new gallery component or legacy images */}
-          {loading && isStaticExport ? (
-            <div>Loading fresh gallery data...</div>
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '2rem' }}>
+              <p>Loading latest gallery content...</p>
+            </div>
           ) : (
             <PhotoSwipeGallery
               galleryData={article.attributes.gallery}
@@ -318,16 +321,12 @@ export async function getStaticProps({ params }) {
     return { notFound: true }
   }
 
-  // Check if this is a static export
-  const isExport = process.env.NEXT_PHASE === "phase-export"
-  
   return {
     props: { 
       article: articlesRes.data[0], 
       categories: categoriesRes.data,
-      isStaticExport: isExport || false
     },
-    revalidate: 60, // Revalidate these pages every 60 seconds
+    // No revalidate needed with static export + client-side fetching
   }
 }
 

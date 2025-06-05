@@ -11,12 +11,12 @@ const nextConfig = {
       "silkytruth.com",
       "api.silkytruth.com",
     ],
-    unoptimized: true, // Need this for next export
+    unoptimized: true, // Keep for compatibility
   },
   swcMinify: false,
-  trailingSlash: true, // Helps with static export
-  assetPrefix: "", // Remove asset prefix to allow relative URLs
-  // Explicitly setting output to export
+  trailingSlash: true,
+  assetPrefix: "",
+  // Use static export for Amplify compatibility, but implement client-side data fetching
   output: "export",
   env: {
     NEXT_PUBLIC_STRAPI_API_URL:

@@ -4,11 +4,11 @@ import Layout from "../components/layout"
 import Seo from "../components/seo"
 import { fetchAPI } from "../lib/api"
 
-const Home = ({ articles, categories, homepage, isStaticExport }) => {
-  const [clientData, setClientData] = useState({
-    articles: articles || [],
-    categories: categories || [],
-    homepage: homepage || {
+const Home = ({ articles: staticArticles, categories: staticCategories, homepage: staticHomepage }) => {
+  const [data, setData] = useState({
+    articles: staticArticles || [],
+    categories: staticCategories || [],
+    homepage: staticHomepage || {
       attributes: {
         seo: {
           metaTitle: "Photography Blog",
@@ -20,10 +20,9 @@ const Home = ({ articles, categories, homepage, isStaticExport }) => {
   })
   const [loading, setLoading] = useState(false)
 
-  // For static export builds, fetch data client-side
+  // Always fetch fresh data client-side to show latest content
   useEffect(() => {
     const fetchData = async () => {
-      if (isStaticExport) {
         try {
           setLoading(true)
 
@@ -74,24 +73,21 @@ const Home = ({ articles, categories, homepage, isStaticExport }) => {
             }
           }
 
-          setClientData({
+          setData({
             articles: articlesRes.data.reverse(),
             categories: categoriesRes.data,
             homepage: homepageData,
           })
         } catch (error) {
           console.error("Error fetching client-side data:", error)
+          // Keep static data as fallback
         } finally {
           setLoading(false)
         }
-      }
     }
 
     fetchData()
-  }, [isStaticExport])
-
-  // Use client-side data for static exports, otherwise use server props
-  const data = isStaticExport ? clientData : { articles, categories, homepage }
+  }, [])
 
   return (
     <Layout categories={data.categories}>
@@ -110,28 +106,7 @@ const Home = ({ articles, categories, homepage, isStaticExport }) => {
   )
 }
 
-// Use getStaticProps instead of getServerSideProps for static export
 export async function getStaticProps() {
-  // For static export, provide minimal data that will be enhanced client-side
-  const isExport = process.env.NEXT_PHASE === "phase-export"
-
-  if (isExport) {
-    return {
-      props: {
-        articles: [],
-        categories: [],
-        homepage: {
-          attributes: {
-            seo: {
-              metaTitle: "Photography Blog",
-              metaDescription:
-                "A beautiful photography blog showcasing amazing images",
-            },
-          },
-        },
-      },
-    }
-  }
 
   try {
     // Fetch articles and categories which we know are available
@@ -187,8 +162,7 @@ export async function getStaticProps() {
         categories: categoriesRes.data,
         homepage: homepageData,
       },
-      // Revalidate the page every 10 minutes
-      revalidate: 600,
+      // No revalidate needed with static export + client-side fetching
     }
   } catch (err) {
     console.log("Error fetching main data:", err)
