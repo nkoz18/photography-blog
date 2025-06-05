@@ -1,7 +1,7 @@
 # Strapi CMS Batch Upload Fix - Project Plan
 
 ## Phase 0: Context and Documentation Verification
-**Goal**: Ensure Claude Code has all necessary context and access
+**Goal**: Ensure development environment has all necessary context and access
 
 ### 0.1 Context Files Check
 - [ ] Read `project-context.md` to understand current priorities
@@ -23,7 +23,7 @@
   - Test user email and password
   - EC2 IP for SSH tests
 - [ ] Update test files with actual values (no placeholders)
-- [ ] Run baseline tests: `./run-tests-for-claude.sh`
+- [ ] Run baseline tests: `./run-tests-for-dev.sh`
 - [ ] Verify upload tests reproduce 401 error: `cd tests && node upload-tests.js`
 
 ### 0.4 Documentation Access

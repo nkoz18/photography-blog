@@ -1,6 +1,6 @@
-# CLAUDE.md
+# Development Guide
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides development guidance and documentation for this repository.
 
 ## Architecture Overview
 
@@ -99,3 +99,8 @@ Frontend uses:
 3. Frontend builds require `--legacy-peer-deps` due to dependency conflicts
 4. Always use environment variables for sensitive data
 5. The Easter egg should not interfere with normal site functionality
+
+---
+
+**Developer**: Nikita Kozlov <Nikita@Stroika.io>  
+**Project**: Photography Blog Development Documentation

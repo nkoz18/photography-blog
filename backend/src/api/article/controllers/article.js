@@ -18,8 +18,8 @@ module.exports = createCoreController("api::article.article", ({ strapi }) => ({
 
       const { id } = ctx.params; // Article ID
 
-      // Validate if article exists
-      const article = await strapi.service("api::article.article").findOne(id, {
+      // Validate if article exists (use entityService to bypass permissions)
+      const article = await strapi.entityService.findOne("api::article.article", id, {
         populate: {
           gallery: {
             populate: {
@@ -112,22 +112,20 @@ module.exports = createCoreController("api::article.article", ({ strapi }) => ({
           },
         });
 
-        // Reload the article to get the fresh data
-        const updatedArticle = await strapi
-          .service("api::article.article")
-          .findOne(id, {
-            populate: {
-              gallery: {
-                populate: {
-                  gallery_items: {
-                    populate: {
-                      image: true,
-                    },
+        // Reload the article to get the fresh data (use entityService to bypass permissions)
+        const updatedArticle = await strapi.entityService.findOne("api::article.article", id, {
+          populate: {
+            gallery: {
+              populate: {
+                gallery_items: {
+                  populate: {
+                    image: true,
                   },
                 },
               },
             },
-          });
+          },
+        });
 
         // Get the updated gallery data
         galleryData = updatedArticle.gallery;

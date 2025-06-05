@@ -1,9 +1,9 @@
-# Testing Strategy Summary for Claude Code
+# Testing Strategy Summary for Development
 
 ## What We've Built
 
 ### 1. Main Test Runner
-**File**: `./run-tests-for-claude.sh`
+**File**: `./run-tests-for-dev.sh`
 - Health checks for backend, frontend, database
 - Runs all tests in sequence
 - Logs results to `tests/logs/`
@@ -27,12 +27,12 @@
 - Creates test images for upload testing
 - Works with or without ImageMagick
 
-## How Claude Code Should Use This
+## How Development Workflow Should Use This
 
 ### 1. First Thing - Establish Baseline
 ```bash
 # Run this BEFORE making any changes
-./run-tests-for-claude.sh
+./run-tests-for-dev.sh
 ```
 
 ### 2. Reproduce the 401 Error
@@ -44,12 +44,12 @@ cd tests && node upload-tests.js
 ### 3. After Making Changes
 ```bash
 # Run the same tests - they should improve
-./run-tests-for-claude.sh
+./run-tests-for-dev.sh
 cd tests && node upload-tests.js  # Should show "✓ Batch upload successful"
 ```
 
 ### 4. Configuration Requirements
-Claude Code must ask for these values to replace placeholders:
+Development tools must ask for these values to replace placeholders:
 - `[BACKEND_URL]` → Backend URL (https://api.silkytruth.com)
 - `[FRONTEND_URL]` → Frontend URL  
 - `[TEST_EMAIL]` → Test user email
@@ -72,11 +72,16 @@ When the batch upload is fixed, these should all pass:
 - ✅ No 401 errors in test logs
 - ✅ All existing functionality still works
 
-## Files Claude Code Must Update
+## Files Development Tools Must Update
 
-When configuring tests, Claude Code should edit:
-1. `run-tests-for-claude.sh` - Replace URL placeholders
+When configuring tests, development tools should edit:
+1. `run-tests-for-dev.sh` - Replace URL placeholders
 2. `tests/upload-tests.js` - Replace URL and auth placeholders  
 3. `tests/smoke-tests.sh` - Replace URL and SSH placeholders
 
 **Remember**: NO placeholders in final commands - always ask user for real values!
+
+---
+
+**Developer**: Nikita Kozlov <Nikita@Stroika.io>  
+**Project**: Photography Blog Testing Strategy

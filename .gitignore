@@ -119,3 +119,33 @@ build
 
 # Context files for Claude Code
 *.backup
+
+############################
+# Security & Credentials
+############################
+
+# Environment files with credentials
+.env.local
+.env.production
+.env.staging
+.env.development
+
+# SSH Keys
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+
+# Test files with credentials
+test-*.js
+*-test.js
+create-admin-simple.js
+test-batch-upload.js
+
+# API keys and tokens
+api-keys.txt
+tokens.txt
+
+# Database exports with sensitive data
+*.dump
+*.sql

@@ -26,7 +26,30 @@ module.exports = ({ env }) => [
       },
     },
   },
-  "strapi::cors",
+  {
+    name: "strapi::cors",
+    config: {
+      enabled: true,
+      header: "*",
+      origin: [
+        "https://api.silkytruth.com",
+        "https://www.silkytruth.com",
+        "https://silkytruth.com", 
+        "http://localhost:3000",
+        "http://localhost:1337"
+      ],
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"],
+      headers: [
+        "Content-Type",
+        "Authorization",
+        "Origin",
+        "Accept",
+        "Cache-Control",
+        "X-Requested-With"
+      ],
+    },
+  },
   "strapi::poweredBy",
   "strapi::logger",
   "strapi::query",

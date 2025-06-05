@@ -1,7 +1,7 @@
-# Claude Code Quick Start
+# Development Quick Start Guide
 
 ## First Time Setup
-1. Run: `./init-claude-code.sh`
+1. Run: `./init-dev-environment.sh`
 2. Read: `project-context.md` - Check the top priority task
 3. Read: `strapi-cms-project-plan.md` - Follow Phase 0 first
 
@@ -38,14 +38,14 @@ Check project-context.md for [NEED VALUE] items:
 ### ALWAYS RUN TESTS BEFORE AND AFTER CHANGES
 ```bash
 # 1. Establish baseline before any changes
-./run-tests-for-claude.sh
+./run-tests-for-dev.sh
 
 # 2. Reproduce the 401 error specifically
 cd tests && node upload-tests.js
 # This will show: "✗ Batch upload failed: 401"
 
 # 3. After making fixes, run tests again
-./run-tests-for-claude.sh
+./run-tests-for-dev.sh
 # Goal: All tests pass, especially upload tests
 ```
 
@@ -62,3 +62,8 @@ Ask user for these values to replace in test files:
 - Frontend URL
 - Test user email and password for Strapi
 - EC2 IP address
+
+---
+
+**Developer**: Nikita Kozlov <Nikita@Stroika.io>  
+**Project**: Photography Blog Development Quick Start

@@ -2,42 +2,45 @@
 
 ## Current Priority Tasks
 
-### 1. 🔴 CRITICAL: Fix Batch Upload 401 Unauthorized Error
+### 1. 🟢 RESOLVED: Batch Upload 401 Unauthorized Error
+**Status**: ✅ FIXED  
+**Resolution**: Fixed route authentication scope and user permissions
+**Details**: Issue was with route configuration requiring `["find", "update"]` scope but user lacked permissions
+
+#### Final Resolution
+```
+Root Cause: Route auth config and users-permissions plugin configuration
+Solution: Updated route to use proper auth configuration
+Location: backend/src/api/article/routes/custom-article.js
+```
+
+#### System Information - COMPLETE
+- **EC2 Instance ID**: i-0a6d92cff60d0595d  
+- **EC2 Public IP**: 44.246.84.130
+- **EC2 Private IP**: 172.31.15.234
+- **EC2 Username**: ubuntu
+- **SSH Key Path**: ~/.ssh/ec2-strapi-key-pair.pem
+- **Strapi Directory on EC2**: /home/ubuntu/photography-blog/backend
+- **Backend URL**: https://api.silkytruth.com
+- **Frontend URL**: https://www.silkytruth.com
+- **Process Manager**: PM2 (photography-blog)
+
+### 2. 🔴 CRITICAL: Fix CORS Issue for Image Loading
 **Status**: In Progress  
-**Impact**: Backend deployment is broken - cannot upload images
-**Details**: After backend deployment to EC2, batch upload returns 401 error
+**Priority**: High
+**Details**: Frontend can't load images due to CORS policy blocking cache-control header
 
 #### Error Information
 ```
-Error: Request failed with status code 401
-Location: Admin panel batch upload feature
-Endpoint: POST /api/articles/:id/batch-upload
+Access to fetch at 'https://api.silkytruth.com/uploads/film_ocf_2024_1_b3ab44b614.JPG' 
+from origin 'https://www.silkytruth.com' has been blocked by CORS policy: 
+Request header field cache-control is not allowed by Access-Control-Allow-Headers in preflight response.
 ```
 
-#### Debugging Steps Taken
-1. ✅ Verified deployment successful
-2. ✅ Admin login works
-3. ✅ Individual image uploads work
-4. ❌ Batch upload fails with 401
-
-#### System Information
-- **EC2 IP**: [NEED VALUE - ask user]
-- **EC2 Username**: ec2-user
-- **SSH Key Path**: ~/.ssh/[NEED VALUE - ask user for key name]
-- **Strapi Directory on EC2**: /home/ec2-user/[NEED VALUE - ask user]
-- **Backend URL**: https://api.silkytruth.com
-- **Process Manager**: [NEED VALUE - PM2 or systemd?]
-- **Node Version on EC2**: [NEED VALUE - check with ssh]
-
-### 2. Frontend Build Warning
+### 3. Frontend Build Warning
 **Status**: Not Started  
 **Priority**: Medium
 **Details**: Legacy peer deps and OpenSSL warnings during build
-
-### 3. Performance Optimization
-**Status**: Not Started  
-**Priority**: Low
-**Details**: Optimize image loading and gallery performance
 
 ---
 
@@ -87,20 +90,48 @@ npm run export
 
 ### SSH to Backend
 ```bash
-ssh -i ~/.ssh/[KEY_NAME] ec2-user@[EC2_IP]
-cd [STRAPI_DIRECTORY]
+# Connect to EC2
+ssh -i ~/.ssh/ec2-strapi-key-pair.pem ubuntu@44.246.84.130
+
+# Navigate to backend directory
+cd /home/ubuntu/photography-blog/backend
+
+# View PM2 status
+pm2 status
+
+# View logs
+pm2 logs photography-blog --lines 20
+
+# Restart backend
+pm2 restart photography-blog
 ```
 
-### Deploy Backend
+### Deploy Backend Changes
 ```bash
-# On EC2
-./deploy.sh
+# Copy file to EC2
+scp -i ~/.ssh/ec2-strapi-key-pair.pem /local/file/path ubuntu@44.246.84.130:/home/ubuntu/photography-blog/backend/path
 
-# Or manually
+# Or manually on EC2
+ssh -i ~/.ssh/ec2-strapi-key-pair.pem ubuntu@44.246.84.130
+cd /home/ubuntu/photography-blog/backend
 git pull origin master
 npm install
 npm run build
-[PM2_OR_SYSTEMD_RESTART_COMMAND]
+pm2 restart photography-blog
+```
+
+### Git Sync Commands
+```bash
+# Before making changes - pull latest
+git pull origin master
+
+# After making changes - commit and push
+git add .
+git commit -m "Your commit message"
+git push origin master
+
+# Keep EC2 in sync with latest changes
+ssh -i ~/.ssh/ec2-strapi-key-pair.pem ubuntu@44.246.84.130 "cd /home/ubuntu/photography-blog && git pull origin master && cd backend && pm2 restart photography-blog"
 ```
 
 ---
@@ -177,12 +208,29 @@ cd tests && node upload-tests.js
 ./tests/smoke-tests.sh
 ```
 
-### Test Configuration Required
-- [BACKEND_URL]: Backend URL (https://api.silkytruth.com)
-- [FRONTEND_URL]: Frontend URL  
-- [TEST_EMAIL]: Test user email for authentication
-- [TEST_PASSWORD]: Test user password
-- [EC2_IP]: EC2 instance IP for SSH tests
+### Test Configuration - COMPLETE
+- **BACKEND_URL**: https://api.silkytruth.com
+- **FRONTEND_URL**: https://www.silkytruth.com  
+- **TEST_EMAIL**: bot@silkytruth.com
+- **TEST_PASSWORD**: V>C'[21|W}7p
+- **EC2_IP**: 44.246.84.130
+
+### Test User Information
+- **Created**: API user via /api/auth/local/register
+- **Purpose**: Testing batch upload and API functionality  
+- **Permissions**: Default authenticated user role
+- **Note**: Can be deleted via admin panel if not needed
+
+### Quick Test Command
+```bash
+# Test batch upload works
+curl -X POST "https://api.silkytruth.com/api/articles/7/batch-upload" \
+  -H "Authorization: Bearer $(curl -s -X POST "https://api.silkytruth.com/api/auth/local" \
+  -H "Content-Type: application/json" \
+  -d '{"identifier": "bot@silkytruth.com", "password": "V>C'\''[21|W}7p"}' | \
+  grep -o '"jwt":"[^"]*"' | cut -d'"' -f4)" \
+  -F "files=@/path/to/test/image.jpg"
+```
 
 ---
 
@@ -225,7 +273,7 @@ cd tests && node upload-tests.js
 
 ## Contact
 
-**Developer**: Nikita Kozlov  
+**Developer**: Nikita Kozlov <Nikita@Stroika.io>  
 **Project**: Photography Blog (Silky Truth)
 
 Last Updated: 2025-01-06

@@ -1,7 +1,7 @@
 #!/bin/bash
-# File: run-tests-for-claude.sh
-# Purpose: Simple test runner for Claude Code to use during development
-# Author: Nikita Kozlov
+# File: run-tests-for-dev.sh
+# Purpose: Simple test runner for development workflow
+# Author: Nikita Kozlov <Nikita@Stroika.io>
 
 set -e  # Exit on any error
 
@@ -16,8 +16,8 @@ TESTS_PASSED=0
 TESTS_FAILED=0
 
 echo "==================================="
-echo "   Claude Code Test Runner"
-echo "==================================="
+echo "   Development Test Runner"
+echo "=================================="
 
 # Function to run a test and track results
 run_test() {
@@ -102,7 +102,7 @@ if [ -f "project-context.md" ]; then
     echo "Last test run: $(date) - ${TESTS_PASSED} passed, ${TESTS_FAILED} failed" >> project-context.md
 fi
 
-# Create a simple status file for Claude Code to check
+# Create a simple status file for development tracking
 cat > tests/last-run-status.json << EOF
 {
   "timestamp": "$(date -Iseconds)",
