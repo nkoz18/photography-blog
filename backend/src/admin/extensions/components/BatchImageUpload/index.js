@@ -102,9 +102,9 @@ const BatchUploadContent = () => {
       // Get the auth token
       const token = auth.getToken();
       
-      // Use the upload plugin admin endpoint
+      // Use the admin upload plugin endpoint
       const response = await fetch(
-        `/upload/batch-upload-gallery/${initialData.id}`,
+        `/admin/upload/batch-upload-gallery/${initialData.id}`,
         {
           method: "POST",
           headers: {
