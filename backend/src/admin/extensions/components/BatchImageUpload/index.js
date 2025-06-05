@@ -102,9 +102,9 @@ const BatchUploadContent = () => {
       // Get the auth token
       const token = auth.getToken();
       
-      // Use the Strapi helper plugin's request function which handles auth automatically
+      // Use the admin API endpoint instead of public API
       const response = await fetch(
-        `/api/articles/${initialData.id}/batch-upload`,
+        `/admin/batch-upload-gallery/${initialData.id}`,
         {
           method: "POST",
           headers: {
