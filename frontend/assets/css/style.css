@@ -343,7 +343,6 @@ p {
   position: relative;
   overflow: hidden;
   border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .gallery-item img {
@@ -519,24 +518,25 @@ p {
   margin: 0 auto;
 }
 
-/* Ensure consistent spacing in Masonry layout */
+/* Gallery container - clean slate */
 .photo-gallery-wrapper {
-  overflow: visible !important;
+  overflow: visible;
 }
 
-.photo-gallery-wrapper .gallery-item-wrapper {
-  margin-bottom: 0 !important; /* Remove any default margin */
-  transform: translateY(0) !important; /* Prevent vertical movement */
-  background: var(--card-bg); /* Adapts to dark mode */
+/* Remove any default margins */
+.photo-gallery-wrapper .gallery-item-container {
+  margin: 0;
+  padding: 0;
 }
 
-/* Very subtle zoom effect on hover without movement */
-.photo-gallery-wrapper .gallery-item-wrapper:hover {
-  transform: translateY(0) !important; /* Keep position fixed */
+/* Image wrapper handles the border radius */
+.photo-gallery-wrapper .gallery-image-wrapper {
+  background: transparent;
 }
 
-.photo-gallery-wrapper .gallery-item-wrapper:hover .gallery-image {
-  transform: scale(1.02); /* Very subtle zoom - only 2% */
+/* Very subtle zoom on the image only */
+.photo-gallery-wrapper .gallery-item-container:hover .gallery-image {
+  transform: scale(1.02);
 }
 
 /* Remove all hover animations and transformations */

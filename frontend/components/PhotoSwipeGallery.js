@@ -196,11 +196,11 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
           },
         }}
       >
-        <div className="photo-gallery-wrapper" style={{ width: "100%", margin: "0 -10px" }}>
+        <div className="photo-gallery-wrapper" style={{ width: "100%" }}>
           <ResponsiveMasonry
             columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3, 1200: 4 }}
           >
-            <Masonry gutter="0">
+            <Masonry gutter="20px">
               {galleryPhotos.map((photo, index) => (
                 <Item
                   key={`gallery-item-${index}`}
@@ -215,28 +215,20 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
                     <div
                       ref={ref}
                       onClick={open}
-                      className="gallery-item-wrapper"
+                      className="gallery-item-container"
                       style={{
                         position: "relative",
                         cursor: "pointer",
-                        overflow: "hidden",
-                        borderRadius: "4px",
-                        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-                        transition: "box-shadow 0.3s ease",
-                        padding: "10px",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)"
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.1)"
+                        marginBottom: "20px",
                       }}
                     >
                       <div
+                        className="gallery-image-wrapper"
                         style={{
                           overflow: "hidden",
                           width: "100%",
                           height: "100%",
+                          borderRadius: "4px",
                         }}
                       >
                         <Image
