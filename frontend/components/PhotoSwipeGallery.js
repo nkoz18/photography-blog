@@ -196,11 +196,11 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
           },
         }}
       >
-        <div className="photo-gallery-wrapper" style={{ width: "100%" }}>
+        <div className="photo-gallery-wrapper" style={{ width: "calc(100% + 20px)", marginLeft: "-10px", marginRight: "-10px" }}>
           <ResponsiveMasonry
             columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3, 1200: 4 }}
           >
-            <Masonry gutter="20px">
+            <Masonry gutter="0">
               {galleryPhotos.map((photo, index) => (
                 <Item
                   key={`gallery-item-${index}`}
@@ -213,21 +213,18 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
                 >
                   {({ ref, open }) => (
                     <div
-                      ref={ref}
-                      onClick={open}
-                      className="gallery-item-container"
                       style={{
-                        position: "relative",
-                        cursor: "pointer",
-                        marginBottom: "20px",
+                        padding: "10px",
                       }}
                     >
                       <div
-                        className="gallery-image-wrapper"
+                        ref={ref}
+                        onClick={open}
+                        className="gallery-item-container"
                         style={{
+                          position: "relative",
+                          cursor: "pointer",
                           overflow: "hidden",
-                          width: "100%",
-                          height: "100%",
                           borderRadius: "4px",
                         }}
                       >
