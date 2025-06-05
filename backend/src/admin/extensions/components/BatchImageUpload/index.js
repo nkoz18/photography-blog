@@ -102,9 +102,9 @@ const BatchUploadContent = () => {
       // Get the auth token
       const token = auth.getToken();
       
-      // Use the admin upload plugin endpoint
+      // Use the standard upload endpoint and then attach to gallery
       const response = await fetch(
-        `/admin/upload/batch-upload-gallery/${initialData.id}`,
+        `/upload`,
         {
           method: "POST",
           headers: {
@@ -137,14 +137,12 @@ const BatchUploadContent = () => {
         throw new Error(errorMessage);
       }
 
-      const responseData = await response.json();
-      console.log("Response data:", responseData);
+      const uploadedFiles = await response.json();
+      console.log("Uploaded files:", uploadedFiles);
 
       setStatus({
         type: "success",
-        message: `Successfully uploaded ${
-          responseData.uploadedFiles?.length || 0
-        } images to the gallery`,
+        message: `Successfully uploaded ${uploadedFiles.length || 0} files! (Gallery attachment coming next)`,
       });
       setFiles([]);
 
