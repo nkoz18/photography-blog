@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react"
 import "photoswipe/dist/photoswipe.css"
 import { Gallery as PhotoSwipeGallery, Item } from "react-photoswipe-gallery"
-import Masonry, { ResponsiveMasonry } from "react-responsive-masonry"
 import { getStrapiURL } from "../lib/api"
 import Image from "next/image"
 import { getRandomDivider } from "../lib/randomAssets"
@@ -194,62 +193,57 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
             allowNativeTouchScrolling: true,
             pinchToZoom: true,
           },
+          downloadURL: (item) => item.src,
+        }}
+        downloadProps={{
+          download: true,
+          target: "_blank",
+          rel: "noopener noreferrer"
         }}
       >
-        <div className="photo-gallery-wrapper" style={{ width: "calc(100% + 20px)", marginLeft: "-10px", marginRight: "-10px" }}>
-          <ResponsiveMasonry
-            columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3, 1200: 4 }}
-          >
-            <Masonry gutter="0">
-              {galleryPhotos.map((photo, index) => (
-                <Item
-                  key={`gallery-item-${index}`}
-                  original={photo.original || photo.src}
-                  thumbnail={photo.src}
-                  width={photo.width}
-                  height={photo.height}
-                  alt={photo.alt || "Gallery image"}
-                  caption={photo.caption || ""}
-                >
-                  {({ ref, open }) => (
-                    <div
+        <div className="custom-masonry-grid">
+          {galleryPhotos.map((photo, index) => (
+              <Item
+                key={`gallery-item-${index}`}
+                original={photo.original || photo.src}
+                thumbnail={photo.src}
+                width={photo.width}
+                height={photo.height}
+                alt={photo.alt || "Gallery image"}
+                caption={photo.caption || ""}
+              >
+                {({ ref, open }) => (
+                  <div
+                    ref={ref}
+                    onClick={open}
+                    className="gallery-item-container"
+                    style={{
+                      position: "relative",
+                      cursor: "pointer",
+                      overflow: "hidden",
+                      borderRadius: "0",
+                      width: "100%",
+                    }}
+                  >
+                    <Image
+                      src={photo.src}
+                      alt={photo.alt || "Gallery image"}
+                      width={photo.width}
+                      height={photo.height}
+                      className="gallery-image"
                       style={{
-                        padding: "10px",
+                        width: "100%",
+                        height: "auto",
+                        display: "block",
+                        transition: "transform 3s cubic-bezier(0.25, 0.1, 0.25, 1)",
                       }}
-                    >
-                      <div
-                        ref={ref}
-                        onClick={open}
-                        className="gallery-item-container"
-                        style={{
-                          position: "relative",
-                          cursor: "pointer",
-                          overflow: "hidden",
-                          borderRadius: "4px",
-                        }}
-                      >
-                        <Image
-                          src={photo.src}
-                          alt={photo.alt || "Gallery image"}
-                          width={photo.width}
-                          height={photo.height}
-                          className="gallery-image"
-                          style={{
-                            width: "100%",
-                            height: "auto",
-                            display: "block",
-                            transition: "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
-                          }}
-                          loading="lazy"
-                          unoptimized
-                        />
-                      </div>
-                    </div>
-                  )}
-                </Item>
-              ))}
-            </Masonry>
-          </ResponsiveMasonry>
+                      loading="lazy"
+                      unoptimized
+                    />
+                  </div>
+                )}
+              </Item>
+            ))}
         </div>
       </PhotoSwipeGallery>
     </div>

@@ -507,10 +507,37 @@ p {
   }
 }
 
-/* PhotoSwipe Gallery Styles - React Photo Gallery version */
+/* PhotoSwipe Gallery Styles - Custom Grid Layout */
 .photo-gallery-container {
   margin-top: 40px;
   width: 100%;
+}
+
+/* Custom masonry grid with consistent spacing */
+.custom-masonry-grid {
+  column-count: 3;
+  column-gap: 13px;
+  width: 100%;
+  column-fill: balance;
+}
+
+.custom-masonry-grid .gallery-item-container {
+  display: inline-block;
+  width: 100%;
+  break-inside: avoid;
+}
+
+/* Responsive column counts */
+@media (max-width: 1200px) {
+  .custom-masonry-grid {
+    column-count: 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .custom-masonry-grid {
+    column-count: 1;
+  }
 }
 
 .photo-gallery-wrapper {
@@ -518,9 +545,10 @@ p {
   margin: 0 auto;
 }
 
-/* Gallery container - clean slate */
+/* Gallery container - Masonry layout */
 .photo-gallery-wrapper {
   overflow: visible;
+  width: 100%;
 }
 
 /* Remove any default margins */
@@ -534,9 +562,14 @@ p {
   background: transparent;
 }
 
-/* Very subtle zoom on the image only */
-.photo-gallery-wrapper .gallery-item-container:hover .gallery-image {
-  transform: scale(1.02);
+/* Very subtle zoom on the image only - targeting the actual image */
+.custom-masonry-grid .gallery-item-container:hover img {
+  transform: scale(1.015);
+  transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.custom-masonry-grid .gallery-item-container img {
+  transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 /* Remove all hover animations and transformations */
