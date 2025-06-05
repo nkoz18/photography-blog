@@ -5,7 +5,15 @@ module.exports = {
       path: "/articles/:id/batch-upload",
       handler: "api::article.article.batchUploadGalleryImages",
       config: {
-        policies: [],
+        policies: [
+          "admin::isAuthenticatedAdmin",
+          {
+            name: "admin::hasPermissions",
+            config: {
+              actions: ["plugin::content-manager.explorer.update"],
+            },
+          },
+        ],
         middlewares: [],
       },
     },
