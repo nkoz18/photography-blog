@@ -100,6 +100,23 @@ Frontend uses:
 4. Always use environment variables for sensitive data
 5. The Easter egg should not interfere with normal site functionality
 
+## Deployment Notification Rule
+
+**IMPORTANT**: Upon completing any changes to the codebase, always inform the user about deployment requirements:
+
+- **Frontend changes**: Require `git push` to trigger AWS Amplify deployment (builds take ~8 minutes)
+- **Backend changes**: Require SSH to EC2 instance to restart services:
+  ```bash
+  ssh -i ~/.ssh/ec2-strapi-key-pair.pem ubuntu@44.246.84.130
+  cd /home/ubuntu/photography-blog/backend
+  git pull origin master
+  npm install
+  npm run build
+  pm2 restart photography-blog
+  ```
+
+Always specify which deployment steps are needed for changes to take effect.
+
 ---
 
 **Developer**: Nikita Kozlov <Nikita@Stroika.io>  

@@ -5,7 +5,6 @@ module.exports = {
       path: "/articles/:id/batch-upload",
       handler: "api::article.article.batchUploadGalleryImages",
       config: {
-        auth: { scope: [] },
         policies: [],
         middlewares: [],
       },
