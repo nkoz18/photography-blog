@@ -35,13 +35,13 @@ export async function getStaticPaths() {
           slug: category.attributes.slug,
         },
       })),
-      fallback: "blocking", // Changed from false to 'blocking' to generate new pages on demand
+      fallback: false, // Must be false for static export
     }
   } catch (error) {
     console.error("Error in getStaticPaths:", error)
     return {
       paths: [],
-      fallback: "blocking",
+      fallback: false,
     }
   }
 }
@@ -79,7 +79,7 @@ export async function getStaticProps({ params }) {
         category: matchingCategories.data[0],
         categories: allCategories,
       },
-      revalidate: 60, // Revalidate every 60 seconds
+      // No revalidate needed with static export + client-side fetching
     }
   } catch (error) {
     console.error("Error in getStaticProps:", error)
