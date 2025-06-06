@@ -272,7 +272,7 @@ html {
 
 .article-cover-image img {
   width: 100%;
-  height: 500px; /* Fixed height for consistent presentation */
+  height: 550px; /* Increased from 500px for better presentation */
   object-fit: cover !important; /* This ensures the image fills the container */
   display: block;
   border-radius: 0 !important;
@@ -310,7 +310,7 @@ img.image-transition {
 
 /* When inside article cover, use special styling */
 .article-cover-image .image-container {
-  height: 500px !important;
+  height: 550px !important;
   padding-bottom: 0 !important;
   box-shadow: none !important;
   border-radius: 0 !important;
@@ -516,11 +516,11 @@ p {
 
   /* Adjust cover image height on mobile */
   .article-cover-image img {
-    height: 250px; /* Split the difference - was 300px, reduced to 200px, now 250px */
+    height: 300px; /* Increased back to 300px for better visibility */
   }
   
   .article-cover-image .image-container {
-    height: 250px !important;
+    height: 300px !important;
   }
   
   /* Consistent spacing for article elements on mobile */
@@ -572,11 +572,11 @@ p {
 
   /* Further reduce cover image height on small screens */
   .article-cover-image img {
-    height: 200px; /* Split the difference - was 250px, reduced to 150px, now 200px */
+    height: 250px; /* Increased from 200px for better visibility on small screens */
   }
   
   .article-cover-image .image-container {
-    height: 200px !important;
+    height: 250px !important;
   }
   
   /* Further consistent spacing adjustments for very small screens */
@@ -704,8 +704,133 @@ p {
   background-color: rgba(0, 0, 0, 0.5) !important;
 }
 
-.pswp__button--download {
-  background-position: 0 -44px;
+/* PhotoSwipe custom icons - completely replace defaults */
+
+/* Hide all default SVG icons */
+.pswp__icn svg,
+.pswp__icn path,
+.pswp__icn rect,
+.pswp__icn circle {
+  display: none !important;
+}
+
+/* Download Button - comprehensive targeting with proper alignment */
+.pswp a[download],
+.pswp button[download],
+.pswp [data-pswp-download],
+.pswp__button--download,
+button[title*="Download"],
+button[aria-label*="Download"],
+button[aria-label*="download"],
+.pswp__top-bar a[download],
+.pswp__top-bar button[download] {
+  background: url('/images/icons/download.svg') no-repeat center !important;
+  background-size: 32px 32px !important;
+  background-position: 9px 14px !important; /* Match .pswp__icn positioning */
+  opacity: 0.85 !important;
+  width: 44px !important;
+  height: 44px !important;
+  border: none !important;
+  padding: 0 !important;
+  transition: opacity 0.2s ease, filter 0.2s ease !important;
+}
+
+/* Special handling for download .pswp__icn if it exists */
+.pswp__button--download .pswp__icn {
+  background: url('/images/icons/download.svg') no-repeat center !important;
+  background-size: 32px 32px !important;
+  opacity: 0.85 !important;
+  transition: opacity 0.2s ease, filter 0.2s ease !important;
+}
+
+.pswp a[download]:hover,
+.pswp button[download]:hover,
+.pswp [data-pswp-download]:hover,
+.pswp__button--download:hover,
+.pswp__button--download:hover .pswp__icn,
+button[title*="Download"]:hover,
+button[aria-label*="Download"]:hover,
+button[aria-label*="download"]:hover,
+.pswp__top-bar a[download]:hover,
+.pswp__top-bar button[download]:hover {
+  opacity: 1 !important;
+  filter: brightness(1.2) !important;
+}
+
+/* Zoom Button */
+.pswp__button--zoom .pswp__icn {
+  background: url('/images/icons/zoom.svg') no-repeat center !important;
+  background-size: 32px 32px !important;
+  opacity: 0.85 !important;
+  transition: opacity 0.2s ease, filter 0.2s ease !important;
+}
+
+.pswp__button--zoom:hover .pswp__icn {
+  opacity: 1 !important;
+  filter: brightness(1.2) !important;
+}
+
+/* Close Button */
+.pswp__button--close .pswp__icn {
+  background: url('/images/icons/x.svg') no-repeat center !important;
+  background-size: 32px 32px !important;
+  opacity: 0.85 !important;
+  transition: opacity 0.2s ease, filter 0.2s ease !important;
+}
+
+.pswp__button--close:hover .pswp__icn {
+  opacity: 1 !important;
+  filter: brightness(1.2) !important;
+}
+
+/* Previous Arrow - larger size with directional hover */
+.pswp__button--arrow--prev .pswp__icn {
+  background: url('/images/icons/prev.svg') no-repeat center !important;
+  background-size: 40px 40px !important; /* Increased from 32px */
+  opacity: 0.85 !important;
+  transition: opacity 0.2s ease, filter 0.2s ease, transform 0.2s ease !important;
+}
+
+.pswp__button--arrow--prev:hover .pswp__icn {
+  opacity: 1 !important;
+  filter: brightness(1.2) !important;
+  transform: translateX(-3px) !important; /* Move left on hover */
+}
+
+/* Next Arrow - larger size with directional hover */
+.pswp__button--arrow--next .pswp__icn {
+  background: url('/images/icons/next.svg') no-repeat center !important;
+  background-size: 40px 40px !important; /* Increased from 32px */
+  opacity: 0.85 !important;
+  transform: none !important; /* Override the horizontal flip */
+  transition: opacity 0.2s ease, filter 0.2s ease, transform 0.2s ease !important;
+}
+
+.pswp__button--arrow--next:hover .pswp__icn {
+  opacity: 1 !important;
+  filter: brightness(1.2) !important;
+  transform: translateX(3px) !important; /* Move right on hover */
+}
+
+/* Show arrows on touch devices */
+.pswp--touch .pswp__button--arrow {
+  visibility: visible !important;
+}
+
+/* Make sure arrows are always visible on mobile */
+@media (max-width: 768px) {
+  .pswp__button--arrow {
+    visibility: visible !important;
+    display: block !important;
+  }
+}
+
+/* Custom PhotoSwipe counter styling */
+.pswp__counter {
+  font-family: "Kirang Haerang", cursive !important;
+  color: rgb(255, 0, 127) !important;
+  font-size: 16px !important;
+  font-weight: normal !important;
 }
 
 /* Fix for UK lightbox captions that may interfere with PhotoSwipe */
