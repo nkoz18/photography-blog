@@ -75,6 +75,7 @@ footer {
   line-height: 1;
   display: flex;
   align-items: center;
+  height: 60px; /* Match hamburger menu height */
 }
 
 .logo-silky {
@@ -451,16 +452,46 @@ p {
 }
 
 @media (max-width: 768px) {
-  .uk-child-width-1-1\@s > * {
+  /* Force single column layout for all article cards on mobile */
+  .uk-child-width-1-2\@s > * {
+    width: 100% !important;
+  }
+  
+  /* Ensure right column grid items also take full width */
+  .uk-child-width-1-2\@m > * {
     width: 100% !important;
   }
 
   .uk-grid > * > * {
     width: 100% !important;
   }
+  
+  /* Fix uk-grid negative margin issue on mobile */
+  .uk-grid {
+    margin-left: 0 !important;
+  }
+  
+  .uk-grid > * {
+    padding-left: 0 !important;
+  }
+  
+  /* Ensure uk-grid-margin items take full width */
+  .uk-grid-margin {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
 
-  /* Force all images to take full width on mobile */
-  .uk-grid > * img {
+  /* Force all article items and their images to take full width on mobile */
+  .article-item {
+    width: 100% !important;
+    margin-bottom: 30px;
+  }
+  
+  .article-item .article-image {
+    width: 100% !important;
+  }
+  
+  .article-item img {
     width: 100% !important;
     max-width: 100% !important;
   }
@@ -469,8 +500,9 @@ p {
     font-size: 50px;
   }
 
+  /* Slightly increase article title size on mobile */
   #title {
-    font-size: 30px;
+    font-size: 32px; /* Increased from 30px */
   }
 
   .uk-article-title {
@@ -484,13 +516,50 @@ p {
 
   /* Adjust cover image height on mobile */
   .article-cover-image img {
-    height: 300px;
+    height: 250px; /* Split the difference - was 300px, reduced to 200px, now 250px */
+  }
+  
+  .article-cover-image .image-container {
+    height: 250px !important;
+  }
+  
+  /* Consistent spacing for article elements on mobile */
+  .article-cover-image {
+    margin-bottom: 20px !important; /* Consistent spacing after image */
+  }
+  
+  .uk-article-title {
+    margin-bottom: 15px !important; /* Consistent spacing after title */
+    margin-top: 0 !important;
+  }
+  
+  .uk-article-content {
+    margin-bottom: 25px !important; /* Consistent spacing before divider */
+  }
+  
+  .random-divider-container {
+    margin: 20px 0 !important; /* Reduced divider spacing on mobile */
+  }
+  
+  .random-divider-container img {
+    height: 80px !important; /* Smaller divider on mobile */
+  }
+  
+  /* Adjust logo to match hamburger menu height */
+  .site-logo {
+    font-size: 28px; /* Adjust to match 60px hamburger height */
+    line-height: 1;
+  }
+  
+  .logo-silky {
+    padding: 8px 12px; /* Adjust padding for better proportions */
   }
 }
 
 @media (max-width: 480px) {
+  /* Further increase on smaller screens */
   #title {
-    font-size: 26px;
+    font-size: 28px; /* Increased from 26px */
   }
 
   .uk-article-title {
@@ -503,7 +572,41 @@ p {
 
   /* Further reduce cover image height on small screens */
   .article-cover-image img {
-    height: 250px;
+    height: 200px; /* Split the difference - was 250px, reduced to 150px, now 200px */
+  }
+  
+  .article-cover-image .image-container {
+    height: 200px !important;
+  }
+  
+  /* Further consistent spacing adjustments for very small screens */
+  .article-cover-image {
+    margin-bottom: 15px !important; /* Tighter spacing on very small screens */
+  }
+  
+  .uk-article-title {
+    margin-bottom: 12px !important;
+  }
+  
+  .uk-article-content {
+    margin-bottom: 20px !important;
+  }
+  
+  .random-divider-container {
+    margin: 15px 0 !important; /* Even tighter divider spacing */
+  }
+  
+  .random-divider-container img {
+    height: 60px !important; /* Even smaller divider on very small screens */
+  }
+  
+  /* Further adjust logo on very small screens */
+  .site-logo {
+    font-size: 24px;
+  }
+  
+  .logo-silky {
+    padding: 6px 10px;
   }
 }
 
@@ -673,11 +776,19 @@ p {
 }
 
 /* Apply variables to elements - with smooth transitions */
+html {
+  background-color: var(--color-background);
+  transition: background-color var(--transition-time) ease;
+}
+
 body {
   background-color: var(--color-background);
   color: var(--color-text);
   transition: background-color var(--transition-time) ease,
     color var(--transition-time) ease;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
 }
 
 .uk-navbar-container {
@@ -862,7 +973,7 @@ footer {
     max-height: 80vh;
     background-color: var(--navbar-bg);
     box-shadow: 0 5px 15px var(--shadow-color);
-    padding: 20px;
+    padding: 80px 20px 40px; /* Increased top padding to clear hamburger menu */
     transition: top 0.3s ease;
     z-index: 100;
     overflow-y: auto;
@@ -877,23 +988,35 @@ footer {
   /* Adjust the navbar list to be vertical on mobile */
   .nav-links .uk-navbar-nav {
     flex-direction: column;
-    gap: 15px;
+    gap: 25px; /* Increased gap between items */
     width: 100%;
     justify-content: center;
     align-items: center;
+    margin: 0;
+    padding: 0;
   }
 
   .nav-links .uk-navbar-nav li {
     width: 100%;
     text-align: center;
+    margin: 0;
+    padding: 0;
   }
 
   .nav-links .uk-navbar-nav li a {
-    padding: 10px 0;
-    font-size: 24px;
+    padding: 15px 20px; /* Better touch targets */
+    font-size: 28px; /* Slightly larger for better readability */
     width: 100%;
     display: block;
     text-align: center;
+    border-radius: 8px; /* Rounded corners for better visual */
+    transition: background-color 0.2s ease;
+  }
+  
+  /* Add hover/active state for mobile menu items */
+  .nav-links .uk-navbar-nav li a:hover,
+  .nav-links .uk-navbar-nav li a:active {
+    background-color: rgba(255, 0, 127, 0.1);
   }
 
   /* Style the dark mode toggle on mobile - make it appear with other nav links */
