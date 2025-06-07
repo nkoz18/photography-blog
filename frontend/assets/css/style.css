@@ -44,6 +44,13 @@ footer {
   width: 100%;
 }
 
+/* Add margin-top to nav on desktop */
+@media (min-width: 769px) {
+  .nav-container {
+    margin-top: 20px; /* 20px white space above nav */
+  }
+}
+
 /* Make nav container use full width of parent container */
 .uk-container-large {
   max-width: 1400px;
@@ -94,11 +101,43 @@ footer {
   font-family: "Kirang Haerang", cursive !important;
   color: var(--color-secondary) !important;
   transition: color 0.3s ease;
-  font-size: 18px; /* Reduced to create contrast with logo */
+  font-size: 18px;
+  text-decoration: none !important;
 }
 
-.nav-link:hover {
-  color: #888888 !important;
+/* Desktop navigation styling */
+@media (min-width: 769px) {
+  .uk-navbar-nav {
+    gap: 15px; /* Reduced spacing between nav items */
+    align-items: center; /* Center align with logo and dark mode toggle */
+  }
+  
+  .uk-navbar-nav li {
+    margin: 0 5px; /* Reduced margin for closer spacing */
+  }
+  
+  .nav-link {
+    color: var(--color-secondary) !important;
+    font-size: 32px; /* Even bigger text */
+    padding: 10px 15px;
+    text-transform: lowercase; /* Lowercase all nav text */
+    display: flex;
+    align-items: center; /* Vertically center the text */
+    line-height: 1; /* Remove extra line height */
+  }
+  
+  .nav-link:hover {
+    color: #ff007f !important; /* Pink hover color instead of gray */
+    text-decoration: none !important;
+  }
+}
+
+/* Mobile navigation overrides */
+@media (max-width: 768px) {
+  .nav-link:hover {
+    color: #ff007f !important; /* Keep pink on mobile too */
+    background-color: transparent !important;
+  }
 }
 
 .uk-navbar-left a {
@@ -1098,12 +1137,13 @@ footer {
     max-height: 80vh;
     background-color: var(--navbar-bg);
     box-shadow: 0 5px 15px var(--shadow-color);
-    padding: 80px 20px 40px; /* Increased top padding to clear hamburger menu */
+    padding: 20px 20px 10px;
     transition: top 0.3s ease;
     z-index: 100;
     overflow-y: auto;
     text-align: center;
   }
+
 
   /* Show the navbar when menu is open */
   .nav-links.is-open {
@@ -1113,12 +1153,12 @@ footer {
   /* Adjust the navbar list to be vertical on mobile */
   .nav-links .uk-navbar-nav {
     flex-direction: column;
-    gap: 25px; /* Increased gap between items */
+    gap: 15px; /* Reduced gap to minimize spacing */
     width: 100%;
-    justify-content: center;
+    justify-content: flex-start; /* Align to top instead of center */
     align-items: center;
     margin: 0;
-    padding: 0;
+    padding: 0; /* No bottom padding */
   }
 
   .nav-links .uk-navbar-nav li {
@@ -1130,23 +1170,41 @@ footer {
 
   .nav-links .uk-navbar-nav li a {
     padding: 15px 20px; /* Better touch targets */
-    font-size: 28px; /* Slightly larger for better readability */
+    font-size: 32px; /* Increased font size for mobile */
     width: 100%;
     display: block;
-    text-align: center;
-    border-radius: 8px; /* Rounded corners for better visual */
-    transition: background-color 0.2s ease;
+    text-align: left; /* Left align for category links */
+    color: #ff007f !important; /* Pink color for all nav text on mobile */
+    transition: none; /* Remove transitions for mobile */
   }
   
-  /* Add hover/active state for mobile menu items */
+  /* Keep dark mode toggle centered */
+  .nav-links .uk-navbar-nav li a.dark-mode-toggle {
+    text-align: center;
+  }
+  
+  /* Remove hover effects on mobile - no background changes */
   .nav-links .uk-navbar-nav li a:hover,
   .nav-links .uk-navbar-nav li a:active {
-    background-color: rgba(255, 0, 127, 0.1);
+    background-color: transparent;
+    color: #ff007f !important; /* Keep pink color */
   }
 
   /* Style the dark mode toggle on mobile - make it appear with other nav links */
   .dark-mode-toggle-container {
     display: none;
+  }
+}
+
+/* Desktop only hover doodles */
+.desktop-only {
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  /* Disable hover doodles on mobile */
+  .desktop-only .hover-doodle {
+    display: none !important;
   }
 }
 
@@ -1191,11 +1249,13 @@ h1.uk-article-title {
 }
 
 .dark-toggle-inner {
-  display: inline-block;
+  display: inline-flex; /* Use inline-flex to combine inline-block and flex */
   background-color: var(--color-text);
   color: var(--color-background);
-  padding: 4px 10px;
-  border-radius: 4px;
+  padding: 10px 10px 7px 7px; /* Custom padding for visual centering */
+  border-radius: 10px; /* Larger border radius */
+  align-items: center; /* Vertically center the content */
+  line-height: 1; /* Remove extra line height */
 }
 
 /* Make sure the dark mode toggle appears properly in mobile menu */
@@ -1208,7 +1268,17 @@ h1.uk-article-title {
 
   .dark-toggle-inner {
     display: inline-block;
-    padding: 6px 12px;
-    font-size: 20px;
+    padding: 8px 16px;
+    font-size: 24px; /* Increased font size for better readability */
   }
+}
+
+/* Footer social link hover effects */
+#social a {
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+#social a:hover {
+  opacity: 1;
 }

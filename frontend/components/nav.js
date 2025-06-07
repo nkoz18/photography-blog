@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react"
 import Link from "next/link"
 import { useDarkMode } from "../lib/useDarkMode"
 import { getRandomMenuIcon } from "../lib/randomAssets"
+import HoverDoodle from "./HoverDoodle"
 
 const Nav = ({ categories, isMenuOpen, toggleMenu }) => {
   const { isDarkMode, toggleDarkMode } = useDarkMode()
@@ -52,15 +53,18 @@ const Nav = ({ categories, isMenuOpen, toggleMenu }) => {
         <div
           className={`uk-navbar-right nav-links ${isMenuOpen ? "is-open" : ""}`}
         >
+          
           <ul className="uk-navbar-nav">
             {categories?.length > 0 &&
               categories.map((category) => (
                 <li key={category.id}>
-                  <Link href={`/category/${category.attributes.slug}`}>
-                    <a className="nav-link" onClick={() => toggleMenu(false)}>
-                      {category.attributes.name}
-                    </a>
-                  </Link>
+                  <HoverDoodle className="desktop-only">
+                    <Link href={`/category/${category.attributes.slug}`}>
+                      <a className="nav-link" onClick={() => toggleMenu(false)}>
+                        {category.attributes.name}
+                      </a>
+                    </Link>
+                  </HoverDoodle>
                 </li>
               ))}
             <li>
