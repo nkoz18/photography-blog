@@ -31,6 +31,7 @@ const Seo = ({ seo = {} }) => {
     metaDescription,
     shareImage,
     article: seoWithDefaults.article || false,
+    noindex: seoWithDefaults.noindex || false,
   }
 
   return (
@@ -57,6 +58,7 @@ const Seo = ({ seo = {} }) => {
         </>
       )}
       {fullSeo.article && <meta property="og:type" content="article" />}
+      {fullSeo.noindex && <meta name="robots" content="noindex, nofollow" />}
       <meta name="twitter:card" content="summary_large_image" />
     </Head>
   )

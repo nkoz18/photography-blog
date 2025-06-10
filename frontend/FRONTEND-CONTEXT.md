@@ -64,6 +64,7 @@ npm run build && npm run export
   - Article grid with asymmetric layout
   - Category navigation
   - SEO metadata from global settings
+  - Random decorative accents on hover (left/right/center SVGs)
 
 ### 2. Article Pages (`pages/article/[slug].js`)
 - **Path**: `/article/[slug]`
@@ -72,8 +73,9 @@ npm run build && npm run export
   - Full article content with rich text
   - Image galleries (legacy or PhotoSwipe)
   - Category links
-  - Author information
+  - Author information displayed below title
   - Client-side data refresh
+  - Author name with subtle styling (IBM Plex Mono, 70% opacity)
 
 ### 3. Category Pages (`pages/category/[slug].js`)
 - **Path**: `/category/[slug]`
@@ -99,13 +101,18 @@ npm run build && npm run export
 - **Features**:
   - Sticky positioning
   - Mobile hamburger menu with random SVG icons
+  - Close button uses x.svg (consistent with lightbox)
   - Category links
   - Dark mode toggle integration
   - Smooth slide animations
 
 #### Footer (`components/footer.js`)
-- **Purpose**: Simple footer with minimal content
-- **Structure**: Centered text with padding
+- **Purpose**: Footer with social media links
+- **Features**:
+  - Custom SVG social icons (Instagram, TikTok, YouTube)
+  - Hover effects with opacity transitions
+  - Dark mode support with icon inversion
+  - 40x40px icon size with scale animation on hover
 
 ### Content Components
 
@@ -132,7 +139,7 @@ npm run build && npm run export
 - **Purpose**: Advanced image loading component
 - **Features**:
   - Focal point support via CSS object-position
-  - Loading states with animated loader
+  - Loading states with GIF loader only (no text)
   - Error handling with retry logic (up to 3 attempts)
   - Exponential backoff for retries
   - Fallback to default image on persistent failure
@@ -153,7 +160,11 @@ npm run build && npm run export
   - Responsive masonry layout
   - PhotoSwipe v5 integration
   - Random decorative dividers between sections
-  - Full-screen lightbox with zoom
+  - Full-screen lightbox with custom UI icons:
+    - Loupe icon for zoom (replaced magnifying glass)
+    - X icon for close
+    - Custom download, prev, next icons
+  - Navigation arrows hidden on mobile/touch devices
   - Caption and alt text support
   - Dynamic import for performance
 
@@ -201,6 +212,10 @@ npm run build && npm run export
 **Assets**:
 - **Menu Icons**: 6 custom SVGs (cone, fries, hamburger, poison, syringe, zippo)
 - **Gallery Dividers**: 4 decorative SVG patterns
+- **UI Icons**: 
+  - Navigation: x.svg, loupe.svg, download.svg, prev.svg, next.svg
+  - Social: social_instagram.svg, social_tik_tok.svg, social_youtube.svg
+- **Decorative Accents**: Multiple SVGs for left/right/center positions
 - **Implementation**: Random selection on component mount
 
 ## API Integration (`lib/api.js`)

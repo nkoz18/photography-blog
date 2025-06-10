@@ -663,6 +663,10 @@ p {
 .photo-gallery-container {
   margin-top: 40px;
   width: 100%;
+  max-width: none !important;
+  margin-left: 0;
+  margin-right: 0;
+  overflow: hidden; /* Prevent overflow */
 }
 
 /* Custom masonry grid with consistent spacing */
@@ -723,6 +727,7 @@ p {
 .custom-masonry-grid .gallery-item-container img {
   transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
+
 
 /* Remove all hover animations and transformations */
 .gallery-item-no-hover {
@@ -812,6 +817,7 @@ button[aria-label*="download"]:hover,
   background-size: 32px 32px !important;
   opacity: 0.85 !important;
   transition: opacity 0.2s ease, filter 0.2s ease !important;
+  margin-left: 8px !important;
 }
 
 .pswp__button--zoom:hover .pswp__icn {
@@ -1291,7 +1297,7 @@ h1.uk-article-title {
 
 /* Footer social link hover effects */
 #social a {
-  opacity: 0.6;
+  opacity: 0.8;
   transition: opacity 0.3s ease;
   display: inline-block;
   margin: 0 10px;
@@ -1299,6 +1305,13 @@ h1.uk-article-title {
 
 #social a:hover {
   opacity: 1;
+}
+
+/* Mobile: Social links always full opacity */
+@media (max-width: 768px) {
+  #social a {
+    opacity: 1;
+  }
 }
 
 /* Social icon styles */
@@ -1317,4 +1330,11 @@ h1.uk-article-title {
 /* Invert social icons in dark mode */
 .dark-mode .social-icon {
   --social-icon-invert: 1;
+}
+
+/* Prevent download and report icons from being inverted in dark mode */
+.dark-mode .download-icon,
+.dark-mode img[src="/images/icons/download.svg"],
+.dark-mode img[src="/images/icons/report.svg"] {
+  filter: none !important;
 }

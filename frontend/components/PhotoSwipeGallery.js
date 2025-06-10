@@ -4,10 +4,14 @@ import { Gallery as PhotoSwipeGallery, Item } from "react-photoswipe-gallery"
 import { getStrapiURL } from "../lib/api"
 import Image from "next/image"
 import { getRandomDivider } from "../lib/randomAssets"
+import ReportModal from "./ReportModal"
+import DownloadAllGalleryButton from "./DownloadAllGalleryButton"
 
 const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
   const [galleryPhotos, setGalleryPhotos] = useState([])
   const [dividerSvg, setDividerSvg] = useState("")
+  const [reportModal, setReportModal] = useState({ isOpen: false, imageId: null, imageName: null })
+  const [pswpInstance, setPswpInstance] = useState(null)
 
   // Get Strapi Image URL helper function
   const getImageUrl = useCallback((image) => {
@@ -98,6 +102,8 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
 
             return {
               id: `gallery-${image.id || index}`,
+              imageId: image.id,
+              imageName: image.attributes?.name || `image-${index + 1}`,
               src,
               width,
               height,
@@ -123,6 +129,8 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
 
             return {
               id: `gallery-${image.id || index}`,
+              imageId: image.id,
+              imageName: image.attributes?.name || `image-${index + 1}`,
               src,
               width,
               height,
@@ -141,6 +149,8 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
 
           return {
             id: `gallery-${image.id || index}`,
+            imageId: image.id,
+            imageName: image.attributes?.name || `image-${index + 1}`,
             src,
             width,
             height,
@@ -182,6 +192,30 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
       </div>
       <PhotoSwipeGallery
         withDownloadButton
+        onOpen={(pswp) => setPswpInstance(pswp)}
+        uiElements={[
+          {
+            name: "custom-report-button",
+            order: 7,
+            isButton: true,
+            html: `<div class="pswp__icn"></div>`,
+            className: "pswp__button--report",
+            title: "Report this image",
+            ariaLabel: "Report this image",
+            onClick: (event, el) => {
+              const index = pswpInstance?.currIndex || 0;
+              const photoData = galleryPhotos[index];
+              
+              if (photoData && photoData.imageId) {
+                setReportModal({
+                  isOpen: true,
+                  imageId: photoData.imageId,
+                  imageName: photoData.imageName
+                });
+              }
+            }
+          }
+        ]}
         options={{
           showHideAnimationType: "fade",
           clickToCloseNonZoomable: true,
@@ -194,6 +228,10 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
             pinchToZoom: true,
           },
           downloadURL: (item) => item.src,
+          // Fix transparency issue
+          bgOpacity: 1,
+          loop: false,
+          focus: false,
         }}
         downloadProps={{
           download: true,
@@ -246,6 +284,53 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
             ))}
         </div>
       </PhotoSwipeGallery>
+
+      {/* Download All Button - Static placement at bottom of gallery */}
+      <DownloadAllGalleryButton 
+        galleryPhotos={galleryPhotos}
+      />
+
+      {/* Report Modal */}
+      <ReportModal
+        isOpen={reportModal.isOpen}
+        imageId={reportModal.imageId}
+        imageName={reportModal.imageName}
+        onClose={() => setReportModal({ isOpen: false, imageId: null, imageName: null })}
+      />
+
+      {/* Custom CSS to fix PhotoSwipe transparency bug */}
+      <style jsx global>{`
+        .pswp__img {
+          opacity: 1 !important;
+          transition: none !important;
+        }
+        
+        .pswp__img--placeholder {
+          opacity: 0 !important;
+        }
+        
+        .pswp__container {
+          backface-visibility: hidden;
+        }
+        
+        /* Ensure images maintain full opacity */
+        .pswp__zoom-wrap {
+          opacity: 1 !important;
+        }
+        
+        /* Report Button - match other PhotoSwipe buttons */
+        .pswp__button--report .pswp__icn {
+          background: url('/images/icons/report.svg') no-repeat center !important;
+          background-size: 24px 24px !important;
+          opacity: 0.85 !important;
+          transition: opacity 0.2s ease, filter 0.2s ease !important;
+        }
+
+        .pswp__button--report:hover .pswp__icn {
+          opacity: 1 !important;
+          filter: brightness(1.2) !important;
+        }
+      `}</style>
     </div>
   )
 }

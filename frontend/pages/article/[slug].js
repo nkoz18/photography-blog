@@ -16,6 +16,7 @@ const PhotoSwipeGallery = dynamic(
   }
 )
 
+
 const Article = ({ article: staticArticle, categories }) => {
   const router = useRouter()
   const [article, setArticle] = useState(staticArticle)
@@ -93,59 +94,82 @@ const Article = ({ article: staticArticle, categories }) => {
       
       setLoading(true)
       try {
-        const articlesRes = await fetchAPI("/articles", {
-          filters: {
-            slug: router.query.slug,
-            publishedAt: {
-              $notNull: true,
+        let articlesRes
+        
+        // Check if slug contains a token (format: slug~token)
+        const slugParam = router.query.slug
+        const hasToken = slugParam.includes('~')
+        
+        if (hasToken) {
+          // Split slug and token
+          const [articleSlug, token] = slugParam.split('~')
+          
+          // Use the tokenized article endpoint
+          const response = await fetch(`${process.env.NEXT_PUBLIC_STRAPI_API_URL || 'https://api.silkytruth.com'}/api/articles/by-token/${articleSlug}/${token}`)
+          
+          if (response.ok) {
+            const articleData = await response.json()
+            // Convert to the same format as the regular API response
+            articlesRes = { data: [{ id: articleData.id, attributes: articleData }] }
+          } else {
+            throw new Error('Article not found or invalid token')
+          }
+        } else {
+          // Regular published article fetch
+          articlesRes = await fetchAPI("/articles", {
+            filters: {
+              slug: slugParam,
+              publishedAt: {
+                $notNull: true,
+              },
             },
-          },
-          populate: {
-            image: {
-              fields: [
-                "url",
-                "alternativeText", 
-                "caption",
-                "width",
-                "height",
-                "formats",
-                "provider_metadata",
-              ],
-            },
-            images: {
-              fields: [
-                "url",
-                "alternativeText",
-                "caption", 
-                "width",
-                "height",
-                "formats",
-                "provider_metadata",
-              ],
-            },
-            gallery: {
-              populate: {
-                gallery_items: {
-                  populate: {
-                    image: {
-                      fields: [
-                        "url",
-                        "alternativeText",
-                        "caption",
-                        "width",
-                        "height", 
-                        "formats",
-                        "provider_metadata",
-                      ],
+            populate: {
+              image: {
+                fields: [
+                  "url",
+                  "alternativeText", 
+                  "caption",
+                  "width",
+                  "height",
+                  "formats",
+                  "provider_metadata",
+                ],
+              },
+              images: {
+                fields: [
+                  "url",
+                  "alternativeText",
+                  "caption", 
+                  "width",
+                  "height",
+                  "formats",
+                  "provider_metadata",
+                ],
+              },
+              gallery: {
+                populate: {
+                  gallery_items: {
+                    populate: {
+                      image: {
+                        fields: [
+                          "url",
+                          "alternativeText",
+                          "caption",
+                          "width",
+                          "height", 
+                          "formats",
+                          "provider_metadata",
+                        ],
+                      },
                     },
                   },
                 },
               },
+              author: { populate: { picture: { fields: ["url"] } } },
+              categories: { fields: ["name", "slug"] },
             },
-            author: { populate: { picture: { fields: ["url"] } } },
-            categories: { fields: ["name", "slug"] },
-          },
-        })
+          })
+        }
         
         if (articlesRes.data && articlesRes.data.length > 0) {
           console.log("Fetched fresh article data:", articlesRes.data[0])
@@ -162,11 +186,17 @@ const Article = ({ article: staticArticle, categories }) => {
     fetchFreshData()
   }, [router.query.slug])
 
+  // Check if this is a tokenized URL or unpublished article
+  const isTokenizedUrl = router.query.slug && router.query.slug.includes('~')
+  const isUnpublished = !article.attributes.publishedAt
+  
   const seo = {
     metaTitle: article.attributes.title,
     metaDescription: article.attributes.description,
     shareImage: article.attributes.image,
     article: true,
+    // Add noindex for tokenized URLs or unpublished articles
+    noindex: isTokenizedUrl || isUnpublished,
   }
 
   return (
@@ -220,36 +250,16 @@ const Article = ({ article: staticArticle, categories }) => {
           )}
         </div>
       </div>
+
     </Layout>
   )
 }
 
 export async function getStaticPaths() {
-  try {
-    // Get all articles from Strapi
-    const articlesRes = await fetchAPI("/articles", { 
-      fields: ["slug"],
-      filters: {
-        publishedAt: {
-          $notNull: true,
-        },
-      },
-    })
-
-    return {
-      paths: articlesRes.data.map((article) => ({
-        params: {
-          slug: article.attributes.slug,
-        },
-      })),
-      fallback: false, // Must be false for static export
-    }
-  } catch (error) {
-    console.error("Error in getStaticPaths:", error)
-    return {
-      paths: [],
-      fallback: false,
-    }
+  // Return empty paths with fallback: 'blocking' to render on demand
+  return {
+    paths: [],
+    fallback: 'blocking',
   }
 }
 
