@@ -261,19 +261,18 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
                       y: 30,
                       scale: 0.95
                     }}
-                    animate={{ 
+                    whileInView={{ 
                       opacity: 1, 
                       y: 0,
                       scale: 1
                     }}
+                    viewport={{ 
+                      once: true,  // Only animate once when entering viewport
+                      margin: "0px 0px -100px 0px"  // Trigger when item is 100px from entering viewport
+                    }}
                     transition={{
                       duration: 0.6,
-                      delay: index * 0.1, // Stagger the animations
                       ease: [0.25, 0.1, 0.25, 1.0] // Custom cubic-bezier
-                    }}
-                    whileHover={{
-                      scale: 1.02,
-                      transition: { duration: 0.3 }
                     }}
                     style={{
                       position: "relative",
@@ -283,20 +282,42 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
                       width: "100%",
                     }}
                   >
-                    <Image
-                      src={photo.src}
-                      alt={photo.alt || "Gallery image"}
-                      width={photo.width}
-                      height={photo.height}
-                      className="gallery-image"
+                    <div
                       style={{
                         width: "100%",
-                        height: "auto",
-                        display: "block",
+                        aspectRatio: `${photo.width} / ${photo.height}`, // Lock the container to exact image ratio
+                        overflow: "hidden",
+                        position: "relative",
                       }}
-                      loading="lazy"
-                      unoptimized
-                    />
+                    >
+                      <motion.div
+                        whileHover={{
+                          scale: 1.015, // Very subtle zoom like before
+                          transition: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] } // Slow like before
+                        }}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          display: "block",
+                        }}
+                      >
+                        <Image
+                          src={photo.src}
+                          alt={photo.alt || "Gallery image"}
+                          width={photo.width}
+                          height={photo.height}
+                          className="gallery-image"
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover", // Ensures image fills container exactly
+                            display: "block",
+                          }}
+                          loading="lazy"
+                          unoptimized
+                        />
+                      </motion.div>
+                    </div>
                   </motion.div>
                 )}
               </Item>

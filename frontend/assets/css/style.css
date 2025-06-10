@@ -681,6 +681,7 @@ p {
   display: inline-block;
   width: 100%;
   break-inside: avoid;
+  margin-bottom: 6px; /* Smaller gap to balance with column-gap */
 }
 
 /* Responsive column counts */
