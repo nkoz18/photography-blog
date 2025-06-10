@@ -180,4 +180,98 @@ module.exports = createCoreController("api::article.article", ({ strapi }) => ({
       );
     }
   },
+
+  async findByToken(ctx) {
+    try {
+      const { slug, token } = ctx.params;
+
+      // Input validation
+      if (!slug || !token) {
+        return ctx.badRequest("Both slug and token are required");
+      }
+
+      // Find article by slug and token
+      const articles = await strapi.entityService.findMany("api::article.article", {
+        filters: {
+          slug: { $eq: slug },
+          obscurityToken: { $eq: token },
+        },
+        populate: {
+          categories: {
+            populate: ["image"],
+          },
+          image: true,
+          author: {
+            populate: ["picture"],
+          },
+          gallery: {
+            populate: {
+              gallery_items: {
+                populate: {
+                  image: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!articles || articles.length === 0) {
+        return ctx.notFound("Article not found or invalid token");
+      }
+
+      const article = articles[0];
+
+      // Return the article regardless of published status
+      // This allows preview of draft articles
+      return article;
+    } catch (error) {
+      console.error("Error finding article by token:", error);
+      return ctx.internalServerError("An error occurred while finding the article");
+    }
+  },
+
+  // Override the default create/update to auto-generate tokens
+  async create(ctx) {
+    // Generate obscurity token if not provided
+    if (!ctx.request.body.data.obscurityToken) {
+      const token = generateObscurityToken();
+      ctx.request.body.data.obscurityToken = token;
+      console.log("Generated new obscurity token for article:", token);
+    }
+    
+    // Call the default create method
+    const result = await super.create(ctx);
+    console.log("Created article with token:", result.data.attributes.obscurityToken);
+    return result;
+  },
+
+  async update(ctx) {
+    const { id } = ctx.params;
+    
+    // Check if article exists and doesn't have a token
+    const existingArticle = await strapi.entityService.findOne("api::article.article", id);
+    
+    if (existingArticle && !existingArticle.obscurityToken) {
+      // Generate token if it doesn't exist
+      const token = generateObscurityToken();
+      ctx.request.body.data.obscurityToken = token;
+      console.log("Generated obscurity token for existing article", id, ":", token);
+    }
+    
+    // Call the default update method
+    const result = await super.update(ctx);
+    console.log("Updated article", id, "with token:", result.data.attributes.obscurityToken);
+    return result;
+  },
 }));
+
+// Helper function to generate 12-character obscurity token
+function generateObscurityToken() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < 12; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}

@@ -9,5 +9,15 @@ module.exports = {
         middlewares: [],
       },
     },
+    {
+      method: "GET",
+      path: "/articles/by-token/:slug/:token",
+      handler: "api::article.article.findByToken",
+      config: {
+        policies: [],
+        middlewares: [],
+        auth: false,
+      },
+    },
   ],
 };

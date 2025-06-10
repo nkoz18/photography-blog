@@ -1,9 +1,2 @@
-import BatchImageUpload from "./BatchImageUpload";
-
-export default {
-  "content-manager.editView.informations": {
-    gallery: {
-      Component: BatchImageUpload,
-    },
-  },
-};
+// Remove gallery widget registration - components are now handled in app.js
+export default {};

@@ -54,6 +54,15 @@
       "type": "component",
       "repeatable": false,
       "component": "sections.image-gallery"
+    },
+    "obscurityToken": {
+      "type": "string",
+      "required": false,
+      "private": false,
+      "unique": true,
+      "minLength": 12,
+      "maxLength": 12,
+      "configurable": false
     }
   }
 }

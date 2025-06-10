@@ -2,6 +2,8 @@
 
 const fs = require("fs");
 const { createReadStream } = require("fs");
+const https = require("https");
+const http = require("http");
 
 /**
  * Strapi server file for the upload extension.
@@ -186,9 +188,135 @@ module.exports = (plugin) => {
         params: ctx.params
       });
     },
+
+    async reportPhoto(ctx) {
+      try {
+        const { id } = ctx.params;
+        const { reason, isSubjectInImage, otherReason } = ctx.request.body;
+        const clientIP = ctx.request.ip || ctx.request.headers['x-forwarded-for'] || ctx.request.connection.remoteAddress;
+        const userAgent = ctx.request.headers['user-agent'];
+
+        // Input validation
+        if (!id) {
+          return ctx.badRequest("File ID is required");
+        }
+
+        if (!reason) {
+          return ctx.badRequest("Report reason is required");
+        }
+
+        // Rate limiting check (simple in-memory implementation)
+        const rateLimit = strapi.photoReportRateLimit || new Map();
+        const rateLimitKey = clientIP;
+        const now = Date.now();
+        const windowStart = now - 60000; // 1 minute window
+
+        if (!rateLimit.has(rateLimitKey)) {
+          rateLimit.set(rateLimitKey, []);
+        }
+
+        const requests = rateLimit.get(rateLimitKey).filter(time => time > windowStart);
+        if (requests.length >= 5) {
+          return ctx.tooManyRequests("Too many reports. Please try again later.");
+        }
+
+        requests.push(now);
+        rateLimit.set(rateLimitKey, requests);
+        strapi.photoReportRateLimit = rateLimit;
+
+        // Get the file
+        const fileModel = strapi.query("plugin::upload.file");
+        const file = await fileModel.findOne({
+          where: { id },
+        });
+
+        if (!file) {
+          return ctx.notFound("File not found");
+        }
+
+        // Prepare the new report data
+        const newReport = {
+          reason: reason,
+          otherReason: reason === 'other' ? otherReason : null,
+          isSubjectInImage: isSubjectInImage,
+          reportedAt: new Date().toISOString(),
+          ipAddress: clientIP,
+          userAgent: userAgent,
+          reportId: Date.now().toString() // Simple unique ID
+        };
+
+        // Get existing provider metadata
+        const providerMetadata = file.provider_metadata || {};
+        
+        // Handle multiple reports
+        if (providerMetadata.reportInfo) {
+          // Check if this IP already reported this image (prevent duplicate reports from same IP)
+          const existingReports = Array.isArray(providerMetadata.reportInfo.reports) 
+            ? providerMetadata.reportInfo.reports 
+            : [providerMetadata.reportInfo];
+          
+          const alreadyReportedByThisIP = existingReports.some(report => 
+            report.ipAddress === clientIP
+          );
+          
+          if (alreadyReportedByThisIP) {
+            return ctx.badRequest("You have already reported this image");
+          }
+          
+          // Add to existing reports
+          if (!Array.isArray(providerMetadata.reportInfo.reports)) {
+            // Convert old single report to array format
+            providerMetadata.reportInfo = {
+              reason: providerMetadata.reportInfo.reason,
+              reportedAt: providerMetadata.reportInfo.reportedAt,
+              reports: [providerMetadata.reportInfo, newReport]
+            };
+          } else {
+            // Add to existing reports array
+            providerMetadata.reportInfo.reports.push(newReport);
+          }
+        } else {
+          // First report for this image
+          providerMetadata.reportInfo = {
+            reason: newReport.reason,
+            reportedAt: newReport.reportedAt,
+            reports: [newReport]
+          };
+        }
+
+        // Update the file with the report info
+        await fileModel.update({
+          where: { id },
+          data: {
+            provider_metadata: providerMetadata,
+          },
+        });
+
+        const reportCount = Array.isArray(providerMetadata.reportInfo.reports) 
+          ? providerMetadata.reportInfo.reports.length 
+          : 1;
+
+        console.log("Photo report recorded:", { 
+          fileId: id, 
+          reason, 
+          reportedAt: newReport.reportedAt,
+          totalReports: reportCount 
+        });
+
+        return { 
+          success: true, 
+          message: "Report recorded successfully",
+          reportCount: reportCount
+        };
+      } catch (error) {
+        console.error("Error recording photo report:", error);
+        return ctx.internalServerError("An error occurred while recording the report");
+      }
+    },
+
   };
 
-  // Register a formatter to ensure the focal point is included in responses
+  // Register a formatter to ensure the focal point and report info are included in responses
   const formatFile = plugin.services.upload.formatFileInfo;
   plugin.services.upload.formatFileInfo = (file) => {
     const formattedFile = formatFile(file);
@@ -196,12 +324,22 @@ module.exports = (plugin) => {
     // If we've attached a focalPoint directly, add it to the response
     if (file.focalPoint) {
       formattedFile.focalPoint = file.focalPoint;
-      return formattedFile;
     }
 
-    // Check provider_metadata for focal point
-    if (file.provider_metadata && file.provider_metadata.focalPoint) {
-      formattedFile.focalPoint = file.provider_metadata.focalPoint;
+    // Check provider_metadata for focal point and report info
+    if (file.provider_metadata) {
+      if (file.provider_metadata.focalPoint) {
+        formattedFile.focalPoint = file.provider_metadata.focalPoint;
+      }
+      
+      if (file.provider_metadata.reportInfo) {
+        formattedFile.isReported = true;
+        formattedFile.reportInfo = file.provider_metadata.reportInfo;
+      } else {
+        formattedFile.isReported = false;
+      }
+    } else {
+      formattedFile.isReported = false;
     }
 
     return formattedFile;
@@ -237,6 +375,24 @@ module.exports = (plugin) => {
       auth: { scope: ["admin"] },
     },
   });
+
+  // Add public route for photo reporting (no auth required)
+  // Create content-api routes if they don't exist
+  if (!plugin.routes["content-api"]) {
+    plugin.routes["content-api"] = { routes: [] };
+  }
+  
+  plugin.routes["content-api"].routes.push({
+    method: "POST",
+    path: "/report-photo/:id",
+    handler: "upload.reportPhoto",
+    config: {
+      policies: [],
+      auth: false,
+    },
+  });
+
+  // Image proxy is now handled by separate API route
 
   return plugin;
 };

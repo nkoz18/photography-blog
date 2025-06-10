@@ -11,7 +11,7 @@ This is a Strapi v4.2.0 headless CMS backend that powers a photography blog. It 
 - **Package Manager**: npm
 
 ### Database
-- **Development**: SQLite (using better-sqlite3)
+- **Development**: PostgreSQL (matching production type)
 - **Production**: PostgreSQL on AWS RDS
   - SSL enabled for secure connections
   - Extended connection timeout for stability
@@ -175,8 +175,15 @@ This is a Strapi v4.2.0 headless CMS backend that powers a photography blog. It 
 ### Database Configuration (`config/database.js`)
 - **Development**:
   ```javascript
-  client: 'better-sqlite3',
-  filename: '.tmp/data.db'
+  client: 'postgres',
+  connection: {
+    host: 'localhost',
+    port: 5432,
+    database: 'postgres',
+    user: 'strapi',
+    password: 'localpass',
+    ssl: false
+  }
   ```
 - **Production**:
   ```javascript
@@ -208,6 +215,25 @@ cd /path/to/backend
 
 ### Environment Variables
 Required in `.env`:
+
+**Development:**
+```
+HOST=0.0.0.0
+PORT=1337
+APP_KEYS=<comma-separated-keys>
+API_TOKEN_SALT=<salt>
+ADMIN_JWT_SECRET=<secret>
+JWT_SECRET=<secret>
+DATABASE_CLIENT=postgres
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_NAME=postgres
+DATABASE_USERNAME=strapi
+DATABASE_PASSWORD=localpass
+DATABASE_SSL_SELF=false
+```
+
+**Production:**
 ```
 HOST=0.0.0.0
 PORT=1337
