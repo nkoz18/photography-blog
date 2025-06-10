@@ -195,6 +195,11 @@ const Article = ({ article: staticArticle, categories }) => {
 
           {/* Article Title and Content */}
           <h1 className="uk-article-title">{article.attributes.title}</h1>
+          {article.attributes.author?.data?.attributes && (
+            <p className="article-author">
+              by {article.attributes.author.data.attributes.name}
+            </p>
+          )}
           <div className="uk-article-content">
             <ReactMarkdown
               source={article.attributes.content}

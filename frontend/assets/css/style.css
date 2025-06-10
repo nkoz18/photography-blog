@@ -369,8 +369,18 @@ p {
 .uk-article-title {
   font-size: 48px;
   line-height: 1.2;
-  margin-bottom: 40px;
+  margin-bottom: 20px;
   font-weight: bold;
+}
+
+/* Article author styling */
+.article-author {
+  font-family: "IBM Plex Mono", monospace !important;
+  font-size: 16px;
+  color: var(--color-text);
+  opacity: 0.7;
+  margin-bottom: 30px;
+  margin-top: 0;
 }
 
 /* Fix for lightbox captions */
@@ -1283,8 +1293,28 @@ h1.uk-article-title {
 #social a {
   opacity: 0.6;
   transition: opacity 0.3s ease;
+  display: inline-block;
+  margin: 0 10px;
 }
 
 #social a:hover {
   opacity: 1;
+}
+
+/* Social icon styles */
+.social-icon {
+  width: 40px;
+  height: 40px;
+  display: block;
+  filter: invert(var(--social-icon-invert, 0));
+  transition: transform 0.3s ease;
+}
+
+.social-icon:hover {
+  transform: scale(1.1);
+}
+
+/* Invert social icons in dark mode */
+.dark-mode .social-icon {
+  --social-icon-invert: 1;
 }
