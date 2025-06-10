@@ -71,7 +71,7 @@ const Image = ({ image, style, alt }) => {
         maxWidth: "100%",
       }}
     >
-      {isLoading && <div className="image-loader">Loading...</div>}
+      {isLoading && <div className="image-loader"></div>}
       {hasError && (
         <div className="image-error" style={{
           position: "absolute",

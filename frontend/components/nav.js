@@ -14,7 +14,7 @@ const Nav = ({ categories, isMenuOpen, toggleMenu }) => {
   }, [])
 
   // Path to the close icon
-  const closeIconSrc = "/images/icons/close-x.svg"
+  const closeIconSrc = "/images/icons/x.svg"
 
   return (
     <div className="uk-container-large uk-align-center">
