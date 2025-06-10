@@ -161,8 +161,11 @@ npm run build && npm run export
 - **Purpose**: Modern masonry gallery with lightbox
 - **Features**:
   - CSS-based masonry layout (3/2/1 columns responsive)
+  - Perfect spacing: 13px horizontal gaps, 6px vertical margins
   - PhotoSwipe v5 integration with report and download buttons
-  - Framer Motion animations: fade-in, slide-up, staggered timing
+  - Framer Motion scroll-triggered animations: fade-in, slide-up with viewport detection
+  - Contained crop zoom on hover (1.015x scale, perfectly bounded)
+  - Aspect ratio containers prevent layout shift during animations
   - Random decorative dividers between sections
   - Full-screen lightbox with custom UI icons:
     - Loupe icon for zoom (replaced magnifying glass)
@@ -171,7 +174,7 @@ npm run build && npm run export
     - Report button for flagging inappropriate content
   - Navigation arrows hidden on mobile/touch devices
   - Caption and alt text support
-  - Smooth hover animations (1.02x scale)
+  - Smooth, slow hover transitions (0.5s cubic-bezier easing)
 
 ### SEO Component (`components/seo.js`)
 - **Purpose**: Meta tag management
@@ -398,5 +401,8 @@ npm run lint:fix # Auto-fix linting issues
 5. **Easter egg** should not interfere with normal usage
 6. **Dark mode** preference persists across sessions
 7. **Static export** means no server-side features (use client-side instead)
+8. **Gallery animations** use `whileInView` for scroll-triggered effects, not array-based timing
+9. **Crop zoom** uses `aspectRatio` containers with `objectFit: cover` to prevent layout shift
+10. **Gallery spacing** balances CSS `column-gap` (13px) with `margin-bottom` (6px) for visual harmony
 
 This frontend provides a performant, feature-rich photography blog experience with creative touches and modern web standards.
