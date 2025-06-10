@@ -20,12 +20,15 @@ This is a Next.js v11.0.0 static site generator frontend for a photography blog.
   - Body: IBM Plex Mono (Google Fonts)
 
 ### Key Dependencies
-- **react-responsive-masonry**: Masonry grid layouts
+- **framer-motion**: Animation library for smooth UI transitions
 - **photoswipe**: Advanced image gallery lightbox
+- **react-photoswipe-gallery**: React wrapper for PhotoSwipe
+- **react-responsive-masonry**: Masonry grid layouts (available but not actively used)
 - **react-markdown**: Markdown rendering for article content
 - **moment**: Date formatting
 - **qs**: Query string parsing for API calls
 - **konami**: Konami code detection for easter egg
+- **jszip**: File compression for download all functionality
 
 ## Architecture & Data Flow
 
@@ -157,16 +160,18 @@ npm run build && npm run export
 #### PhotoSwipeGallery (`components/PhotoSwipeGallery.js`)
 - **Purpose**: Modern masonry gallery with lightbox
 - **Features**:
-  - Responsive masonry layout
-  - PhotoSwipe v5 integration
+  - CSS-based masonry layout (3/2/1 columns responsive)
+  - PhotoSwipe v5 integration with report and download buttons
+  - Framer Motion animations: fade-in, slide-up, staggered timing
   - Random decorative dividers between sections
   - Full-screen lightbox with custom UI icons:
     - Loupe icon for zoom (replaced magnifying glass)
     - X icon for close
     - Custom download, prev, next icons
+    - Report button for flagging inappropriate content
   - Navigation arrows hidden on mobile/touch devices
   - Caption and alt text support
-  - Dynamic import for performance
+  - Smooth hover animations (1.02x scale)
 
 ### SEO Component (`components/seo.js`)
 - **Purpose**: Meta tag management

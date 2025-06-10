@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react"
 import "photoswipe/dist/photoswipe.css"
 import { Gallery as PhotoSwipeGallery, Item } from "react-photoswipe-gallery"
+import { motion } from "framer-motion"
 import { getStrapiURL } from "../lib/api"
 import Image from "next/image"
 import { getRandomDivider } from "../lib/randomAssets"
@@ -251,10 +252,29 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
                 caption={photo.caption || ""}
               >
                 {({ ref, open }) => (
-                  <div
+                  <motion.div
                     ref={ref}
                     onClick={open}
                     className="gallery-item-container"
+                    initial={{ 
+                      opacity: 0, 
+                      y: 30,
+                      scale: 0.95
+                    }}
+                    animate={{ 
+                      opacity: 1, 
+                      y: 0,
+                      scale: 1
+                    }}
+                    transition={{
+                      duration: 0.6,
+                      delay: index * 0.1, // Stagger the animations
+                      ease: [0.25, 0.1, 0.25, 1.0] // Custom cubic-bezier
+                    }}
+                    whileHover={{
+                      scale: 1.02,
+                      transition: { duration: 0.3 }
+                    }}
                     style={{
                       position: "relative",
                       cursor: "pointer",
@@ -273,12 +293,11 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
                         width: "100%",
                         height: "auto",
                         display: "block",
-                        transition: "transform 3s cubic-bezier(0.25, 0.1, 0.25, 1)",
                       }}
                       loading="lazy"
                       unoptimized
                     />
-                  </div>
+                  </motion.div>
                 )}
               </Item>
             ))}

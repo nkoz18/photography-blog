@@ -718,14 +718,9 @@ p {
   background: transparent;
 }
 
-/* Very subtle zoom on the image only - targeting the actual image */
-.custom-masonry-grid .gallery-item-container:hover img {
-  transform: scale(1.015);
-  transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
-}
-
+/* Hover effects now handled by Framer Motion */
 .custom-masonry-grid .gallery-item-container img {
-  transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+  transition: none; /* Let Framer Motion handle all transitions */
 }
 
 
