@@ -21,9 +21,25 @@ const Article = ({ article: staticArticle, categories }) => {
   const router = useRouter()
   const [article, setArticle] = useState(staticArticle)
   const [loading, setLoading] = useState(false)
+  const [isTokenized, setIsTokenized] = useState(false)
   
-  if (!staticArticle) {
-    return { notFound: true } // 404 if article is missing
+  // Handle case where no static article (for tokenized URLs)
+  if (!staticArticle && !article) {
+    if (router.query.slug && router.query.slug.includes('~')) {
+      // This is a tokenized URL, show loading while we fetch
+      return (
+        <Layout categories={categories || []}>
+          <div className="uk-section">
+            <div className="uk-container uk-container-large">
+              <div style={{ textAlign: 'center', padding: '4rem 0' }}>
+                <p>Loading article...</p>
+              </div>
+            </div>
+          </div>
+        </Layout>
+      )
+    }
+    return <div>Loading...</div>
   }
 
   // Debug log to check the exact structure of gallery and images
@@ -99,6 +115,7 @@ const Article = ({ article: staticArticle, categories }) => {
         // Check if slug contains a token (format: slug~token)
         const slugParam = router.query.slug
         const hasToken = slugParam.includes('~')
+        setIsTokenized(hasToken)
         
         if (hasToken) {
           // Split slug and token
@@ -118,87 +135,97 @@ const Article = ({ article: staticArticle, categories }) => {
             throw new Error('Article not found or invalid token')
           }
         } else {
-          // Regular published article fetch
-          articlesRes = await fetchAPI("/articles", {
-            filters: {
-              slug: slugParam,
-              publishedAt: {
-                $notNull: true,
+          // Regular published article fetch (only if we don't have static data)
+          if (!staticArticle) {
+            articlesRes = await fetchAPI("/articles", {
+              filters: {
+                slug: slugParam,
+                publishedAt: {
+                  $notNull: true,
+                },
               },
-            },
-            populate: {
-              image: {
-                fields: [
-                  "url",
-                  "alternativeText", 
-                  "caption",
-                  "width",
-                  "height",
-                  "formats",
-                  "provider_metadata",
-                ],
-              },
-              images: {
-                fields: [
-                  "url",
-                  "alternativeText",
-                  "caption", 
-                  "width",
-                  "height",
-                  "formats",
-                  "provider_metadata",
-                ],
-              },
-              gallery: {
-                populate: {
-                  gallery_items: {
-                    populate: {
-                      image: {
-                        fields: [
-                          "url",
-                          "alternativeText",
-                          "caption",
-                          "width",
-                          "height", 
-                          "formats",
-                          "provider_metadata",
-                        ],
+              populate: {
+                image: {
+                  fields: [
+                    "url",
+                    "alternativeText", 
+                    "caption",
+                    "width",
+                    "height",
+                    "formats",
+                    "provider_metadata",
+                  ],
+                },
+                images: {
+                  fields: [
+                    "url",
+                    "alternativeText",
+                    "caption", 
+                    "width",
+                    "height",
+                    "formats",
+                    "provider_metadata",
+                  ],
+                },
+                gallery: {
+                  populate: {
+                    gallery_items: {
+                      populate: {
+                        image: {
+                          fields: [
+                            "url",
+                            "alternativeText",
+                            "caption",
+                            "width",
+                            "height", 
+                            "formats",
+                            "provider_metadata",
+                          ],
+                        },
                       },
                     },
                   },
                 },
+                author: { populate: { picture: { fields: ["url"] } } },
+                categories: { fields: ["name", "slug"] },
               },
-              author: { populate: { picture: { fields: ["url"] } } },
-              categories: { fields: ["name", "slug"] },
-            },
-          })
+            })
+          }
         }
         
-        if (articlesRes.data && articlesRes.data.length > 0) {
+        if (articlesRes && articlesRes.data && articlesRes.data.length > 0) {
           console.log("Fetched fresh article data:", articlesRes.data[0])
           setArticle(articlesRes.data[0])
+        } else if (hasToken) {
+          // For tokenized URLs, if no data found, show error
+          throw new Error('Invalid token or article not found')
         }
       } catch (error) {
         console.error("Error fetching fresh article data:", error)
-        // Keep static article data as fallback
+        if (hasToken) {
+          // For tokenized URLs, redirect to 404
+          router.replace('/404')
+          return
+        }
+        // For regular URLs, keep static article data as fallback
       } finally {
         setLoading(false)
       }
     }
     
     fetchFreshData()
-  }, [router.query.slug])
+  }, [router.query.slug, staticArticle, router])
 
   // Check if this is a tokenized URL or unpublished article
   const isTokenizedUrl = router.query.slug && router.query.slug.includes('~')
-  const isUnpublished = !article.attributes.publishedAt
+  const isUnpublished = article?.attributes ? !article.attributes.publishedAt : false
   
   // Generate canonical URL for preview pages
-  const canonicalUrl = isTokenizedUrl 
+  const canonicalUrl = isTokenizedUrl && article?.attributes
     ? `https://www.silkytruth.com/article/${article.attributes.slug}`
     : null
   
-  const seo = {
+  const seo = article?.attributes ? {
     metaTitle: article.attributes.title,
     metaDescription: article.attributes.description,
     shareImage: article.attributes.image,
@@ -207,6 +234,10 @@ const Article = ({ article: staticArticle, categories }) => {
     isPreview: isTokenizedUrl,
     noindex: isUnpublished && !isTokenizedUrl, // Use isPreview instead for token URLs
     canonicalUrl: canonicalUrl,
+  } : {
+    metaTitle: "Loading...",
+    metaDescription: "Loading article content...",
+    noindex: true,
   }
 
   return (
@@ -214,49 +245,57 @@ const Article = ({ article: staticArticle, categories }) => {
       <Seo seo={seo} />
       <div className="uk-section">
         <div className="uk-container uk-container-large">
-          {/* Cover Image - Content Width */}
-          {article.attributes.image && (
-            <div
-              className="article-cover-image"
-              style={{
-                marginBottom: "2rem",
-                maxWidth: "100%",
-                overflow: "hidden",
-                // Ensure minimum height to show focal point effect
-                minHeight: "300px",
-              }}
-            >
-              <Image
-                image={article.attributes.image}
-                alt={article.attributes.title || "Article featured image"}
-              />
-            </div>
-          )}
+          {article?.attributes ? (
+            <>
+              {/* Cover Image - Content Width */}
+              {article.attributes.image && (
+                <div
+                  className="article-cover-image"
+                  style={{
+                    marginBottom: "2rem",
+                    maxWidth: "100%",
+                    overflow: "hidden",
+                    // Ensure minimum height to show focal point effect
+                    minHeight: "300px",
+                  }}
+                >
+                  <Image
+                    image={article.attributes.image}
+                    alt={article.attributes.title || "Article featured image"}
+                  />
+                </div>
+              )}
 
-          {/* Article Title and Content */}
-          <h1 className="uk-article-title">{article.attributes.title}</h1>
-          {article.attributes.author?.data?.attributes && (
-            <p className="article-author">
-              by {article.attributes.author.data.attributes.name}
-            </p>
-          )}
-          <div className="uk-article-content">
-            <ReactMarkdown
-              source={article.attributes.content}
-              escapeHtml={false}
-            />
-          </div>
+              {/* Article Title and Content */}
+              <h1 className="uk-article-title">{article.attributes.title}</h1>
+              {article.attributes.author?.data?.attributes && (
+                <p className="article-author">
+                  by {article.attributes.author.data.attributes.name}
+                </p>
+              )}
+              <div className="uk-article-content">
+                <ReactMarkdown
+                  source={article.attributes.content}
+                  escapeHtml={false}
+                />
+              </div>
 
-          {/* PhotoSwipe Gallery - Uses either new gallery component or legacy images */}
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: '2rem' }}>
-              <p>Loading latest gallery content...</p>
-            </div>
+              {/* PhotoSwipe Gallery - Uses either new gallery component or legacy images */}
+              {loading ? (
+                <div style={{ textAlign: 'center', padding: '2rem' }}>
+                  <p>Loading latest gallery content...</p>
+                </div>
+              ) : (
+                <PhotoSwipeGallery
+                  galleryData={article.attributes.gallery}
+                  images={article.attributes.images}
+                />
+              )}
+            </>
           ) : (
-            <PhotoSwipeGallery
-              galleryData={article.attributes.gallery}
-              images={article.attributes.images}
-            />
+            <div style={{ textAlign: 'center', padding: '4rem 0' }}>
+              <p>Loading article content...</p>
+            </div>
           )}
         </div>
       </div>
@@ -295,35 +334,10 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps({ params }) {
-  // Check if this is a token-based URL
-  const hasToken = params.slug && params.slug.includes('~')
-  
-  let articlesRes
-  
-  if (hasToken) {
-    // Handle token-based access - don't use fetchAPI, use direct fetch
-    const [articleSlug, token] = params.slug.split('~')
-    
-    try {
-      // Use localhost for development since we're running locally
-      const apiUrl = 'http://localhost:1337';
-      
-      const response = await fetch(`${apiUrl}/api/articles/by-token/${articleSlug}/${token}`)
-      
-      if (response.ok) {
-        const articleData = await response.json()
-        // Token API now returns same format as regular API
-        articlesRes = { data: [articleData.data] }
-      } else {
-        return { notFound: true }
-      }
-    } catch (error) {
-      console.error('Error fetching token-based article:', error)
-      return { notFound: true }
-    }
-  } else {
-    // Regular published article fetch
-    articlesRes = await fetchAPI("/articles", {
+  try {
+    // Only fetch published articles for static generation
+    // Tokenized URLs will be handled client-side
+    const articlesRes = await fetchAPI("/articles", {
       filters: { 
         slug: params.slug,
         publishedAt: {
@@ -387,21 +401,24 @@ export async function getStaticProps({ params }) {
         categories: { fields: ["name", "slug"] },
       },
     })
-  }
-  
-  // Fetch categories separately for both token and regular articles  
-  const categoriesRes = await fetchAPI("/categories", { fields: ["name", "slug"] })
+    
+    // Fetch categories separately
+    const categoriesRes = await fetchAPI("/categories", { fields: ["name", "slug"] })
 
-  if (!articlesRes.data.length) {
+    if (!articlesRes.data.length) {
+      return { notFound: true }
+    }
+
+    return {
+      props: { 
+        article: articlesRes.data[0], 
+        categories: categoriesRes.data,
+      },
+      // No revalidate needed with static export + client-side fetching
+    }
+  } catch (error) {
+    console.error('Error in getStaticProps:', error)
     return { notFound: true }
-  }
-
-  return {
-    props: { 
-      article: articlesRes.data[0], 
-      categories: categoriesRes.data,
-    },
-    // No revalidate needed with static export + client-side fetching
   }
 }
 
