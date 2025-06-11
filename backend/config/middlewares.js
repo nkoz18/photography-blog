@@ -6,7 +6,7 @@ module.exports = ({ env }) => [
       contentSecurityPolicy: {
         directives: {
           "default-src": ["'self'", "https:"],
-          "script-src": ["'self'", "'unsafe-inline'", "cdn.jsdelivr.net"],
+          "script-src": ["'self'", "'unsafe-inline'", "cdn.jsdelivr.net", "cloud.umami.is"],
           "img-src": [
             "'self'",
             "data:",

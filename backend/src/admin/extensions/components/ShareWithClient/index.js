@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Typography, Button, Alert } from '@strapi/design-system';
-import { useCMEditViewDataManager } from "@strapi/helper-plugin";
+import { useCMEditViewDataManager, auth } from "@strapi/helper-plugin";
 
 const ShareWithClient = () => {
   const { modifiedData, slug, layout } = useCMEditViewDataManager();
@@ -32,11 +32,15 @@ const ShareWithClient = () => {
 
     setIsGenerating(true);
     try {
+      // Get the auth token
+      const token = auth.getToken();
+      
       // Use the correct Strapi API endpoint to trigger token generation
       const response = await fetch(`/api/articles/${article.id}`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           data: {
