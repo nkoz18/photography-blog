@@ -2,7 +2,6 @@ import ImageFocalPoint from "./extensions/components/ImageFocalPoint";
 import BatchImageUpload from "./extensions/components/BatchImageUpload";
 import ShareWithClient from "./extensions/components/ShareWithClient";
 import CustomGalleryCSS from "./extensions/components/CustomGalleryCSS";
-import ReportsManagement from "./extensions/components/ReportsManagement";
 
 /**
  * Admin panel customization entry point
@@ -38,7 +37,6 @@ export default {
       Component: CustomGalleryCSS,
     });
 
-    // Add Reports Management to the main menu (simpler approach)
-    console.log('Registering Reports Management component');
+    // Custom components registered successfully
   },
 };

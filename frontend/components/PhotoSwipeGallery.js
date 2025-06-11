@@ -94,9 +94,15 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
         galleryData.data.attributes.gallery_items.length > 0
       ) {
         processedImages = galleryData.data.attributes.gallery_items
-          .filter((item) => item && item.image && item.image.data)
+          .filter((item) => {
+            // Handle both direct item.image and item.attributes.image formats
+            const imageRef = item.image || item.attributes?.image;
+            return item && imageRef && imageRef.data;
+          })
           .map((item, index) => {
-            const image = item.image.data
+            // Handle both direct item.image and item.attributes.image formats
+            const imageRef = item.image || item.attributes?.image;
+            const image = imageRef.data;
             const width = image.attributes?.width || 1200
             const height = image.attributes?.height || 800
             const src = getImageUrl(image)
@@ -109,8 +115,8 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
               width,
               height,
               original: src,
-              alt: item.alt_text || image.attributes?.alternativeText || "",
-              caption: item.caption || image.attributes?.caption || "",
+              alt: item.alt_text || item.attributes?.alt_text || image.attributes?.alternativeText || "",
+              caption: item.caption || item.attributes?.caption || image.attributes?.caption || "",
             }
           })
       }
@@ -136,8 +142,8 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
               width,
               height,
               original: src,
-              alt: item.alt_text || image.attributes?.alternativeText || "",
-              caption: item.caption || image.attributes?.caption || "",
+              alt: item.alt_text || item.attributes?.alt_text || image.attributes?.alternativeText || "",
+              caption: item.caption || item.attributes?.caption || image.attributes?.caption || "",
             }
           })
       }

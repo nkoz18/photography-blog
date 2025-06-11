@@ -109,7 +109,17 @@ This runs the frontend at http://localhost:3000 using the cloud backend (https:/
    - CMS changes appear immediately without frontend redeployment
    - Static export + client-side data fetching for optimal performance
 
-4. **Konami Code Easter Egg**:
+4. **Client Sharing (Obscurity Tokens)**:
+   - **Purpose**: Share unpublished articles with clients for preview/approval
+   - **Admin Widget**: `backend/src/admin/extensions/components/ShareWithClient/index.js`
+   - **Token Generation**: Auto-generated 12-character alphanumeric tokens stored in `obscurityToken` field
+   - **API Endpoint**: `/api/articles/by-token/:slug/:token` (bypasses published status)
+   - **URL Format**: `https://www.silkytruth.com/article/{slug}~{token}`
+   - **Features**: Full gallery access, image downloads, reporting functionality
+   - **SEO Protection**: Complete robots directives, canonical links, no indexing
+   - **Security**: Tokens required for access, no internal linking, preview-only mode
+
+5. **Konami Code Easter Egg**:
    - Component: `frontend/components/KonamiEasterEgg.js`
    - Triggers character animations on specific sequence
    - Uses React Portal for rendering
@@ -198,6 +208,19 @@ Only use the predefined Google Fonts:
 7. **Test dark mode thoroughly** on page loads, reloads, and orientation changes
 
 ## Recent Changes and Solutions
+
+### Client Sharing Feature Implementation (Complete)
+- **Issue**: Need to share unpublished articles with clients for preview/approval
+- **Solution**: Implemented comprehensive obscurity token system
+- **Components**:
+  - Backend API endpoint: `backend/src/api/article/controllers/article.js` (findByToken method)
+  - Admin sharing widget: `backend/src/admin/extensions/components/ShareWithClient/index.js`
+  - Frontend token handling: `frontend/pages/article/[slug].js`
+  - SEO protection: `frontend/components/seo.js`
+  - Gallery compatibility: `frontend/components/PhotoSwipeGallery.js`
+- **Features**: Auto token generation, full gallery access, download/report functionality, complete SEO protection
+- **URL Format**: `https://www.silkytruth.com/article/{slug}~{token}`
+- **Status**: ✅ Complete - Fully functional with all images, gallery, and protection features
 
 ### Batch Upload Authentication Fix
 - **Issue**: Batch upload failing with 401 Unauthorized errors

@@ -32,6 +32,8 @@ const Seo = ({ seo = {} }) => {
     shareImage,
     article: seoWithDefaults.article || false,
     noindex: seoWithDefaults.noindex || false,
+    canonicalUrl: seoWithDefaults.canonicalUrl || null,
+    isPreview: seoWithDefaults.isPreview || false,
   }
 
   return (
@@ -58,7 +60,23 @@ const Seo = ({ seo = {} }) => {
         </>
       )}
       {fullSeo.article && <meta property="og:type" content="article" />}
-      {fullSeo.noindex && <meta name="robots" content="noindex, nofollow" />}
+      
+      {/* SEO Protection for Preview/Token URLs */}
+      {fullSeo.isPreview && (
+        <>
+          <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+          <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+        </>
+      )}
+      
+      {/* Standard noindex for non-preview pages */}
+      {fullSeo.noindex && !fullSeo.isPreview && <meta name="robots" content="noindex, nofollow" />}
+      
+      {/* Canonical URL for preview pages */}
+      {fullSeo.canonicalUrl && (
+        <link rel="canonical" href={fullSeo.canonicalUrl} />
+      )}
+      
       <meta name="twitter:card" content="summary_large_image" />
     </Head>
   )

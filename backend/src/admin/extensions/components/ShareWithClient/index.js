@@ -6,6 +6,7 @@ const ShareWithClient = () => {
   const { modifiedData, slug, layout } = useCMEditViewDataManager();
   const article = modifiedData;
   const [copied, setCopied] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   
   // Only show for article content type
   if (!layout || layout.apiID !== 'article') {
@@ -18,11 +19,46 @@ const ShareWithClient = () => {
       return null;
     }
 
-    // Use production URL or localhost for development
-    const baseURL = process.env.NODE_ENV === 'production' 
-      ? 'https://www.silkytruth.com' 
-      : 'http://localhost:3000';
+    // Always use localhost for development since that's where your frontend is running
+    const baseURL = 'http://localhost:3000';
     return `${baseURL}/article/${article.slug}~${article.obscurityToken}`;
+  };
+
+  const generateShareLink = async () => {
+    if (!article?.id) {
+      alert('Please save the article first');
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      // Use the correct Strapi API endpoint to trigger token generation
+      const response = await fetch(`/api/articles/${article.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          data: {
+            ...article,
+            // Force a small update to trigger the token generation in the controller
+            updatedAt: new Date().toISOString()
+          }
+        })
+      });
+
+      if (response.ok) {
+        // Refresh the page to show updated data
+        window.location.reload();
+      } else {
+        alert('Failed to generate share link. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error generating share link:', error);
+      alert('Failed to generate share link. Please try again.');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const copyToClipboard = () => {
@@ -38,54 +74,73 @@ const ShareWithClient = () => {
   };
 
   const shareURL = generateShareURL();
-
-  if (!shareURL) {
-    return (
-      <Box padding={4} background="neutral100" borderRadius="4px">
-        <Typography variant="omega" fontWeight="bold">
-          Share with Client
-        </Typography>
-        <Typography variant="pi" textColor="neutral600" marginTop={2}>
-          Save the article first to generate a shareable link.
-        </Typography>
-      </Box>
-    );
-  }
+  const hasToken = Boolean(article?.obscurityToken);
+  const isSaved = Boolean(article?.id);
 
   return (
-    <Box padding={4} background="neutral100" borderRadius="4px">
-      <Typography variant="omega" fontWeight="bold" marginBottom={2}>
-        Share with Client
+    <Box 
+      padding={4} 
+      background="neutral0" 
+      borderRadius="4px" 
+      shadow="tableShadow"
+      border="1px solid neutral150"
+    >
+      <Typography variant="sigma" fontWeight="bold" marginBottom={3}>
+        🔗 Share with Client
       </Typography>
-      
-      {copied && (
-        <Alert closeLabel="Close" variant="success" marginBottom={2}>
-          Link copied to clipboard!
-        </Alert>
+
+      {!isSaved ? (
+        <Typography variant="pi" textColor="neutral600" as="p">
+          Save the article first to generate a shareable link.
+        </Typography>
+      ) : !hasToken ? (
+        <>
+          <Typography variant="pi" textColor="neutral600" marginBottom={3} as="p" style={{ lineHeight: '32px' }}>
+            Create a private link to share this article with clients for preview and feedback.
+          </Typography>
+          <Button 
+            onClick={generateShareLink}
+            variant="default" 
+            size="S" 
+            fullWidth
+            loading={isGenerating}
+            disabled={isGenerating}
+          >
+            {isGenerating ? 'Creating Share Link...' : 'Create Share Link'}
+          </Button>
+        </>
+      ) : (
+        <>
+          {copied && (
+            <Alert closeLabel="Close" variant="success" marginBottom={3}>
+              Link copied to clipboard!
+            </Alert>
+          )}
+          
+          <Typography variant="pi" textColor="neutral600" marginBottom={3}>
+            Share this private link to let clients preview the article:
+          </Typography>
+          
+          <Box 
+            padding={3} 
+            background="neutral100" 
+            borderRadius="4px" 
+            border="1px solid neutral200"
+            marginBottom={3}
+            style={{ wordBreak: 'break-all', fontSize: '12px', fontFamily: 'monospace' }}
+          >
+            {shareURL}
+          </Box>
+          
+          <Button onClick={copyToClipboard} variant="default" size="S" fullWidth>
+            Copy Link URL
+          </Button>
+          
+          <Typography variant="pi" textColor="neutral500" marginTop={3} style={{ fontSize: '11px' }}>
+            Token: {article.obscurityToken}
+          </Typography>
+        </>
       )}
-      
-      <Typography variant="pi" textColor="neutral600" marginBottom={3}>
-        Share this private link to let clients preview the article:
-      </Typography>
-      
-      <Box 
-        padding={2} 
-        background="neutral0" 
-        borderRadius="4px" 
-        border="1px solid neutral200"
-        marginBottom={3}
-        style={{ wordBreak: 'break-all', fontSize: '12px', fontFamily: 'monospace' }}
-      >
-        {shareURL}
-      </Box>
-      
-      <Button onClick={copyToClipboard} variant="secondary" size="S">
-        Copy Link URL
-      </Button>
-      
-      <Typography variant="pi" textColor="neutral500" marginTop={2}>
-        Token: {article.obscurityToken}
-      </Typography>
     </Box>
   );
 };

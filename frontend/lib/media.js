@@ -1,12 +1,20 @@
 import { getStrapiURL } from "./api"
 
 export function getStrapiMedia(media) {
-  if (!media || !media.data || !media.data.attributes) {
+  if (!media) {
     console.warn("Invalid media data provided to getStrapiMedia")
     return null
   }
 
-  const { url } = media.data.attributes
+  // Handle both regular API format (media.data.attributes) and token API format (direct attributes)
+  const attributes = media.data?.attributes || media
+  
+  if (!attributes || !attributes.url) {
+    console.warn("Invalid media data provided to getStrapiMedia")
+    return null
+  }
+
+  const { url } = attributes
   if (!url) {
     console.warn("No URL found in media data")
     return null

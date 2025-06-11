@@ -104,13 +104,16 @@ const Article = ({ article: staticArticle, categories }) => {
           // Split slug and token
           const [articleSlug, token] = slugParam.split('~')
           
-          // Use the tokenized article endpoint
-          const response = await fetch(`${process.env.NEXT_PUBLIC_STRAPI_API_URL || 'https://api.silkytruth.com'}/api/articles/by-token/${articleSlug}/${token}`)
+          // Use the tokenized article endpoint with proper API base URL
+          const apiUrl = process.env.USE_CLOUD_BACKEND === 'true' 
+            ? 'https://api.silkytruth.com' 
+            : 'http://localhost:1337';
+          const response = await fetch(`${apiUrl}/api/articles/by-token/${articleSlug}/${token}`)
           
           if (response.ok) {
             const articleData = await response.json()
-            // Convert to the same format as the regular API response
-            articlesRes = { data: [{ id: articleData.id, attributes: articleData }] }
+            // Token API now returns same format as regular API
+            articlesRes = { data: [articleData.data] }
           } else {
             throw new Error('Article not found or invalid token')
           }
@@ -190,13 +193,20 @@ const Article = ({ article: staticArticle, categories }) => {
   const isTokenizedUrl = router.query.slug && router.query.slug.includes('~')
   const isUnpublished = !article.attributes.publishedAt
   
+  // Generate canonical URL for preview pages
+  const canonicalUrl = isTokenizedUrl 
+    ? `https://www.silkytruth.com/article/${article.attributes.slug}`
+    : null
+  
   const seo = {
     metaTitle: article.attributes.title,
     metaDescription: article.attributes.description,
     shareImage: article.attributes.image,
     article: true,
-    // Add noindex for tokenized URLs or unpublished articles
-    noindex: isTokenizedUrl || isUnpublished,
+    // Enhanced SEO protection for preview URLs
+    isPreview: isTokenizedUrl,
+    noindex: isUnpublished && !isTokenizedUrl, // Use isPreview instead for token URLs
+    canonicalUrl: canonicalUrl,
   }
 
   return (
@@ -264,8 +274,35 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps({ params }) {
-  const [articlesRes, categoriesRes] = await Promise.all([
-    fetchAPI("/articles", {
+  // Check if this is a token-based URL
+  const hasToken = params.slug && params.slug.includes('~')
+  
+  let articlesRes
+  
+  if (hasToken) {
+    // Handle token-based access - don't use fetchAPI, use direct fetch
+    const [articleSlug, token] = params.slug.split('~')
+    
+    try {
+      // Use localhost for development since we're running locally
+      const apiUrl = 'http://localhost:1337';
+      
+      const response = await fetch(`${apiUrl}/api/articles/by-token/${articleSlug}/${token}`)
+      
+      if (response.ok) {
+        const articleData = await response.json()
+        // Token API now returns same format as regular API
+        articlesRes = { data: [articleData.data] }
+      } else {
+        return { notFound: true }
+      }
+    } catch (error) {
+      console.error('Error fetching token-based article:', error)
+      return { notFound: true }
+    }
+  } else {
+    // Regular published article fetch
+    articlesRes = await fetchAPI("/articles", {
       filters: { 
         slug: params.slug,
         publishedAt: {
@@ -328,9 +365,11 @@ export async function getStaticProps({ params }) {
         author: { populate: { picture: { fields: ["url"] } } },
         categories: { fields: ["name", "slug"] },
       },
-    }),
-    fetchAPI("/categories", { fields: ["name", "slug"] }),
-  ])
+    })
+  }
+  
+  // Fetch categories separately for both token and regular articles  
+  const categoriesRes = await fetchAPI("/categories", { fields: ["name", "slug"] })
 
   if (!articlesRes.data.length) {
     return { notFound: true }

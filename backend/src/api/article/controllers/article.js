@@ -222,9 +222,74 @@ module.exports = createCoreController("api::article.article", ({ strapi }) => ({
 
       const article = articles[0];
 
-      // Return the article regardless of published status
-      // This allows preview of draft articles
-      return article;
+      // Transform populated relations to match REST API format
+      const transformedArticle = { ...article };
+      
+      // Transform image field if it exists
+      if (transformedArticle.image) {
+        transformedArticle.image = {
+          data: {
+            id: transformedArticle.image.id,
+            attributes: transformedArticle.image
+          }
+        };
+      }
+      
+      // Transform author field if it exists
+      if (transformedArticle.author) {
+        transformedArticle.author = {
+          data: {
+            id: transformedArticle.author.id,
+            attributes: transformedArticle.author
+          }
+        };
+      }
+      
+      // Transform categories field if it exists
+      if (transformedArticle.categories) {
+        transformedArticle.categories = {
+          data: transformedArticle.categories.map(cat => ({
+            id: cat.id,
+            attributes: cat
+          }))
+        };
+      }
+      
+      // Transform gallery field if it exists
+      if (transformedArticle.gallery) {
+        const gallery = { ...transformedArticle.gallery };
+        
+        if (gallery.gallery_items) {
+          // Transform gallery_items to match expected structure
+          gallery.gallery_items = gallery.gallery_items.map(item => ({
+            id: item.id,
+            attributes: {
+              ...item,
+              image: item.image ? {
+                data: {
+                  id: item.image.id,
+                  attributes: item.image
+                }
+              } : null
+            }
+          }));
+        }
+        
+        transformedArticle.gallery = {
+          data: {
+            id: gallery.id,
+            attributes: gallery
+          }
+        };
+      }
+
+      // Convert to standard Strapi API format to maintain compatibility with frontend
+      return {
+        data: {
+          id: transformedArticle.id,
+          attributes: transformedArticle
+        }
+      };
     } catch (error) {
       console.error("Error finding article by token:", error);
       return ctx.internalServerError("An error occurred while finding the article");

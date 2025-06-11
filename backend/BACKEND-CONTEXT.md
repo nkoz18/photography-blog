@@ -42,9 +42,14 @@ This is a Strapi v4.2.0 headless CMS backend that powers a photography blog. It 
   - image (single media)
   - author (many-to-one relation with Writer)
   - gallery (component: sections.image-gallery)
+  - obscurityToken (string) - Auto-generated 12-character token for client sharing
 - **Custom Features**:
   - Batch image upload endpoint
   - Gallery management system
+  - **Client Sharing System**: Obscurity token-based preview URLs for unpublished content
+    - Endpoint: `/api/articles/by-token/:slug/:token`
+    - Bypasses published status for client previews
+    - Returns same data structure as regular API for compatibility
 
 #### 2. Category (Collection Type)
 **Location**: `src/api/category/`
@@ -142,7 +147,17 @@ This is a Strapi v4.2.0 headless CMS backend that powers a photography blog. It 
    - Live preview
    - Percentage-based positioning
 
-3. **GalleryThumbnails** (`components/GalleryThumbnails/index.js`)
+3. **ShareWithClient** (`components/ShareWithClient/index.js`)
+   - **Purpose**: Generate client preview links for unpublished articles
+   - **Features**: 
+     - Auto-generates 12-character obscurity tokens
+     - Creates shareable preview URLs
+     - Card-based UI with proper typography
+     - Manual token generation on demand
+   - **URL Format**: `https://www.silkytruth.com/article/{slug}~{token}`
+   - **UI Text**: Includes instructions for client sharing
+
+4. **CustomGalleryCSS** (`components/CustomGalleryCSS/index.js`)
    - Enhanced gallery visualization
    - Thumbnail previews
    - Reordering support
