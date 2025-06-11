@@ -4,16 +4,32 @@ import { useEffect, useState } from "react"
  * Custom hook for managing dark mode
  * - Uses system preference as initial value
  * - Persists user preference in localStorage
- * - Adds/removes 'dark-mode' class on body
+ * - Adds/removes 'dark-mode' class on html and body
  * - Supports toggling between modes
+ * - Prevents flash by checking existing class state
  */
 export const useDarkMode = () => {
-  // Initialize dark mode based on system preference and saved preference
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  // Initialize dark mode based on existing class (set by head script) or preferences
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    // Check if dark mode class is already applied (by head script)
+    if (typeof window !== 'undefined') {
+      return document.documentElement.classList.contains('dark-mode')
+    }
+    return false
+  })
 
-  // Effect to initialize dark mode state
+  // Effect to initialize dark mode state on client-side
   useEffect(() => {
-    // Helper to get initial dark mode preference
+    // Check if dark mode was already applied by head script
+    const hasExistingDarkMode = document.documentElement.classList.contains('dark-mode')
+    
+    if (hasExistingDarkMode) {
+      // Dark mode already applied, just sync state
+      setIsDarkMode(true)
+      return
+    }
+
+    // If not applied, check preferences
     const getInitialDarkMode = () => {
       // Check localStorage first
       const savedMode = localStorage.getItem("darkMode")
@@ -26,7 +42,6 @@ export const useDarkMode = () => {
         return window.matchMedia("(prefers-color-scheme: dark)").matches
       }
 
-      // Default to false
       return false
     }
 
@@ -36,15 +51,17 @@ export const useDarkMode = () => {
   // Effect to add/remove dark mode class and update localStorage
   useEffect(() => {
     if (isDarkMode) {
+      document.documentElement.classList.add("dark-mode")
       document.body.classList.add("dark-mode")
     } else {
+      document.documentElement.classList.remove("dark-mode")
       document.body.classList.remove("dark-mode")
     }
 
     // Save to localStorage
     localStorage.setItem("darkMode", isDarkMode.toString())
 
-    // Update CSS variables for dark mode
+    // Update CSS variables for dark mode (updated colors)
     applyColorScheme(isDarkMode)
   }, [isDarkMode])
 
@@ -82,23 +99,29 @@ export const useDarkMode = () => {
     const root = document.documentElement
 
     if (isDark) {
-      root.style.setProperty("--color-background", "#1f2023")
+      root.style.setProperty("--color-background", "#1a1a1a")
       root.style.setProperty("--color-text", "#efefef")
-      root.style.setProperty("--color-primary", "#6a9fb5")
-      root.style.setProperty("--color-secondary", "#ac885b")
+      root.style.setProperty("--color-primary", "#ff007f")
+      root.style.setProperty("--color-secondary", "#ff007f")
       root.style.setProperty("--color-accent", "#d0d0d0")
       root.style.setProperty("--color-border", "#444444")
       root.style.setProperty("--image-grayscale", "10%")
       root.style.setProperty("--image-opacity", "90%")
+      root.style.setProperty("--navbar-bg", "#1a1a1a")
+      root.style.setProperty("--card-bg", "#1a1a1a")
+      root.style.setProperty("--footer-bg", "#1a1a1a")
     } else {
       root.style.setProperty("--color-background", "#ffffff")
       root.style.setProperty("--color-text", "#333333")
-      root.style.setProperty("--color-primary", "#1e88e5")
-      root.style.setProperty("--color-secondary", "#e65100")
+      root.style.setProperty("--color-primary", "#ff007f")
+      root.style.setProperty("--color-secondary", "#ff007f")
       root.style.setProperty("--color-accent", "#444444")
       root.style.setProperty("--color-border", "#dddddd")
       root.style.setProperty("--image-grayscale", "0%")
       root.style.setProperty("--image-opacity", "100%")
+      root.style.setProperty("--navbar-bg", "#ffffff")
+      root.style.setProperty("--card-bg", "#ffffff")
+      root.style.setProperty("--footer-bg", "#ffffff")
     }
   }
 

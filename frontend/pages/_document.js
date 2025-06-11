@@ -5,6 +5,35 @@ class MyDocument extends Document {
     return (
       <Html>
         <Head>
+          {/* Dark mode flash prevention script - runs immediately */}
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function() {
+                  try {
+                    // Check saved preference first
+                    const savedMode = localStorage.getItem('darkMode');
+                    let isDarkMode = false;
+                    
+                    if (savedMode !== null) {
+                      isDarkMode = savedMode === 'true';
+                    } else if (window.matchMedia) {
+                      // Check system preference
+                      isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    }
+                    
+                    if (isDarkMode) {
+                      document.documentElement.classList.add('dark-mode');
+                      document.body.classList.add('dark-mode');
+                    }
+                  } catch (e) {
+                    // Fail silently
+                  }
+                })();
+              `
+            }}
+          />
+          
           {/* Favicon links */}
           <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png" />
           <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png" />

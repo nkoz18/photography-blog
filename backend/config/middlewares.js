@@ -13,13 +13,15 @@ module.exports = ({ env }) => [
             "blob:",
             "cdn.jsdelivr.net",
             "strapi.io",
-            `${env("AWS_BUCKET_NAME")}.s3.${env("AWS_REGION")}.amazonaws.com`,
+            "localhost:1337",
+            "photography-blog-images.s3.us-west-2.amazonaws.com",
           ],
           "media-src": [
             "'self'",
             "data:",
             "blob:",
-            `${env("AWS_BUCKET_NAME")}.s3.${env("AWS_REGION")}.amazonaws.com`,
+            "localhost:1337",
+            "photography-blog-images.s3.us-west-2.amazonaws.com",
           ],
           "connect-src": ["'self'", "https:", "wss:"],
         },
@@ -69,4 +71,8 @@ module.exports = ({ env }) => [
   "strapi::session",
   "strapi::favicon",
   "strapi::public",
+  {
+    name: "global::rewrite-s3-urls",
+    config: {},
+  },
 ];

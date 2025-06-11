@@ -1,0 +1,88 @@
+{
+  "kind": "collectionType",
+  "collectionName": "reports",
+  "info": {
+    "singularName": "report",
+    "pluralName": "reports",
+    "displayName": "Image Report",
+    "description": "Reports submitted for images by users"
+  },
+  "options": {
+    "draftAndPublish": false,
+    "comment": ""
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "reportedImage": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": ["images"],
+      "pluginOptions": {}
+    },
+    "reason": {
+      "type": "enumeration",
+      "enum": [
+        "unflattering",
+        "inappropriate", 
+        "copyright",
+        "other"
+      ],
+      "required": true
+    },
+    "otherReason": {
+      "type": "text",
+      "required": false,
+      "maxLength": 500
+    },
+    "isSubjectInImage": {
+      "type": "enumeration",
+      "enum": [
+        "yes",
+        "no"
+      ],
+      "required": true
+    },
+    "ipAddress": {
+      "type": "string",
+      "required": false,
+      "maxLength": 45
+    },
+    "userAgent": {
+      "type": "text",
+      "required": false
+    },
+    "browserInfo": {
+      "type": "json",
+      "required": false
+    },
+    "reportedAt": {
+      "type": "datetime",
+      "required": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "reviewed",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending",
+      "required": true
+    },
+    "adminNotes": {
+      "type": "text",
+      "required": false
+    },
+    "reviewedAt": {
+      "type": "datetime",
+      "required": false
+    },
+    "reviewedBy": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "admin::user"
+    }
+  }
+}

@@ -237,7 +237,8 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
         downloadProps={{
           download: true,
           target: "_blank",
-          rel: "noopener noreferrer"
+          rel: "noopener noreferrer",
+          title: "Download image"
         }}
       >
         <div className="custom-masonry-grid">
@@ -361,14 +362,32 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
         /* Report Button - match other PhotoSwipe buttons */
         .pswp__button--report .pswp__icn {
           background: url('/images/icons/report.svg') no-repeat center !important;
-          background-size: 24px 24px !important;
+          background-size: 32px 32px !important;
           opacity: 0.85 !important;
           transition: opacity 0.2s ease, filter 0.2s ease !important;
+          margin-left: 8px !important; /* Consistent spacing like zoom button */
         }
 
         .pswp__button--report:hover .pswp__icn {
           opacity: 1 !important;
           filter: brightness(1.2) !important;
+        }
+        
+        /* Make other icons larger to match report icon height */
+        .pswp__button--download .pswp__icn,
+        .pswp__button--zoom .pswp__icn,
+        .pswp__button--close .pswp__icn {
+          background-size: 36px 36px !important;
+        }
+        
+        /* Larger counter font */
+        .pswp__counter {
+          font-size: 18px !important;
+        }
+        
+        /* Ensure consistent spacing for all PhotoSwipe buttons */
+        .pswp__top-bar .pswp__icn {
+          margin-left: 8px !important;
         }
       `}</style>
     </div>

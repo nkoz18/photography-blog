@@ -30,6 +30,14 @@ Frontend architecture, components, and build process
 ### [backend/README.md](backend/README.md)
 Strapi backend specific setup and configuration
 
+## 🔄 Database Sync Documentation
+
+### [backend/database-sync/README.md](backend/database-sync/README.md)
+**Database Sync Guide** - Complete guide for syncing production data to local development
+
+### [backend/database-sync/DATA_SYNC_COMPLETE.md](backend/database-sync/DATA_SYNC_COMPLETE.md)
+Sync completion report and current production data summary
+
 ## 📋 Other Documentation
 
 - `backend/src/admin/README.md` - Admin UI customization notes

@@ -344,6 +344,18 @@ module.exports = (plugin) => {
 
     return formattedFile;
   };
+  
+  // Override the getSignedUrl method to handle local proxy URLs
+  const originalGetSignedUrl = plugin.services.upload.getSignedUrl;
+  plugin.services.upload.getSignedUrl = (file) => {
+    // If the URL is already a local proxy URL, return it as-is
+    if (file.url && file.url.includes('/api/image-proxy/')) {
+      return { url: file.url };
+    }
+    
+    // Otherwise, use the original method
+    return originalGetSignedUrl(file);
+  };
 
   // Add the custom routes to admin API
   plugin.routes.admin.routes.push({

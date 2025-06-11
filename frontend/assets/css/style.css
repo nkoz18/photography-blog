@@ -918,11 +918,11 @@ button[aria-label*="download"]:hover,
 
 /* ============= DARK MODE STYLES ============= */
 
-/* CSS variables for theme colors */
+/* CSS variables for theme colors - following style guide */
 :root {
   --color-background: #ffffff;
   --color-text: #333333;
-  --color-primary: #ff007f;
+  --color-primary: #ff007f; /* RGB: 255, 0, 127 - Style guide primary */
   --color-secondary: #ff007f;
   --color-accent: #444444;
   --color-border: #dddddd;
@@ -936,25 +936,52 @@ button[aria-label*="download"]:hover,
   --logo-text: #ffffff;
   --logo-secondary: #ff007f;
   --transition-time: 0.3s;
+  /* Typography - following style guide */
+  --font-readable: 'IBM Plex Mono', monospace;
+  --font-stylized: 'Kirang Haerang', cursive;
+  --font-logo: 'Barriecito', cursive;
 }
 
-/* Dark mode variables */
-.dark-mode {
-  --color-background: #1f2023;
+/* Dark mode variables - applied to both html and body for comprehensive coverage */
+.dark-mode,
+html.dark-mode {
+  --color-background: #1a1a1a; /* RGB: 26, 26, 26 - Style guide dark background */
   --color-text: #efefef;
-  --color-primary: #ff007f;
+  --color-primary: #ff007f; /* RGB: 255, 0, 127 - Style guide primary (unchanged) */
   --color-secondary: #ff007f;
   --color-accent: #d0d0d0;
   --color-border: #444444;
   --image-grayscale: 10%;
   --image-opacity: 90%;
-  --navbar-bg: #1f2023;
-  --card-bg: #1f2023;
-  --footer-bg: #1f2023;
+  --navbar-bg: #1a1a1a;
+  --card-bg: #1a1a1a;
+  --footer-bg: #1a1a1a;
   --shadow-color: rgba(0, 0, 0, 0.4);
   --logo-bg: #ff007f;
   --logo-text: #ffffff;
   --logo-secondary: #ff007f;
+}
+
+/* Ensure all elements inherit dark mode background immediately */
+html.dark-mode,
+html.dark-mode body,
+html.dark-mode #__next {
+  background-color: #1a1a1a !important;
+  color: #efefef !important;
+}
+
+/* Prevent any white flash on orientation change or reload */
+@media (prefers-color-scheme: dark) {
+  html:not(.light-mode-forced) {
+    background-color: #1a1a1a;
+    color: #efefef;
+  }
+  
+  html:not(.light-mode-forced) body,
+  html:not(.light-mode-forced) #__next {
+    background-color: #1a1a1a;
+    color: #efefef;
+  }
 }
 
 /* Apply variables to elements - with smooth transitions */

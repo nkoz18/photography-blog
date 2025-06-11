@@ -26,13 +26,14 @@ const ReportModal = ({ isOpen, imageId, imageName, onClose }) => {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_STRAPI_API_URL || 'https://api.silkytruth.com'}/api/upload/report-photo/${imageId}`,
+        `${process.env.NEXT_PUBLIC_STRAPI_API_URL || 'https://api.silkytruth.com'}/api/report-image/${imageId}`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
+            reportedImageId: imageId,
             reason: selectedReason,
             isSubjectInImage: isInPhoto,
           }),
