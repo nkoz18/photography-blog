@@ -2,7 +2,10 @@ import { getStrapiURL } from "./api"
 
 export function getStrapiMedia(media) {
   if (!media) {
-    console.warn("Invalid media data provided to getStrapiMedia")
+    // Only log in development to avoid cluttering production/build logs
+    if (process.env.NODE_ENV === 'development') {
+      console.warn("Invalid media data provided to getStrapiMedia")
+    }
     return null
   }
 
@@ -10,13 +13,18 @@ export function getStrapiMedia(media) {
   const attributes = media.data?.attributes || media
   
   if (!attributes || !attributes.url) {
-    console.warn("Invalid media data provided to getStrapiMedia")
+    // Only log in development to avoid cluttering production/build logs
+    if (process.env.NODE_ENV === 'development') {
+      console.warn("Invalid media data provided to getStrapiMedia")
+    }
     return null
   }
 
   const { url } = attributes
   if (!url) {
-    console.warn("No URL found in media data")
+    if (process.env.NODE_ENV === 'development') {
+      console.warn("No URL found in media data")
+    }
     return null
   }
 

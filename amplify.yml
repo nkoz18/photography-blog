@@ -8,16 +8,9 @@ applications:
           commands:
             - cd frontend
             - npm ci --legacy-peer-deps
-            - npm install -g cross-env
-            - 'echo "Node version:" && node -v'
-            - 'echo "NPM version:" && npm -v'
         build:
           commands:
-            - 'echo "Starting build process..."'
-            - 'echo "Environment variables: NEXT_PUBLIC_STRAPI_API_URL=$NEXT_PUBLIC_STRAPI_API_URL API_URL=$API_URL NODE_ENV=$NODE_ENV USE_CLOUD_BACKEND=$USE_CLOUD_BACKEND"'
-            - 'cross-env USE_CLOUD_BACKEND=true NEXT_PUBLIC_STRAPI_API_URL=https://api.silkytruth.com STRAPI_API_URL=https://api.silkytruth.com npx next build && npx next export'
-            - 'echo "Next build and export completed, checking output..."'
-            - 'ls -la out'
+            - 'USE_CLOUD_BACKEND=true NEXT_PUBLIC_STRAPI_API_URL=https://api.silkytruth.com STRAPI_API_URL=https://api.silkytruth.com npm run build && npm run export'
       artifacts:
         baseDirectory: frontend/out
         files:
@@ -29,4 +22,4 @@ applications:
         - pattern: '**/*'
           headers:
             - key: 'Content-Security-Policy'
-              value: "default-src 'self' https://api.silkytruth.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' https://api.silkytruth.com data: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; font-src 'self' data: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.gstatic.com; connect-src 'self' https://api.silkytruth.com;" 
+              value: "default-src 'self' https://api.silkytruth.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' https://api.silkytruth.com data: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cloud.umami.is; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; font-src 'self' data: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.gstatic.com; connect-src 'self' https://api.silkytruth.com https://cloud.umami.is;" 

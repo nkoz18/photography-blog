@@ -28,12 +28,6 @@ const Card = ({ article, className }) => {
           </div>
 
           <div className="article-content">
-            {category && (
-              <p id="category" className="uk-text-uppercase">
-                {category.attributes.name}
-              </p>
-            )}
-
             <h3 id="title">{article.attributes.title}</h3>
           </div>
         </a>

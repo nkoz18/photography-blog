@@ -917,6 +917,10 @@ button[aria-label*="download"]:hover,
   margin-right: 8px !important;
 }
 
+a[download] {
+  margin-top: 8px !important;
+}
+
 /* Add padding to lightbox images on desktop to prevent overlap with controls */
 @media (min-width: 961px) {
   .pswp__img {
