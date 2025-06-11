@@ -62,12 +62,18 @@ pkill -f "next dev" || true
 # Kill any existing processes and start fresh
 pkill -f "npm run develop" && pkill -f "npm run dev" || true
 
-# Start backend with PostgreSQL database
-cd backend && nohup npm run develop > ../backend-postgres.log 2>&1 &
+# Start backend with PostgreSQL database (use timeout to prevent hanging)
+cd backend && timeout 120 nohup npm run develop > ../backend-postgres.log 2>&1 &
 
-# Start frontend with local backend (shows production images via proxy)
-cd frontend && nohup bash -c 'NODE_OPTIONS=--openssl-legacy-provider USE_CLOUD_BACKEND=false npm run dev' > ../frontend-local.log 2>&1 &
+# Start frontend with local backend (shows production images via proxy, use timeout to prevent hanging)
+cd frontend && timeout 120 nohup bash -c 'NODE_OPTIONS=--openssl-legacy-provider USE_CLOUD_BACKEND=false npm run dev' > ../frontend-local.log 2>&1 &
 ```
+
+**IMPORTANT**: When using Bash tool to start servers:
+- Always use `timeout` command to prevent hanging (max 120 seconds for npm commands)
+- Use `nohup` and `&` for background processes 
+- The `pkill` command may show error but will succeed - this is normal
+- Backend starts at http://localhost:1337, frontend at http://localhost:3000
 This runs:
 - Frontend at http://localhost:3000 (using local backend)
 - Backend at http://localhost:1337 (PostgreSQL with production data)
@@ -94,9 +100,17 @@ This runs the frontend at http://localhost:3000 using the cloud backend (https:/
 ### Custom Features
 
 1. **Image Focal Points**: 
-   - Stored in `provider_metadata.focalPoint` as `{x, y}` percentages
-   - UI at `/admin/plugins/upload/assets`
-   - Update endpoint: `/upload/updateFocalPoint/:id`
+   - **Storage**: Stored in `provider_metadata.focalPoint` as `{x, y}` percentages (0-100)
+   - **Admin UI**: Available at `/admin/plugins/upload/assets` with visual crosshair selector
+   - **Backend API**: Update endpoint `/upload/updateFocalPoint/:id`
+   - **Frontend Implementation**: 
+     - Automatically applied to article cover images (width > 1000px)
+     - Uses CSS `object-fit: cover` with `object-position` for precise cropping
+     - Extracts focal point from multiple data sources (provider_metadata, formats, direct property)
+     - Sets CSS custom property `--focal-point` with percentage values
+     - Article cover images: 550px fixed height with focal point cropping
+     - Thumbnail images: Natural aspect ratio (no focal point needed)
+   - **Method**: Classic `object-fit: cover` + computed `object-position` percentages (Method #1)
 
 2. **Batch Image Upload**:
    - Custom component: `backend/src/admin/extensions/components/BatchImageUpload/index.js`
@@ -104,12 +118,19 @@ This runs the frontend at http://localhost:3000 using the cloud backend (https:/
    - Attaches uploaded files to article galleries automatically
    - Handles multiple image uploads with drag-and-drop interface
 
-3. **Dynamic Content Loading**:
+3. **Gallery Image Previews (Admin)**:
+   - Component: `backend/src/admin/extensions/components/CustomGalleryCSS/index.js`
+   - Displays gallery images directly in accordion items (300px height)
+   - Uses image proxy system for S3-hosted images
+   - Dark mode compatible styling with Strapi colors
+   - **Styling**: Dark backgrounds, proper borders, centered images with file labels
+
+4. **Dynamic Content Loading**:
    - Frontend fetches fresh content from CMS on every page load
    - CMS changes appear immediately without frontend redeployment
    - Static export + client-side data fetching for optimal performance
 
-4. **Client Sharing (Obscurity Tokens)**:
+5. **Client Sharing (Obscurity Tokens)**:
    - **Purpose**: Share unpublished articles with clients for preview/approval
    - **Admin Widget**: `backend/src/admin/extensions/components/ShareWithClient/index.js`
    - **Token Generation**: Auto-generated 12-character alphanumeric tokens stored in `obscurityToken` field
@@ -119,7 +140,20 @@ This runs the frontend at http://localhost:3000 using the cloud backend (https:/
    - **SEO Protection**: Complete robots directives, canonical links, no indexing
    - **Security**: Tokens required for access, no internal linking, preview-only mode
 
-5. **Konami Code Easter Egg**:
+6. **Forced Dark Mode (Admin)**:
+   - **Bootstrap Script**: `backend/src/admin/app.js`
+   - Forces Strapi admin to always use dark theme regardless of system preferences
+   - Sets localStorage preferences and applies CSS classes
+   - Non-intrusive implementation without console spam
+
+7. **Umami Analytics**:
+   - **Location**: `frontend/pages/_document.js`
+   - **Conditional Loading**: Only loads in production (`NODE_ENV === 'production'`)
+   - **Website ID**: `303b22bb-dee7-4c36-8521-5c813ad7d3d9`
+   - **Privacy**: No tracking during development or local testing
+   - **Script**: `https://cloud.umami.is/script.js` (deferred loading)
+
+8. **Konami Code Easter Egg**:
    - Component: `frontend/components/KonamiEasterEgg.js`
    - Triggers character animations on specific sequence
    - Uses React Portal for rendering
@@ -206,8 +240,58 @@ Only use the predefined Google Fonts:
 5. The Easter egg should not interfere with normal site functionality
 6. **Follow UI/UX Style Guide** for all new components and modifications
 7. **Test dark mode thoroughly** on page loads, reloads, and orientation changes
+8. **Admin panel rebuilds** required after modifying admin extensions: `npm run build`
+9. **Gallery previews** use image proxy system - ensure backend proxy endpoint is running
+10. **Analytics** only loads in production - test locally with `NODE_ENV=production`
+11. **Dark mode enforcement** applies automatically on admin bootstrap - no user intervention needed
 
 ## Recent Changes and Solutions
+
+### Image Focal Points Implementation (Complete)
+- **Issue**: Focal points were stored in backend but not applied on frontend - images always showed center crop
+- **Solution**: Implemented complete focal point system using CSS `object-fit: cover` + `object-position`
+- **Implementation**:
+  - Enhanced `Image` component to extract focal points from multiple data sources
+  - Applied focal points only to article cover images (550px fixed height with cropping)
+  - Used CSS custom property `--focal-point` with percentage positioning
+  - Preserved natural aspect ratio for thumbnail images (no focal point needed)
+- **Method**: Classic `object-fit: cover` + computed `object-position` percentages (most reliable approach)
+- **Result**: When focal point is set in admin (e.g., 50.67%, 97.71%), that area stays visible in cropped cover images
+- **Status**: ✅ Complete - Focal points now work correctly on article cover images
+
+### Gallery Image Previews in Admin (Complete)
+- **Issue**: Need visual gallery management in Strapi admin for large photo collections
+- **Solution**: Custom CSS injection component that displays images in accordion items
+- **Implementation**:
+  - Component: `backend/src/admin/extensions/components/CustomGalleryCSS/index.js`
+  - Uses `aria-controls^="accordion-content-gallery.gallery_items"` selector to find gallery buttons
+  - Applies 300px height to parent containers via JavaScript class injection
+  - Loads thumbnail images via local image proxy system
+  - Dark mode compatible styling with Strapi color palette
+- **Features**: Centered images, file name labels, 280px thumbnails, proper error handling
+- **Status**: ✅ Complete - Gallery management now visual and intuitive
+
+### Umami Analytics Integration (Complete)
+- **Issue**: Need privacy-focused analytics for production site only
+- **Solution**: Conditional script loading based on NODE_ENV
+- **Implementation**:
+  - Location: `frontend/pages/_document.js`
+  - Production check: `process.env.NODE_ENV === 'production'`
+  - Website ID: `303b22bb-dee7-4c36-8521-5c813ad7d3d9`
+  - Script: `https://cloud.umami.is/script.js` (deferred)
+- **Benefits**: No dev tracking, clean data, automatic deployment compatibility
+- **Status**: ✅ Complete - Analytics active on production only
+
+### Forced Dark Mode for Admin Panel (Complete)
+- **Issue**: Strapi admin switching between light/dark modes causing UI inconsistency
+- **Solution**: Bootstrap-level theme enforcement with minimal observer pattern
+- **Implementation**:
+  - Bootstrap function in `backend/src/admin/app.js`
+  - Sets localStorage preferences and DOM attributes
+  - Simple timeout-based re-enforcement (no aggressive observers)
+  - Eliminated console logging spam
+- **Features**: Persistent dark mode, no user intervention required, clean console
+- **Status**: ✅ Complete - Admin always displays in dark mode
 
 ### Client Sharing Feature Implementation (Complete)
 - **Issue**: Need to share unpublished articles with clients for preview/approval

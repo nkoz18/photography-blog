@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { getStrapiMedia } from "../lib/media"
 
 /**
@@ -9,6 +9,39 @@ const Image = ({ image, style, alt }) => {
   const [imgSrc, setImgSrc] = useState("")
   const [hasError, setHasError] = useState(false)
   const [retryCount, setRetryCount] = useState(0)
+  const imageRef = useRef(null)
+
+  // Extract focal point from image metadata
+  const getFocalPoint = () => {
+    if (!image?.data?.attributes) return null
+    
+    // Try multiple locations for focal point data
+    const attrs = image.data.attributes
+    let focalPoint = null
+    
+    // Check provider_metadata.focalPoint (primary location)
+    if (attrs.provider_metadata?.focalPoint) {
+      focalPoint = attrs.provider_metadata.focalPoint
+    }
+    // Check formats.focalPoint (alternative location)
+    else if (attrs.formats?.focalPoint) {
+      focalPoint = attrs.formats.focalPoint
+    }
+    // Check direct focalPoint property
+    else if (attrs.focalPoint) {
+      focalPoint = attrs.focalPoint
+    }
+    
+    // Validate focal point data
+    if (focalPoint && typeof focalPoint.x === 'number' && typeof focalPoint.y === 'number') {
+      // Clamp values to 0-100 range to prevent out-of-bounds positioning
+      const x = Math.max(0, Math.min(100, focalPoint.x))
+      const y = Math.max(0, Math.min(100, focalPoint.y))
+      return { x, y }
+    }
+    
+    return null
+  }
 
   useEffect(() => {
     // Only set the image source after component mounts
@@ -97,6 +130,7 @@ const Image = ({ image, style, alt }) => {
       {imgSrc && !hasError && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
+          ref={imageRef}
           src={imgSrc}
           alt={altText}
           className={`image-transition ${
@@ -105,6 +139,15 @@ const Image = ({ image, style, alt }) => {
           onLoad={() => {
             setIsLoading(false)
             setHasError(false)
+            
+            // Apply focal point positioning after image loads
+            const focalPoint = getFocalPoint()
+            if (focalPoint && imageRef.current && isArticleCover) {
+              const focalPointValue = `${focalPoint.x}% ${focalPoint.y}%`
+              // Set the CSS custom property that the stylesheet expects
+              imageRef.current.style.setProperty('--focal-point', focalPointValue)
+              console.log(`Applied focal point CSS variable: ${focalPointValue} to image:`, imgSrc)
+            }
           }}
           onError={async (e) => {
             console.error("Image failed to load:", imgSrc, e)
@@ -134,12 +177,19 @@ const Image = ({ image, style, alt }) => {
               setHasError(true)
             }
           }}
-          style={{
+          style={isArticleCover ? {
+            // For article cover images: use fixed height with object-fit cover for cropping
             width: "100%",
-            height: "auto", // CRUCIAL: Let image maintain its natural aspect ratio
+            height: "550px",
+            maxWidth: "100%", 
+            display: "block",
+            objectFit: "cover"
+          } : {
+            // For thumbnail images: maintain natural aspect ratio
+            width: "100%",
+            height: "auto",
             maxWidth: "100%",
             display: "block",
-            // NO object-fit property - let the image show at its natural size
           }}
         />
       )}
