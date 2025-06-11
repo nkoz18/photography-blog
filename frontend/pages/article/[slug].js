@@ -23,27 +23,9 @@ const Article = ({ article: staticArticle, categories }) => {
   const [loading, setLoading] = useState(false)
   const [isTokenized, setIsTokenized] = useState(false)
   
-  // Handle case where no static article (for tokenized URLs)
-  if (!staticArticle && !article) {
-    if (router.query.slug && router.query.slug.includes('~')) {
-      // This is a tokenized URL, show loading while we fetch
-      return (
-        <Layout categories={categories || []}>
-          <div className="uk-section">
-            <div className="uk-container uk-container-large">
-              <div style={{ textAlign: 'center', padding: '4rem 0' }}>
-                <p>Loading article...</p>
-              </div>
-            </div>
-          </div>
-        </Layout>
-      )
-    }
-    return <div>Loading...</div>
-  }
-
   // Debug log to check the exact structure of gallery and images
   useEffect(() => {
+    if (!article?.attributes) return
     console.log("Article data structure:", article)
     if (article.attributes.gallery) {
       console.log("Article gallery:", article.attributes.gallery)
@@ -216,6 +198,25 @@ const Article = ({ article: staticArticle, categories }) => {
     
     fetchFreshData()
   }, [router.query.slug, staticArticle, router])
+
+  // Handle case where no static article (for tokenized URLs) - AFTER all hooks
+  if (!staticArticle && !article) {
+    if (router.query.slug && router.query.slug.includes('~')) {
+      // This is a tokenized URL, show loading while we fetch
+      return (
+        <Layout categories={categories || []}>
+          <div className="uk-section">
+            <div className="uk-container uk-container-large">
+              <div style={{ textAlign: 'center', padding: '4rem 0' }}>
+                <p>Loading article...</p>
+              </div>
+            </div>
+          </div>
+        </Layout>
+      )
+    }
+    return <div>Loading...</div>
+  }
 
   // Check if this is a tokenized URL or unpublished article
   const isTokenizedUrl = router.query.slug && router.query.slug.includes('~')

@@ -290,11 +290,17 @@ USE_CLOUD_BACKEND=true   # Uses https://api.silkytruth.com
 
 ### **Testing Before Deployment**
 
-ALWAYS test the export locally before pushing:
+⚠️ **CRITICAL:** Development mode (`npm run dev`) behaves differently than production. `getStaticPaths` runs on every request in development, making it forgiving, but production uses caching.
+
+**ALWAYS test in production mode before deploying:**
 
 ```bash
 cd frontend
+# Test production build (required to understand real behavior)
 NODE_OPTIONS=--openssl-legacy-provider USE_CLOUD_BACKEND=true npm run build
+NODE_OPTIONS=--openssl-legacy-provider USE_CLOUD_BACKEND=true npm start
+
+# Test static export (required for AWS Amplify)
 NODE_OPTIONS=--openssl-legacy-provider USE_CLOUD_BACKEND=true npm run export
 # If this fails, AWS Amplify will fail
 ```
@@ -316,20 +322,51 @@ NODE_OPTIONS=--openssl-legacy-provider USE_CLOUD_BACKEND=true npm run export
 - Dynamic: Users get latest content
 - Result: Best of both worlds
 
+### **Why Not Use ISR (Incremental Static Regeneration)?**
+
+**ISR would be better for most use cases:**
+```javascript
+// ISR approach - Updates every 60 seconds automatically
+export async function getStaticProps() {
+  return {
+    props: { articles: await fetchAPI("/articles") },
+    revalidate: 60  // Auto-regenerate every 60 seconds
+  }
+}
+
+export async function getStaticPaths() {
+  return {
+    paths: [...],
+    fallback: 'blocking'  // Generate new pages on-demand
+  }
+}
+```
+
+**But ISR is ruled out by our constraints:**
+- ❌ **AWS Amplify only supports static export** (no server for ISR)
+- ❌ **`fallback: 'blocking'` breaks `next export`**
+- ❌ **`revalidate` requires server runtime**
+- ❌ **Still has update delays** (user wants immediate updates)
+- ❌ **Can't handle tokenized URLs** (security risk to pre-generate)
+
+**Alternative deployment platforms** (Vercel, Netlify) would support ISR, but we're committed to AWS Amplify.
+
 ### **CRITICAL DEVELOPMENT RULES**
 
-1. **NEVER use `fallback: 'blocking'` or `true`**
+1. **NEVER use `fallback: 'blocking'` or `true`** (breaks AWS Amplify)
 2. **ALWAYS test `npm run export` before deploying**
-3. **ALL dynamic content via `useEffect` + client-side fetching**
-4. **Published content = static paths, unpublished = client-side only**
-5. **AWS Amplify build MUST complete or entire deployment fails**
+3. **ALWAYS test in production mode** (`npm run build && npm start`)
+4. **ALL dynamic content via `useEffect` + client-side fetching**
+5. **Published content = static paths, unpublished = client-side only**
+6. **AWS Amplify build MUST complete or entire deployment fails**
 
 This hybrid approach ensures:
 - ✅ AWS Amplify deployments never fail
-- ✅ Content appears immediately after publishing
+- ✅ Content appears immediately after publishing (no revalidate delays)
 - ✅ SEO benefits from static generation
 - ✅ Performance benefits from caching
 - ✅ Preview URLs work for client sharing
+- ✅ Works within AWS Amplify limitations
 
 ## UI/UX Style Guide
 
