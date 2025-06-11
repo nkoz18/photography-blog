@@ -13,7 +13,36 @@ export default {
     locales: [],
   },
   bootstrap(app) {
-    console.log("Admin panel bootstrap");
+
+    // Force dark mode immediately on bootstrap
+    const forceDarkMode = () => {
+      try {
+        localStorage.setItem('strapi-theme', 'dark');
+        localStorage.setItem('STRAPI_THEME', 'dark');
+        document.documentElement.setAttribute('data-theme', 'dark');
+        if (document.body) {
+          document.body.setAttribute('data-theme', 'dark');
+          document.body.classList.add('theme-dark');
+          document.body.classList.remove('theme-light');
+        }
+      } catch (error) {
+        // Silently handle errors
+      }
+    };
+    
+    // Apply immediately
+    forceDarkMode();
+    
+    // Apply when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', forceDarkMode);
+    } else {
+      forceDarkMode();
+    }
+    
+    // Simple one-time theme enforcement without observer to avoid logging spam
+    setTimeout(forceDarkMode, 500);
+    setTimeout(forceDarkMode, 2000);
 
     // Register custom components
     app.injectContentManagerComponent("editView", "right-links", {
@@ -36,6 +65,7 @@ export default {
       name: "custom-gallery-css",
       Component: CustomGalleryCSS,
     });
+
 
     // Custom components registered successfully
   },

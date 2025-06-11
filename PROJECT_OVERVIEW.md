@@ -63,6 +63,21 @@ pm2 restart photography-blog
 
 ## Recent Solutions
 
+### ✅ Gallery Image Previews
+- **Feature**: Visual gallery management in Strapi admin
+- **Solution**: Custom CSS injection displaying thumbnails in accordion items
+- **Status**: Working - 300px previews with dark mode styling
+
+### ✅ Umami Analytics
+- **Feature**: Privacy-focused analytics for production site
+- **Solution**: Conditional script loading (production only)
+- **Status**: Working - tracking live users only, no dev interference
+
+### ✅ Forced Dark Mode (Admin)
+- **Feature**: Consistent dark theme in Strapi admin panel
+- **Solution**: Bootstrap-level theme enforcement
+- **Status**: Working - admin always displays in dark mode
+
 ### ✅ Batch Upload Fix
 - **Issue**: 401 Unauthorized errors
 - **Solution**: Use standard `/upload` endpoint + content-manager API

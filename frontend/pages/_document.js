@@ -85,6 +85,15 @@ class MyDocument extends Document {
             async
             src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.2.0/js/uikit.js"
           />
+          
+          {/* Umami Analytics - Production Only */}
+          {process.env.NODE_ENV === 'production' && (
+            <script 
+              defer 
+              src="https://cloud.umami.is/script.js" 
+              data-website-id="303b22bb-dee7-4c36-8521-5c813ad7d3d9"
+            />
+          )}
         </Head>
         <body>
           <Main />
