@@ -23,10 +23,26 @@ const Category = ({ category, categories }) => {
 }
 
 export async function getStaticPaths() {
-  // Return empty paths with fallback: 'blocking' to render on demand
-  return {
-    paths: [],
-    fallback: 'blocking',
+  try {
+    // Get all categories from Strapi
+    const categoriesRes = await fetchAPI("/categories", { 
+      fields: ["slug"],
+    })
+
+    return {
+      paths: categoriesRes.data.map((category) => ({
+        params: {
+          slug: category.attributes.slug,
+        },
+      })),
+      fallback: false, // Must be false for static export
+    }
+  } catch (error) {
+    console.error("Error in getStaticPaths:", error)
+    return {
+      paths: [],
+      fallback: false,
+    }
   }
 }
 

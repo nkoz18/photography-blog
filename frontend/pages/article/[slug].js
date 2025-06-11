@@ -266,10 +266,31 @@ const Article = ({ article: staticArticle, categories }) => {
 }
 
 export async function getStaticPaths() {
-  // Return empty paths with fallback: 'blocking' to render on demand
-  return {
-    paths: [],
-    fallback: 'blocking',
+  try {
+    // Get all articles from Strapi
+    const articlesRes = await fetchAPI("/articles", { 
+      fields: ["slug"],
+      filters: {
+        publishedAt: {
+          $notNull: true,
+        },
+      },
+    })
+
+    return {
+      paths: articlesRes.data.map((article) => ({
+        params: {
+          slug: article.attributes.slug,
+        },
+      })),
+      fallback: false, // Must be false for static export
+    }
+  } catch (error) {
+    console.error("Error in getStaticPaths:", error)
+    return {
+      paths: [],
+      fallback: false,
+    }
   }
 }
 
