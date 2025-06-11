@@ -135,62 +135,63 @@ const Article = ({ article: staticArticle, categories }) => {
             throw new Error('Article not found or invalid token')
           }
         } else {
-          // Regular published article fetch (only if we don't have static data)
-          if (!staticArticle) {
-            articlesRes = await fetchAPI("/articles", {
-              filters: {
-                slug: slugParam,
-                publishedAt: {
-                  $notNull: true,
-                },
+          // Regular published article fetch (always fetch fresh data)
+          articlesRes = await fetchAPI("/articles", {
+            filters: {
+              slug: slugParam,
+              publishedAt: {
+                $notNull: true,
               },
-              populate: {
-                image: {
-                  fields: [
-                    "url",
-                    "alternativeText", 
-                    "caption",
-                    "width",
-                    "height",
-                    "formats",
-                    "provider_metadata",
-                  ],
-                },
-                images: {
-                  fields: [
-                    "url",
-                    "alternativeText",
-                    "caption", 
-                    "width",
-                    "height",
-                    "formats",
-                    "provider_metadata",
-                  ],
-                },
-                gallery: {
-                  populate: {
-                    gallery_items: {
-                      populate: {
-                        image: {
-                          fields: [
-                            "url",
-                            "alternativeText",
-                            "caption",
-                            "width",
-                            "height", 
-                            "formats",
-                            "provider_metadata",
-                          ],
-                        },
+            },
+            populate: {
+              image: {
+                fields: [
+                  "url",
+                  "alternativeText", 
+                  "caption",
+                  "width",
+                  "height",
+                  "formats",
+                  "provider_metadata",
+                  "focalPoint",
+                ],
+              },
+              images: {
+                fields: [
+                  "url",
+                  "alternativeText",
+                  "caption", 
+                  "width",
+                  "height",
+                  "formats",
+                  "provider_metadata",
+                  "focalPoint",
+                ],
+              },
+              gallery: {
+                populate: {
+                  gallery_items: {
+                    populate: {
+                      image: {
+                        fields: [
+                          "url",
+                          "alternativeText",
+                          "caption",
+                          "width",
+                          "height", 
+                          "formats",
+                          "provider_metadata",
+                          "focalPoint",
+                        ],
                       },
                     },
                   },
                 },
-                author: { populate: { picture: { fields: ["url"] } } },
-                categories: { fields: ["name", "slug"] },
               },
-            })
-          }
+              author: { populate: { picture: { fields: ["url"] } } },
+              categories: { fields: ["name", "slug"] },
+            },
+          })
         }
         
         if (articlesRes && articlesRes.data && articlesRes.data.length > 0) {

@@ -37,6 +37,7 @@ const Home = ({ articles: staticArticles, categories: staticCategories, homepage
               populate: {
                 image: { fields: ["url", "alternativeText", "caption"] },
                 category: { fields: ["name", "slug"] },
+                author: { fields: ["name"] },
               },
             }),
             fetchAPI("/categories", {
