@@ -127,7 +127,18 @@ export const useDarkMode = () => {
 
   // Toggle function
   const toggleDarkMode = () => {
-    setIsDarkMode((prevMode) => !prevMode)
+    // Add transitioning class to optimize transitions
+    document.documentElement.classList.add('transitioning')
+    
+    // Use requestAnimationFrame for smoother transition
+    requestAnimationFrame(() => {
+      setIsDarkMode((prevMode) => !prevMode)
+      
+      // Remove transitioning class after transition
+      setTimeout(() => {
+        document.documentElement.classList.remove('transitioning')
+      }, 300) // Match the --transition-time value
+    })
   }
 
   return { isDarkMode, toggleDarkMode }

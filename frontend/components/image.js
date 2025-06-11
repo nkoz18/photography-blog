@@ -65,13 +65,23 @@ const Image = ({ image, style, alt }) => {
       }`}
       style={{
         position: "relative",
-        paddingBottom: isArticleCover ? 0 : "56.25%",
-        height: isArticleCover ? "100%" : 0,
-        overflow: "hidden",
+        width: "100%",
+        height: "auto", // Let height be determined by image aspect ratio
         maxWidth: "100%",
       }}
     >
-      {isLoading && <div className="image-loader"></div>}
+      {isLoading && !isArticleCover && (
+        <div style={{
+          width: "100%",
+          paddingBottom: "56.25%", // 16:9 aspect ratio placeholder while loading
+          backgroundColor: "#f5f5f5",
+          backgroundImage: "url('/loader.gif')",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center center",
+          backgroundSize: "50px 50px"
+        }}></div>
+      )}
+      {isLoading && isArticleCover && <div className="image-loader"></div>}
       {hasError && (
         <div className="image-error" style={{
           position: "absolute",
@@ -125,16 +135,11 @@ const Image = ({ image, style, alt }) => {
             }
           }}
           style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
             width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            // Remove inline objectPosition, let CSS variable handle it entirely
-            // objectPosition: focalPoint
-            //   ? `${focalPoint.x}% ${focalPoint.y}%`
-            //   : "50% 50%",
+            height: "auto", // CRUCIAL: Let image maintain its natural aspect ratio
+            maxWidth: "100%",
+            display: "block",
+            // NO object-fit property - let the image show at its natural size
           }}
         />
       )}

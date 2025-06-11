@@ -3,6 +3,8 @@ html {
   height: 100%;
   background-color: var(--color-background);
   transition: background-color var(--transition-time) ease;
+  font-family: "IBM Plex Mono", monospace, Sans-Serif;
+  font-size: 18px;
 }
 
 body {
@@ -10,6 +12,7 @@ body {
   display: flex;
   flex-direction: column;
   margin: 0;
+  padding: 0;
   background-color: var(--color-background);
   color: var(--color-text);
   transition: background-color var(--transition-time) ease,
@@ -40,8 +43,9 @@ footer {
 
 /* Navbar container styling - ensures it matches content width */
 .uk-navbar-container {
-  background: #fff !important;
+  background: var(--navbar-bg) !important;
   width: 100%;
+  transition: background-color var(--transition-time) ease;
 }
 
 /* Add margin-top to nav on desktop */
@@ -127,7 +131,7 @@ footer {
   }
   
   .nav-link:hover {
-    color: #ff007f !important; /* Pink hover color instead of gray */
+    color: var(--color-primary) !important; /* Primary color hover */
     text-decoration: none !important;
   }
 }
@@ -135,7 +139,7 @@ footer {
 /* Mobile navigation overrides */
 @media (max-width: 768px) {
   .nav-link:hover {
-    color: #ff007f !important; /* Keep pink on mobile too */
+    color: var(--color-primary) !important; /* Use primary color variable */
     background-color: transparent !important;
   }
 }
@@ -202,20 +206,12 @@ h6,
   color: #ff007f;
 }
 
-img:hover {
-  opacity: 1;
-  transition: opacity 0.25s cubic-bezier(0.39, 0.575, 0.565, 1);
-}
 
 .uk-navbar-nav > li > a {
   text-transform: lowercase;
   font-size: 18px;
 }
 
-html {
-  font-family: "IBM Plex Mono", monospace, Sans-Serif;
-  font-size: 18px;
-}
 
 #social {
   text-align: center;
@@ -235,6 +231,7 @@ html {
   min-height: 100px;
   margin-bottom: 15px;
   display: block;
+  overflow: hidden; /* Contain the image within bounds */
 }
 
 .image-loader {
@@ -322,8 +319,8 @@ html {
   ) !important; /* Use focal point CSS variable */
 }
 
-/* Force object-position to be respected */
-img.image-transition {
+/* Force object-position to be respected - ONLY for article cover images */
+.article-cover-image img.image-transition {
   width: 100%;
   height: 100%;
   position: absolute;
@@ -338,14 +335,18 @@ img.image-transition {
   ) !important; /* Use focal point CSS variable */
 }
 
-/* Image container fixes for focal points */
-.image-container {
-  position: relative;
+/* Thumbnail images should maintain natural aspect ratio */
+.article-item img.image-transition {
   width: 100%;
-  min-height: 100px;
-  margin-bottom: 15px;
+  height: auto;
+  position: static; /* Use static positioning for natural flow */
+  max-width: 100%; /* Ensure image doesn't exceed container */
+  border-radius: 0 !important;
+  box-shadow: none !important;
   display: block;
 }
+
+/* Image container fixes for focal points */
 
 /* When inside article cover, use special styling */
 .article-cover-image .image-container {
@@ -371,6 +372,13 @@ p {
   line-height: 1.2;
   margin-bottom: 20px;
   font-weight: bold;
+}
+
+/* Desktop article page title */
+@media (min-width: 961px) {
+  .uk-article-title {
+    font-size: 52px;
+  }
 }
 
 /* Article author styling */
@@ -700,12 +708,7 @@ p {
 .photo-gallery-wrapper {
   width: 100%;
   margin: 0 auto;
-}
-
-/* Gallery container - Masonry layout */
-.photo-gallery-wrapper {
   overflow: visible;
-  width: 100%;
 }
 
 /* Remove any default margins */
@@ -886,27 +889,51 @@ button[aria-label*="download"]:hover,
 .pswp__counter {
   font-family: "Kirang Haerang", cursive !important;
   color: rgb(255, 0, 127) !important;
-  font-size: 16px !important;
+  font-size: 24px !important;
   font-weight: normal !important;
+  text-shadow: none !important;
 }
 
-/* Fix for UK lightbox captions that may interfere with PhotoSwipe */
-.uk-lightbox-caption {
-  display: none !important;
+/* More specific counter styling to override any conflicting rules */
+.pswp .pswp__counter,
+.pswp__top-bar .pswp__counter {
+  font-family: "Kirang Haerang", cursive !important;
+  color: rgb(255, 0, 127) !important;
+  font-size: 24px !important;
+  font-weight: normal !important;
+  line-height: 1 !important;
+  text-shadow: none !important;
 }
 
-/* Disable all the transform and hover effects from the previous implementation */
-.gallery-item-wrapper:hover,
-.gallery-item:hover img,
-.gallery-item-wrapper:hover {
-  transform: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+/* Move right-side controls further left for more spacing */
+.pswp__top-bar {
+  padding-right: 20px !important;
 }
 
-/* Make sure the PhotoSwipe UI elements work properly */
-.pswp__img {
-  object-fit: contain;
+.pswp__button--close,
+.pswp__button--zoom,
+.pswp__button--download,
+.pswp__button--report {
+  margin-right: 8px !important;
 }
+
+/* Add padding to lightbox images on desktop to prevent overlap with controls */
+@media (min-width: 961px) {
+  .pswp__img {
+    padding-top: 60px !important;
+    padding-bottom: 60px !important;
+    object-fit: contain !important;
+  }
+  
+  /* Ensure the image container respects the padding */
+  .pswp__zoom-wrap {
+    padding-top: 60px !important;
+    padding-bottom: 60px !important;
+  }
+}
+
+
+
 
 /* Reset styling for article page images */
 .uk-article-title + div img,
@@ -962,12 +989,753 @@ html.dark-mode {
   --logo-secondary: #ff007f;
 }
 
+/* Optimize dark mode transitions for performance */
+html.transitioning {
+  /* Disable all transitions temporarily for instant switch */
+  transition: none !important;
+}
+
+html.transitioning *,
+html.transitioning *::before,
+html.transitioning *::after {
+  /* Only transition critical properties for smooth appearance */
+  transition: background-color var(--transition-time) ease,
+              color var(--transition-time) ease,
+              border-color var(--transition-time) ease !important;
+  transition-delay: 0s !important;
+}
+
 /* Ensure all elements inherit dark mode background immediately */
 html.dark-mode,
 html.dark-mode body,
 html.dark-mode #__next {
   background-color: #1a1a1a !important;
   color: #efefef !important;
+}
+
+/* Force all major containers to use CSS variables */
+.dark-mode .uk-container,
+.dark-mode .uk-container-large,
+.dark-mode .uk-section,
+.dark-mode .uk-card,
+.dark-mode .uk-navbar-container,
+.dark-mode nav,
+.dark-mode header,
+.dark-mode main,
+.dark-mode .content-wrapper {
+  background-color: var(--color-background) !important;
+  color: var(--color-text) !important;
+}
+
+/* Ensure navigation elements use proper background */
+.dark-mode .uk-navbar,
+.dark-mode .uk-navbar-container,
+.dark-mode .nav-container,
+.dark-mode .nav-links {
+  background-color: var(--navbar-bg) !important;
+}
+
+/* Mobile navigation dark mode fixes */
+.dark-mode .nav-links,
+.dark-mode .nav-links.is-open {
+  background-color: var(--navbar-bg) !important;
+}
+
+/* Force all navigation text to use proper colors in dark mode */
+.dark-mode .nav-link,
+.dark-mode .uk-navbar-nav li a {
+  color: #ff007f !important;
+}
+
+/* LIGHT MODE EXPLICIT STYLES - Force everything back to light when not in dark mode */
+/* These are needed because UIKit and other libraries might override our variables */
+html:not(.dark-mode),
+html:not(.dark-mode) body,
+html:not(.dark-mode) #__next {
+  background-color: #ffffff !important;
+  color: #333333 !important;
+}
+
+html:not(.dark-mode) .uk-container,
+html:not(.dark-mode) .uk-container-large,
+html:not(.dark-mode) .uk-section,
+html:not(.dark-mode) .uk-card,
+html:not(.dark-mode) .uk-navbar-container,
+html:not(.dark-mode) nav,
+html:not(.dark-mode) header,
+html:not(.dark-mode) main,
+html:not(.dark-mode) .content-wrapper {
+  background-color: #ffffff !important;
+  color: #333333 !important;
+}
+
+html:not(.dark-mode) .uk-navbar,
+html:not(.dark-mode) .uk-navbar-container,
+html:not(.dark-mode) .nav-container,
+html:not(.dark-mode) .nav-links,
+html:not(.dark-mode) .nav-links.is-open {
+  background-color: #ffffff !important;
+}
+
+html:not(.dark-mode) .nav-link,
+html:not(.dark-mode) .uk-navbar-nav li a {
+  color: #ff007f !important;
+}
+
+/* Mobile navigation text should stay pink even in light mode */
+@media (max-width: 768px) {
+  html:not(.dark-mode) .nav-links .uk-navbar-nav li a {
+    color: #ff007f !important;
+  }
+}
+
+html:not(.dark-mode) {
+  color: #333333 !important;
+}
+
+html:not(.dark-mode) .uk-section-default,
+html:not(.dark-mode) .uk-section-primary,
+html:not(.dark-mode) .uk-section-secondary,
+html:not(.dark-mode) .uk-offcanvas-bar {
+  background-color: #ffffff !important;
+}
+
+/* Reset image filters in light mode */
+html:not(.dark-mode) img,
+html:not(.dark-mode) video {
+  filter: none !important;
+}
+
+/* ============= SCROLLBAR CENTERING FIX ============= */
+
+/* Remove forced scrollbar - let browser handle naturally */
+
+/* ============= REPORT MODAL COMPONENT STYLES ============= */
+/* Note: Base styles defined here, responsive overrides follow */
+
+/* Modal overlay */
+.report-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000001;
+  padding: 10px;
+}
+
+/* Modal container base styles */
+.report-modal-container {
+  padding: 0;
+  max-width: 580px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+  color: white;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Modal background */
+.report-modal-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: transparent;
+  background-image: url("/images/icons/solid_doodle_box.svg");
+  background-size: contain;
+  background-position: 13px 16px;
+  background-repeat: no-repeat;
+}
+
+/* Close button */
+.report-modal-close-button {
+  position: absolute;
+  top: 55px;
+  right: 62px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  z-index: 20;
+}
+
+.report-modal-close-button svg {
+  width: 28px;
+  height: 28px;
+}
+
+/* Modal content area */
+.report-modal-content {
+  position: absolute;
+  top: 80px;
+  left: 80px;
+  right: 80px;
+  bottom: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  z-index: 10;
+}
+
+/* Status states */
+.report-modal-success {
+  margin-bottom: 20px;
+}
+
+.report-modal-success .status-icon {
+  color: white;
+  margin-bottom: 20px;
+  font-size: 64px;
+}
+
+.report-modal-title {
+  margin: -10px 0 12px 0;
+  color: white;
+  font-family: "Kirang Haerang", cursive;
+  font-size: 28px;
+  font-weight: normal;
+}
+
+.report-modal-success p,
+.report-modal-error p,
+.report-modal-already-reported p,
+.report-modal-rate-limited p {
+  margin: 0;
+  color: white;
+  font-size: 16px;
+  font-family: "IBM Plex Mono", monospace;
+  opacity: 0.9;
+}
+
+/* Success state specific styling - narrower and larger text */
+.report-modal-success p {
+  font-size: 18px;
+  max-width: 200px;
+  margin: 0 auto;
+}
+
+.report-modal-error .status-icon,
+.report-modal-already-reported .status-icon,
+.report-modal-rate-limited .status-icon {
+  color: white;
+  margin-bottom: 20px;
+  font-size: 64px;
+}
+
+.report-modal-error h3,
+.report-modal-already-reported h3,
+.report-modal-rate-limited h3 {
+  margin: 0 0 12px 0;
+  color: white;
+  font-family: "Kirang Haerang", cursive;
+  font-size: 28px;
+  font-weight: normal;
+}
+
+/* Step containers */
+.report-modal-step1,
+.report-modal-step2 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.report-modal-step2 {
+  margin-bottom: 10px;
+}
+
+/* Question text */
+.report-modal-question {
+  margin: 0 0 40px 0;
+  font-size: 32px;
+  font-weight: normal;
+  color: white;
+  font-family: "Kirang Haerang", cursive;
+  line-height: 1.2;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* Step 1 button container */
+.report-modal-step1-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+/* Step 1 buttons (Yes/No) */
+.report-modal-step1-button {
+  padding: 0;
+  background-color: transparent;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: #ff007f;
+  border: none;
+  font-size: 24px;
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 600;
+  cursor: pointer;
+  width: 120px;
+  height: 80px;
+  transition: all 0.1s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.report-modal-step1-button.yes {
+  background-image: url("/images/icons/box_small_white_1.svg");
+  background-position: 10px 3px;
+}
+
+.report-modal-step1-button.no {
+  background-image: url("/images/icons/box_small_white_3.svg");
+  background-position: center;
+}
+
+/* Loading spinner */
+.report-modal-loading {
+  padding: 40px 0;
+}
+
+.report-modal-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255,255,255,0.3);
+  border-top: 4px solid white;
+  border-radius: 50%;
+  margin: 0 auto;
+}
+
+.report-modal-loading p {
+  margin-top: 20px;
+  color: white;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 16px;
+}
+
+/* Step 2 options grid */
+.report-modal-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  width: 100%;
+}
+
+/* Step 2 option buttons */
+.report-modal-option-button {
+  padding: 16px 24px;
+  background-color: transparent;
+  color: white;
+  border: none;
+  font-size: 18px;
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.01s ease;
+  background: none;
+}
+
+
+/* ============= REPORT MODAL RESPONSIVE STYLES ============= */
+
+/* Mobile overlay padding reduction */
+@media (max-width: 640px) {
+  .report-modal-overlay {
+    padding: 5px !important;
+  }
+}
+
+/* Mobile-first responsive styles for report modal */
+.report-modal-container {
+  /* Mobile: larger container for rotated background - use percentage to match overlay */
+  max-width: 90%;
+  max-height: 85vh;
+  min-height: 600px;
+  width: 520px;
+}
+
+
+.report-modal-close-button {
+  /* Mobile: position close button within rotated larger background */
+  top: 4%;
+  right: 16%;
+  width: 32px;
+  height: 32px;
+  padding: 4px;
+}
+
+.report-modal-close-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+.report-modal-content {
+  /* Mobile: content area within rotated larger background */
+  top: 12%;
+  left: 10%;
+  right: 10%;
+  bottom: 12%;
+}
+
+.report-modal-question {
+  /* Mobile: larger text with constrained width */
+  font-size: 38px;
+  margin: 0 0 34px 0;
+  line-height: 1.1;
+  max-width: 200px;
+}
+
+.report-modal-step1 .report-modal-question {
+  margin: 0 0 34px 0;
+}
+
+.report-modal-step2 .report-modal-question {
+  margin: 0 0 34px 0;
+}
+
+.report-modal-step2 {
+  /* Mobile: reduce bottom margin with rotated background */
+  margin-bottom: 15px;
+}
+
+/* Mobile: Stack Yes/No buttons vertically */
+.report-modal-step1 > div {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.report-modal-options {
+  /* Mobile: single column, full width, tighter spacing */
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  width: 100%;
+  margin-left: 0;
+  margin-bottom: 8px;
+}
+
+.report-modal-option-button {
+  /* Mobile: larger button text with spacing */
+  padding: 10px 16px;
+  font-size: 18px;
+  margin: 5px 0;
+}
+
+.report-modal-title {
+  /* Mobile: smaller title relative to larger container */
+  font-size: 22px;
+  margin: -5px 0 8px 0;
+}
+
+.report-modal-success {
+  /* Mobile: adjust success message spacing */
+  margin-bottom: 20px;
+}
+
+/* Tablet styles */
+@media (min-width: 641px) and (max-width: 960px) {
+  .report-modal-container {
+    max-width: 520px;
+    min-height: 320px;
+  }
+  
+  /* Tablet: Reset Yes/No buttons to horizontal */
+  .report-modal-step1 > div {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    justify-content: center;
+  }
+  
+  .report-modal-background {
+    background-position: 10px 14px;
+    transform: none;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+  }
+  
+  .report-modal-close-button {
+    top: 42px;
+    right: 58px;
+    width: 38px;
+    height: 38px;
+    padding: 6px;
+  }
+  
+  .report-modal-close-button svg {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .report-modal-content {
+    top: 65px;
+    left: 65px;
+    right: 65px;
+    bottom: 65px;
+  }
+  
+  .report-modal-question {
+    font-size: 35px;
+    margin: 0 0 20px 0;
+    max-width: 340px;
+  }
+  
+  .report-modal-step1 .report-modal-question {
+    margin: 25px 10px 24px 0;
+  }
+  
+  .report-modal-step2 .report-modal-question {
+    margin: 0;
+  }
+  
+  .report-modal-step2 {
+    margin-bottom: 20px;
+  }
+  
+  .report-modal-options {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+    margin-left: 0;
+    margin-bottom: 30px;
+  }
+  
+  .report-modal-option-button {
+    padding: 10px 20px;
+    font-size: 17px;
+  }
+  
+  .report-modal-title {
+    font-size: 26px;
+    margin: -8px 0 10px 0;
+  }
+  
+  .report-modal-success {
+    margin-bottom: 40px;
+    margin-top: -20px;
+  }
+}
+
+/* Desktop styles */
+@media (min-width: 961px) {
+  .report-modal-container {
+    max-width: 620px;
+    width: 620px;
+    min-height: 400px;
+  }
+  
+  /* Desktop: Reset Yes/No buttons to horizontal */
+  .report-modal-step1 > div {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    justify-content: center;
+  }
+  
+  .report-modal-background {
+    background-position: 13px 16px;
+    transform: none;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+  }
+  
+  .report-modal-close-button {
+    top: 55px;
+    right: 62px;
+    width: 44px;
+    height: 44px;
+    padding: 8px;
+  }
+  
+  .report-modal-close-button svg {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .report-modal-content {
+    top: 80px;
+    left: 80px;
+    right: 80px;
+    bottom: 80px;
+  }
+  
+  .report-modal-question {
+    font-size: 38px;
+    line-height: 1.2;
+    max-width: 600px;
+  }
+  
+  .report-modal-step1 .report-modal-question {
+    margin: 40px 0 30px 0;
+  }
+  
+  .report-modal-step2 .report-modal-question {
+    margin: 20px 0 20px 0;
+  }
+  
+  .report-modal-step2 {
+    margin-bottom: 10px;
+  }
+  
+  .report-modal-options {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    width: 100%;
+    margin-left: 0;
+    margin-bottom: 0;
+  }
+  
+  .report-modal-option-button {
+    padding: 16px 24px;
+    font-size: 18px;
+  }
+  
+  .report-modal-title {
+    font-size: 28px;
+    margin: -10px 0 12px 0;
+  }
+  
+  .report-modal-success {
+    margin-bottom: 20px;
+  }
+}
+
+/* Mobile: rotate and scale background - MUST come after tablet/desktop to override */
+@media (max-width: 640px) {
+  .report-modal-background {
+    background-position: 0 9px !important;
+    background-size: 100% 100% !important;
+    transform: rotate(90deg) scale(1.2) !important;
+    width: 120% !important;
+    height: 90% !important;
+    top: 5% !important;
+    left: -10% !important;
+  }
+}
+
+/* ============= RESPONSIVE ARTICLE THUMBNAIL STYLES ============= */
+
+/* Base article item styling - maintain aspect ratios across all viewports */
+.article-item {
+  margin-bottom: 30px;
+  display: block;
+}
+
+/* Ensure image containers don't have any interfering styles */
+.article-item .image-container {
+  position: relative;
+  width: 100%;
+  height: auto;
+  padding: 0;
+  overflow: visible;
+}
+
+.article-item .article-image {
+  width: 100%;
+  height: auto; /* Always use auto height to maintain aspect ratio */
+  overflow: visible; /* Allow image to determine container size */
+  position: relative;
+  margin-bottom: 15px;
+}
+
+.article-item .article-image img {
+  width: 100%;
+  height: auto; /* Always maintain native aspect ratio */
+  max-width: 100%;
+  display: block;
+  vertical-align: top; /* Remove any bottom gap */
+  /* Remove object-fit completely - let images show at natural aspect ratio */
+}
+
+/* Desktop: Full width thumbnails with aspect ratio maintained */
+@media (min-width: 961px) {
+  .article-item {
+    margin-bottom: 30px; /* Set to 30px as requested */
+  }
+  
+  .article-item .article-image {
+    margin-bottom: 20px;
+  }
+  
+  /* Article title size on desktop */
+  #title {
+    font-size: 40px !important; /* Set to 40px for desktop */
+  }
+}
+
+/* Tablet: Full width thumbnails with aspect ratio maintained */
+@media (min-width: 641px) and (max-width: 960px) {
+  .article-item {
+    margin-bottom: 0; /* Remove bottom margin on tablet */
+  }
+  
+  .article-item .article-image {
+    margin-bottom: 18px;
+  }
+  
+  /* Nav link size on tablet - more reasonable size */
+  .nav-link {
+    font-size: 24px !important; /* Reduced from 28px */
+  }
+  
+  /* Article title size on tablet */
+  #title {
+    font-size: 32px !important; /* Set to 32px for tablet */
+  }
+}
+
+/* Mobile: Native aspect ratio, consistent spacing */
+@media (max-width: 640px) {
+  .article-item {
+    width: 100% !important;
+    margin-bottom: 0; /* Remove bottom margin for consistent spacing */
+    display: block;
+  }
+  
+  .article-item .article-image {
+    margin-bottom: 12px; /* Consistent spacing between image and title */
+  }
+  
+  /* Ensure mobile articles stack properly */
+  .uk-child-width-1-2\@s > .article-item,
+  .uk-child-width-1-2\@m > .article-item {
+    width: 100% !important;
+    margin-bottom: 0;
+  }
+  
+  /* Remove UIKit grid margins on mobile for consistent spacing */
+  .uk-grid + .uk-grid,
+  .uk-grid > .uk-grid-margin,
+  * + .uk-grid-margin {
+    margin-top: 0;
+  }
 }
 
 /* Prevent any white flash on orientation change or reload */
@@ -984,44 +1752,8 @@ html.dark-mode #__next {
   }
 }
 
-/* Apply variables to elements - with smooth transitions */
-html {
-  background-color: var(--color-background);
-  transition: background-color var(--transition-time) ease;
-}
 
-body {
-  background-color: var(--color-background);
-  color: var(--color-text);
-  transition: background-color var(--transition-time) ease,
-    color var(--transition-time) ease;
-  margin: 0;
-  padding: 0;
-  min-height: 100vh;
-}
 
-.uk-navbar-container {
-  background: var(--navbar-bg) !important;
-  transition: background-color var(--transition-time) ease;
-}
-
-.logo-silky {
-  background-color: var(--logo-bg);
-  color: var(--logo-text);
-  transition: background-color var(--transition-time) ease,
-    color var(--transition-time) ease;
-}
-
-.logo-truth {
-  color: var(--logo-secondary);
-  transition: color var(--transition-time) ease;
-}
-
-.nav-link,
-.uk-navbar-nav li a {
-  color: var(--color-secondary) !important;
-  transition: color var(--transition-time) ease;
-}
 
 /* Card and container backgrounds */
 .uk-card,
@@ -1042,6 +1774,31 @@ footer {
 .dark-mode video {
   filter: grayscale(var(--image-grayscale)) opacity(var(--image-opacity));
   transition: filter var(--transition-time) ease;
+}
+
+/* Ensure all text elements use proper colors */
+.dark-mode h1, .dark-mode h2, .dark-mode h3, .dark-mode h4, .dark-mode h5, .dark-mode h6,
+.dark-mode p, .dark-mode span, .dark-mode div, .dark-mode article, .dark-mode section {
+  color: var(--color-text);
+}
+
+/* Force UIKit components to respect dark mode */
+.dark-mode .uk-article,
+.dark-mode .uk-article-title,
+.dark-mode .uk-article-content,
+.dark-mode .uk-text-lead,
+.dark-mode .uk-text-meta,
+.dark-mode .uk-heading-primary,
+.dark-mode .uk-heading-secondary {
+  color: var(--color-text) !important;
+}
+
+/* Ensure all backgrounds use variables */
+.dark-mode .uk-section-default,
+.dark-mode .uk-section-primary,
+.dark-mode .uk-section-secondary,
+.dark-mode .uk-offcanvas-bar {
+  background-color: var(--color-background) !important;
 }
 
 /* Exempt Konami easter egg character from dark mode filters */
@@ -1113,9 +1870,6 @@ footer {
 }
 
 /* Animation for active state - removed rotation */
-.hamburger-menu-button.is-active .menu-icon {
-  /* transform: rotate(90deg); - removed rotation */
-}
 
 /* X icon shown when menu is active */
 .menu-icon-close {
@@ -1152,18 +1906,6 @@ footer {
   display: none; /* Hide the original hamburger lines */
 }
 
-/* Animated hamburger icon - can be removed if not needed for fallback */
-.hamburger-menu-button.is-active span:nth-child(1) {
-  transform: translateY(10px) rotate(45deg);
-}
-
-.hamburger-menu-button.is-active span:nth-child(2) {
-  opacity: 0;
-}
-
-.hamburger-menu-button.is-active span:nth-child(3) {
-  transform: translateY(-10px) rotate(-45deg);
-}
 
 /* Mobile navigation styles */
 @media (max-width: 768px) {
@@ -1219,7 +1961,7 @@ footer {
     width: 100%;
     display: block;
     text-align: left; /* Left align for category links */
-    color: #ff007f !important; /* Pink color for all nav text on mobile */
+    color: var(--color-primary) !important; /* Use primary color variable */
     transition: none; /* Remove transitions for mobile */
   }
   
@@ -1232,7 +1974,7 @@ footer {
   .nav-links .uk-navbar-nav li a:hover,
   .nav-links .uk-navbar-nav li a:active {
     background-color: transparent;
-    color: #ff007f !important; /* Keep pink color */
+    color: var(--color-primary) !important; /* Use primary color variable */
   }
 
   /* Style the dark mode toggle on mobile - make it appear with other nav links */
@@ -1295,12 +2037,22 @@ h1.uk-article-title {
 
 .dark-toggle-inner {
   display: inline-flex; /* Use inline-flex to combine inline-block and flex */
-  background-color: var(--color-text);
-  color: var(--color-background);
   padding: 10px 10px 7px 7px; /* Custom padding for visual centering */
   border-radius: 10px; /* Larger border radius */
   align-items: center; /* Vertically center the content */
   line-height: 1; /* Remove extra line height */
+}
+
+/* Light mode toggle button */
+html:not(.dark-mode) .dark-toggle-inner {
+  background-color: #333333;
+  color: #ffffff;
+}
+
+/* Dark mode toggle button */
+.dark-mode .dark-toggle-inner {
+  background-color: #efefef;
+  color: #1a1a1a;
 }
 
 /* Make sure the dark mode toggle appears properly in mobile menu */
@@ -1311,10 +2063,20 @@ h1.uk-article-title {
     text-align: center;
   }
 
-  .dark-toggle-inner {
+  html:not(.dark-mode) .dark-toggle-inner {
     display: inline-block;
     padding: 8px 16px;
     font-size: 24px; /* Increased font size for better readability */
+    background-color: #333333;
+    color: #ffffff;
+  }
+
+  .dark-mode .dark-toggle-inner {
+    display: inline-block;
+    padding: 8px 16px;
+    font-size: 24px; /* Increased font size for better readability */
+    background-color: #efefef;
+    color: #1a1a1a;
   }
 }
 
