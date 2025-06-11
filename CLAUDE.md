@@ -179,6 +179,158 @@ Frontend uses:
 - Frontend: AWS Amplify (static site from `/frontend/out`)
 - Build config: `amplify.yml`
 
+## Static vs Dynamic Generation - CRITICAL DEPLOYMENT KNOWLEDGE
+
+### **⚠️ DEPLOYMENT RULE #1: AWS Amplify REQUIRES Static Export**
+
+AWS Amplify can ONLY deploy static sites. This means:
+- ✅ `next export` must work without errors
+- ✅ `fallback: false` REQUIRED in all `getStaticPaths`
+- ❌ `fallback: 'blocking'` or `true` will BREAK deployment
+- ❌ Server-side features (API routes, ISR) NOT supported
+
+### **The Hybrid Approach Solution**
+
+We use a **hybrid static + dynamic** approach to get the best of both worlds:
+
+#### **Static Generation (Build Time)**
+```javascript
+// In getStaticPaths - MUST use fallback: false
+export async function getStaticPaths() {
+  const articles = await fetchAPI("/articles", { 
+    filters: { publishedAt: { $notNull: true } }
+  })
+  
+  return {
+    paths: articles.data.map(article => ({ params: { slug: article.attributes.slug } })),
+    fallback: false  // ← CRITICAL: Must be false for AWS Amplify
+  }
+}
+```
+
+#### **Dynamic Content Loading (Runtime)**
+```javascript
+// In component - ALWAYS fetch fresh data
+useEffect(() => {
+  const fetchFreshData = async () => {
+    const freshData = await fetchAPI("/articles") // Always get latest
+    setData(freshData.data)
+  }
+  fetchFreshData()
+}, [])
+```
+
+### **How This Works in Practice**
+
+1. **Build Time (Static Generation):**
+   - Next.js pre-generates HTML for all published articles
+   - Creates static files in `/frontend/out`
+   - AWS Amplify serves these for fast initial load + SEO
+
+2. **Runtime (Dynamic Loading):**
+   - React components fetch fresh data from Strapi API
+   - New content appears immediately without rebuild
+   - User sees latest content even if static files are old
+
+### **File-by-File Implementation**
+
+#### **Homepage (`pages/index.js`)**
+- ✅ Static: Pre-generates with initial articles
+- ✅ Dynamic: `useEffect` fetches fresh articles on every load
+- ✅ Result: New articles appear immediately
+
+#### **Article Pages (`pages/article/[slug].js`)**
+- ✅ Static: Pre-generates paths for published articles only
+- ✅ Dynamic: Always fetches fresh content including focal points and galleries
+- ✅ Special: Tokenized URLs (`slug~token`) handled purely client-side
+
+#### **Category Pages (`pages/category/[slug].js`)**
+- ✅ Static: Pre-generates paths for all categories
+- ✅ Dynamic: Fetches fresh articles assigned to that category
+- ✅ Result: New articles appear in correct categories immediately
+
+### **AWS Amplify Build Process**
+
+```yaml
+# amplify.yml - The build that MUST succeed
+build:
+  commands:
+    - NODE_OPTIONS=--openssl-legacy-provider USE_CLOUD_BACKEND=true npm run deploy
+
+# npm run deploy executes:
+# 1. next build (creates .next/)
+# 2. next export (creates out/ - THIS MUST NOT FAIL)
+```
+
+### **Common Deployment Failures & Solutions**
+
+#### **❌ Error: "Pages with `fallback` enabled cannot be exported"**
+**Problem:** Used `fallback: 'blocking'` or `true` in `getStaticPaths`
+**Solution:** ALWAYS use `fallback: false`
+
+#### **❌ Error: "API routes are not supported"**
+**Problem:** Created files in `pages/api/`
+**Solution:** Remove API routes, use backend endpoints instead
+
+#### **❌ Error: "getServerSideProps is not supported"**
+**Problem:** Used SSR instead of SSG
+**Solution:** Use `getStaticProps` + client-side fetching
+
+### **Environment Variables for Different Modes**
+
+#### **Local Development:**
+```bash
+USE_CLOUD_BACKEND=false  # Uses http://localhost:1337
+```
+
+#### **AWS Amplify Build:**
+```bash
+USE_CLOUD_BACKEND=true   # Uses https://api.silkytruth.com
+```
+
+### **Testing Before Deployment**
+
+ALWAYS test the export locally before pushing:
+
+```bash
+cd frontend
+NODE_OPTIONS=--openssl-legacy-provider USE_CLOUD_BACKEND=true npm run build
+NODE_OPTIONS=--openssl-legacy-provider USE_CLOUD_BACKEND=true npm run export
+# If this fails, AWS Amplify will fail
+```
+
+### **Special Features Compatibility**
+
+#### **✅ Tokenized URLs (Client Previews)**
+- Static: Not pre-generated (would expose tokens)
+- Dynamic: Handled entirely client-side via `useEffect`
+- Result: Preview URLs work without breaking static export
+
+#### **✅ Real-time Content Updates**
+- Static: Provides fast initial load
+- Dynamic: `useEffect` on every page ensures fresh content
+- Result: Publish → appears immediately without rebuild
+
+#### **✅ SEO + Performance**
+- Static: Search engines get pre-rendered HTML
+- Dynamic: Users get latest content
+- Result: Best of both worlds
+
+### **CRITICAL DEVELOPMENT RULES**
+
+1. **NEVER use `fallback: 'blocking'` or `true`**
+2. **ALWAYS test `npm run export` before deploying**
+3. **ALL dynamic content via `useEffect` + client-side fetching**
+4. **Published content = static paths, unpublished = client-side only**
+5. **AWS Amplify build MUST complete or entire deployment fails**
+
+This hybrid approach ensures:
+- ✅ AWS Amplify deployments never fail
+- ✅ Content appears immediately after publishing
+- ✅ SEO benefits from static generation
+- ✅ Performance benefits from caching
+- ✅ Preview URLs work for client sharing
+
 ## UI/UX Style Guide
 
 When creating or modifying UI elements, follow these strict guidelines:

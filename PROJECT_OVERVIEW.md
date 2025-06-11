@@ -44,12 +44,29 @@ NODE_OPTIONS=--openssl-legacy-provider USE_CLOUD_BACKEND=false npm run dev
 
 ## Deployment
 
-### Frontend Deployment (AWS Amplify)
+### Frontend Deployment (AWS Amplify) - CRITICAL RULES
+
+#### **⚠️ BEFORE DEPLOYING: Test Export Locally**
+```bash
+cd frontend
+NODE_OPTIONS=--openssl-legacy-provider USE_CLOUD_BACKEND=true npm run build
+NODE_OPTIONS=--openssl-legacy-provider USE_CLOUD_BACKEND=true npm run export
+# If this fails, AWS Amplify will fail
+```
+
+#### **Deploy to Production**
 ```bash
 git add .
 git commit -m "Your changes"
 git push origin master  # Triggers automatic deployment (~8 minutes)
 ```
+
+#### **AWS Amplify Requirements:**
+- ✅ `fallback: false` in ALL `getStaticPaths`
+- ✅ `next export` must succeed
+- ❌ NO `fallback: 'blocking'` or `true`
+- ❌ NO API routes in `pages/api/`
+- ❌ NO `getServerSideProps`
 
 ### Backend Deployment (AWS EC2)
 ```bash

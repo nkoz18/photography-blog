@@ -32,18 +32,46 @@ This is a Next.js v11.0.0 static site generator frontend for a photography blog.
 
 ## Architecture & Data Flow
 
-### Build Strategy
-The frontend uses a hybrid approach combining static generation with client-side data fetching:
+### Build Strategy - CRITICAL FOR AWS AMPLIFY
+The frontend uses a **mandatory hybrid approach** combining static generation with client-side data fetching. This is REQUIRED because AWS Amplify only supports static sites.
 
-1. **Static Generation** (Build Time):
+#### **1. Static Generation (Build Time) - AWS Amplify Requirement:**
+   - **MUST use `fallback: false`** in all `getStaticPaths` (AWS Amplify requirement)
    - Pre-renders all pages using `getStaticProps` and `getStaticPaths`
    - Fetches data from Strapi backend during build
-   - Generates static HTML files
+   - Generates static HTML files in `/out` directory
+   - **CRITICAL:** `next export` must succeed or deployment fails
 
-2. **Client-Side Fetching** (Runtime):
-   - When `isStaticExport` is true, components fetch fresh data
+#### **2. Client-Side Fetching (Runtime) - Dynamic Content:**
+   - **EVERY page** fetches fresh data via `useEffect` hooks
    - Ensures content stays up-to-date without rebuilding
-   - Uses React hooks for data management
+   - New articles appear immediately after publishing
+   - Tokenized URLs handled purely client-side
+
+#### **3. Why This Architecture is Required:**
+   - **AWS Amplify Limitation:** Only supports static sites (`next export`)
+   - **User Requirement:** Content must update immediately without rebuilds
+   - **SEO Requirement:** Search engines need pre-rendered HTML
+   - **Performance Requirement:** Fast initial page loads
+
+#### **4. Deployment Compatibility Rules:**
+   ```javascript
+   // ✅ CORRECT - Works with AWS Amplify
+   export async function getStaticPaths() {
+     return {
+       paths: [...],
+       fallback: false  // REQUIRED for next export
+     }
+   }
+   
+   // ❌ BREAKS AWS AMPLIFY DEPLOYMENT
+   export async function getStaticPaths() {
+     return {
+       paths: [...],
+       fallback: 'blocking'  // NOT supported by next export
+     }
+   }
+   ```
 
 ### Environment Configuration
 ```bash
@@ -392,17 +420,59 @@ npm run lint:fix # Auto-fix linting issues
 - Real-time content updates via client-side fetching
 - Preserves static benefits while staying current
 
+## Deployment Troubleshooting
+
+### **Common AWS Amplify Build Failures:**
+
+#### **Error: "Pages with `fallback` enabled cannot be exported"**
+```
+Error: Found pages with `fallback` enabled:
+/category/[slug]
+/article/[slug]
+Pages with `fallback` enabled in `getStaticPaths` can not be exported.
+```
+**Solution:** Change `fallback: 'blocking'` to `fallback: false` in all `getStaticPaths`
+
+#### **Error: "getServerSideProps is not supported"**
+**Solution:** Use `getStaticProps` + client-side fetching instead of SSR
+
+#### **Error: "API routes are not supported"**
+**Solution:** Remove any files in `pages/api/` directory
+
+#### **Error: Build fails with dependency issues**
+**Solution:** Ensure using `npm install --legacy-peer-deps`
+
+### **Pre-Deployment Testing:**
+
+ALWAYS test before pushing to master:
+```bash
+cd frontend
+NODE_OPTIONS=--openssl-legacy-provider USE_CLOUD_BACKEND=true npm run build
+NODE_OPTIONS=--openssl-legacy-provider USE_CLOUD_BACKEND=true npm run export
+# If this succeeds locally, AWS Amplify will succeed
+```
+
+### **Dynamic Content Implementation Checklist:**
+
+✅ **Homepage:** Client-side fetching in `useEffect`  
+✅ **Category Pages:** Client-side fetching with category filtering  
+✅ **Article Pages:** Client-side fetching with full populate (focal points, galleries)  
+✅ **All `getStaticPaths`:** Use `fallback: false`  
+✅ **Build Test:** `npm run export` succeeds locally  
+
 ## Notes for Developers
 
 1. **Always use `--legacy-peer-deps`** due to dependency conflicts
 2. **OpenSSL legacy provider** required for Node.js compatibility
 3. **Test both backends** during development
-4. **Focal points** are percentage-based (0-100)
+4. **Focal points** are percentage-based (0-100) and only used on article cover images
 5. **Easter egg** should not interfere with normal usage
 6. **Dark mode** preference persists across sessions
 7. **Static export** means no server-side features (use client-side instead)
 8. **Gallery animations** use `whileInView` for scroll-triggered effects, not array-based timing
 9. **Crop zoom** uses `aspectRatio` containers with `objectFit: cover` to prevent layout shift
 10. **Gallery spacing** balances CSS `column-gap` (13px) with `margin-bottom` (6px) for visual harmony
+11. **CRITICAL:** Always use `fallback: false` for AWS Amplify compatibility
+12. **CRITICAL:** Test `npm run export` before every deployment
 
-This frontend provides a performant, feature-rich photography blog experience with creative touches and modern web standards.
+This frontend provides a performant, feature-rich photography blog experience with creative touches and modern web standards while maintaining AWS Amplify deployment compatibility.
