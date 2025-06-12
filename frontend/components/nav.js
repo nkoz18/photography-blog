@@ -3,6 +3,7 @@ import Link from "next/link"
 import { useDarkMode } from "../lib/useDarkMode"
 import { getRandomMenuIcon } from "../lib/randomAssets"
 import HoverDoodle from "./HoverDoodle"
+import ScribbleToggle from "./ScribbleToggle"
 
 const Nav = ({ categories, isMenuOpen, toggleMenu }) => {
   const { isDarkMode, toggleDarkMode } = useDarkMode()
@@ -70,17 +71,7 @@ const Nav = ({ categories, isMenuOpen, toggleMenu }) => {
                 </li>
               ))}
             <li>
-              <a
-                className="nav-link dark-mode-toggle"
-                onClick={toggleDarkMode}
-                aria-label={
-                  isDarkMode ? "Switch to light mode" : "Switch to dark mode"
-                }
-              >
-                <span className="dark-toggle-inner">
-                  {mounted ? (isDarkMode ? "☀️ light" : "🌙 dark") : "🌙 dark"}
-                </span>
-              </a>
+              <ScribbleToggle isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />
             </li>
           </ul>
         </div>

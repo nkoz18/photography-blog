@@ -1998,14 +1998,19 @@ footer {
     transition: none; /* Remove transitions for mobile */
   }
   
-  /* Keep dark mode toggle centered */
-  .nav-links .uk-navbar-nav li a.dark-mode-toggle {
-    text-align: center;
+  /* Keep scribble toggle centered */
+  .nav-links .uk-navbar-nav li .switch {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 15px 0;
+    margin-left: -10px;
   }
   
-  /* Remove left padding on the last anchor tag (dark mode toggle) */
-  .nav-links .uk-navbar-nav li:last-child a {
-    padding-left: 0;
+  /* Remove padding on the last list item (scribble toggle) */
+  .nav-links .uk-navbar-nav li:last-child {
+    padding: 0;
   }
   
   /* Remove hover effects on mobile - no background changes */
@@ -2060,63 +2065,6 @@ h1.uk-article-title {
   font-weight: bold;
 }
 
-/* Remove the dark mode toggle container styles since they're no longer needed */
-.dark-mode-toggle-container {
-  display: none;
-}
-
-/* Dark mode toggle styling */
-.dark-mode-toggle {
-  cursor: pointer;
-  font-family: "Kirang Haerang", cursive !important;
-  font-size: 18px;
-  text-transform: lowercase;
-}
-
-.dark-toggle-inner {
-  display: inline-flex; /* Use inline-flex to combine inline-block and flex */
-  padding: 10px 10px 7px 7px; /* Custom padding for visual centering */
-  border-radius: 10px; /* Larger border radius */
-  align-items: center; /* Vertically center the content */
-  line-height: 1; /* Remove extra line height */
-}
-
-/* Light mode toggle button */
-html:not(.dark-mode) .dark-toggle-inner {
-  background-color: #333333;
-  color: #ffffff;
-}
-
-/* Dark mode toggle button */
-.dark-mode .dark-toggle-inner {
-  background-color: #efefef;
-  color: #1a1a1a;
-}
-
-/* Make sure the dark mode toggle appears properly in mobile menu */
-@media (max-width: 768px) {
-  .nav-links .uk-navbar-nav li a.dark-mode-toggle {
-    display: inline-block;
-    margin: 0 auto;
-    text-align: center;
-  }
-
-  html:not(.dark-mode) .dark-toggle-inner {
-    display: inline-block;
-    padding: 8px 16px;
-    font-size: 32px;
-    background-color: #333333;
-    color: #ffffff;
-  }
-
-  .dark-mode .dark-toggle-inner {
-    display: inline-block;
-    padding: 8px 16px;
-    font-size: 32px;
-    background-color: #efefef;
-    color: #1a1a1a;
-  }
-}
 
 /* Footer social link hover effects */
 #social a {
@@ -2160,4 +2108,186 @@ html:not(.dark-mode) .dark-toggle-inner {
 .dark-mode img[src="/images/icons/download.svg"],
 .dark-mode img[src="/images/icons/report.svg"] {
   filter: none !important;
+}
+
+/* ===== SCRIBBLE TOGGLE CSS ===== */
+
+:root {
+  --accent: #ff007f;
+  --text: #333;
+  --bg: #fff;
+  --track-w: 130px;
+  --track-h: 48px;
+  --knob: 40px;
+  --travel: calc(var(--track-w) - var(--knob) - 12px);
+}
+
+.dark-mode {
+  --text: #fff;
+  --bg: #1a1a1a;
+}
+
+.switch {
+  display: inline-block;
+  position: relative;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.switch label {
+  display: block;
+  width: var(--track-w);
+  height: var(--track-h);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.track-bg {
+  width: 100%;
+  height: 100%;
+  background-color: var(--accent);
+  border-radius: calc(var(--track-h) / 2);
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.dark-mode .track-bg {
+  background-color: transparent;
+}
+
+.scribble-outline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.word {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: var(--track-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Kirang Haerang", cursive;
+  font-size: 26px;
+  color: var(--text);
+  font-weight: normal;
+  z-index: 3;
+  pointer-events: none;
+  user-select: none;
+}
+
+.word-dark {
+  left: 15px;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.word-light {
+  right: 15px;
+  opacity: 1;
+  transition: opacity 0.35s ease;
+}
+
+.switch input:checked + label .word-dark {
+  opacity: 1;
+}
+
+.switch input:checked + label .word-light {
+  opacity: 0;
+}
+
+.scribble-knob {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: var(--knob);
+  height: var(--knob);
+  background-color: var(--bg);
+  border-radius: 50%;
+  transition: transform 0.35s ease;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.switch input:checked + label .scribble-knob {
+  transform: translateX(var(--travel));
+}
+
+.knob-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.3s ease;
+}
+
+.knob-icon.sun {
+  opacity: 1;
+}
+
+.knob-icon.moon {
+  opacity: 0;
+}
+
+.switch input:checked + label .knob-icon.sun {
+  opacity: 0;
+}
+
+.switch input:checked + label .knob-icon.moon {
+  opacity: 1;
+}
+
+.scribble-knob-outline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* Desktop Hover Effects */
+@media (hover: hover) {
+  .switch label {
+    cursor: pointer;
+  }
+
+  .switch label:hover .scribble-knob {
+    transform: scale(1.05);
+    transition: transform .25s ease;
+  }
+  
+  .switch input:checked + label:hover .scribble-knob {
+    transform: translateX(var(--travel)) scale(1.05);
+  }
+}
+
+/* Mobile Responsive CSS */
+@media (max-width: 768px) {
+  :root {
+    --track-w: 120px;
+    --track-h: 44px;
+    --knob: 36px;
+  }
+
+  .word {
+    font-size: 22px;
+  }
 }
