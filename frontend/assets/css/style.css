@@ -774,6 +774,28 @@ p {
   background-color: rgba(0, 0, 0, 0.5) !important;
 }
 
+/* Prevent background scrolling when PhotoSwipe is open */
+.pswp--open {
+  overflow: hidden !important;
+}
+
+body.pswp--open {
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+}
+
+html.pswp--open {
+  overflow: hidden !important;
+}
+
+/* Prevent background scrolling when Report Modal is open */
+body:has(.report-modal-overlay) {
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+}
+
 /* PhotoSwipe custom icons - completely replace defaults */
 
 /* Hide all default SVG icons */
@@ -1185,10 +1207,10 @@ html:not(.dark-mode) video {
 .report-modal-close-button {
   position: absolute;
   top: -20px;
-  right: 10px;
+  right: 20px;
   background: none;
   border: none;
-  cursor: pointer;
+  cursor: pointer !important;
   width: 36px;
   height: 36px;
   display: flex;
@@ -1196,6 +1218,10 @@ html:not(.dark-mode) video {
   justify-content: center;
   padding: 0;
   z-index: 20;
+}
+
+.report-modal-close-button * {
+  cursor: pointer !important;
 }
 
 .close-button-canvas {
@@ -1238,7 +1264,7 @@ html:not(.dark-mode) video {
   margin: -10px 0 12px 0;
   color: white;
   font-family: "Kirang Haerang", cursive;
-  font-size: 28px;
+  font-size: 42px; /* Updated to match mobile size */
   font-weight: normal;
 }
 
@@ -1256,7 +1282,7 @@ html:not(.dark-mode) video {
 
 /* Success state specific styling - narrower and larger text */
 .report-modal-success p {
-  font-size: 18px;
+  font-size: 20px; /* Updated to match mobile size */
   max-width: 300px;
   margin: 0 auto;
   font-family: "Barriecito", cursive !important;
@@ -1396,59 +1422,8 @@ html:not(.dark-mode) video {
 
 /* ============= REPORT MODAL RESPONSIVE STYLES ============= */
 
-/* Mobile-first responsive styles for rough.js report modal */
-.report-modal-container {
-  /* Mobile: container sized for canvas */
-  max-width: 90%;
-  max-height: 90vh;
-  min-height: 500px;
-  width: 360px;
-  position: relative;
-}
-
-
-/* Mobile: rough.js canvas sizing */
-.modal-background-canvas {
-  max-width: 100%;
-  max-height: 100%;
-}
-
-.report-modal-question {
-  /* Mobile: question text styling */
-  font-size: 38px;
-  margin: 0 0 30px 0;
-  line-height: 1.1;
-  max-width: 300px;
-}
-
-/* Mobile: Stack Yes/No buttons vertically */
-.report-modal-step1-buttons {
-  flex-direction: column;
-  gap: 15px;
-  align-items: center;
-}
-
-/* Mobile: Canvas button sizing */
-.step1-yes-button,
-.step1-no-button {
-  width: auto;
-}
-
-.step2-option-button {
-  max-width: 280px;
-  width: 100%;
-}
-
-.report-modal-title {
-  /* Mobile: smaller title relative to larger container */
-  font-size: 22px;
-  margin: -5px 0 8px 0;
-}
-
-.report-modal-success {
-  /* Mobile: adjust success message spacing */
-  margin-bottom: 20px;
-}
+/* ============= REPORT MODAL RESPONSIVE STYLES ============= */
+/* Note: Mobile-first base styles defined above, responsive overrides below */
 
 /* Tablet styles */
 @media (min-width: 641px) and (max-width: 960px) {
@@ -1458,11 +1433,28 @@ html:not(.dark-mode) video {
     min-height: 480px;
   }
   
-  /* Tablet: Reset Yes/No buttons to horizontal */
+  /* Tablet: Yes/No buttons vertical */
   .report-modal-step1-buttons {
-    flex-direction: row;
+    flex-direction: column;
     gap: 20px;
     justify-content: center;
+  }
+  
+  /* Tablet: Step 1 margin */
+  .report-modal-step1 {
+    margin-top: 110px;
+  }
+  
+  /* Tablet: Step 2 margin */
+  .report-modal-step2 {
+    margin-top: 70px;
+  }
+  
+  /* Tablet: Close button positioning */
+  .report-modal-close-button {
+    position: absolute;
+    top: 30px;
+    right: 31px;
   }
   
   .modal-background-canvas {
@@ -1489,14 +1481,35 @@ html:not(.dark-mode) video {
     font-size: 17px;
   }
   
+  /* Tablet: Title and success text sizing */
   .report-modal-title {
-    font-size: 26px;
+    font-size: 46px !important;
     margin: -8px 0 10px 0;
+  }
+  
+  .report-modal-success p {
+    font-size: 22px;
   }
   
   .report-modal-success {
     margin-bottom: 40px;
     margin-top: -20px;
+  }
+  
+  /* Tablet: Session reported styling */
+  .report-modal-session-reported p {
+    max-width: 440px;
+    font-size: 20px;
+  }
+  
+  /* Tablet: Already reported heading */
+  .report-modal-already-reported h3 {
+    font-size: 46px;
+  }
+  
+  /* Tablet: Add padding to lightbox images */
+  .pswp--click-to-zoom.pswp--zoom-allowed .pswp__img {
+    padding: 80px !important;
   }
 }
 
@@ -1508,11 +1521,26 @@ html:not(.dark-mode) video {
     min-height: 480px;
   }
   
-  /* Desktop: horizontal Yes/No buttons */
+  /* Desktop: Close button positioning */
+  .report-modal-close-button {
+    top: 20px;
+    right: 60px;
+  }
+  
+  /* Desktop: Yes/No buttons vertical */
   .report-modal-step1-buttons {
-    flex-direction: row;
+    flex-direction: column;
     gap: 30px;
     justify-content: center;
+  }
+  
+  /* Desktop: Step margins */
+  .report-modal-step1 {
+    margin-top: 100px;
+  }
+  
+  .report-modal-step2 {
+    margin-top: 50px;
   }
   
   .modal-background-canvas {
@@ -1527,9 +1555,9 @@ html:not(.dark-mode) video {
     margin: 0 0 30px 0;
   }
   
+  /* Desktop: Options vertical */
   .report-modal-options {
-    flex-direction: row;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 15px;
     max-width: 500px;
   }
@@ -1541,10 +1569,26 @@ html:not(.dark-mode) video {
   .step2-option-button {
     max-width: 240px;
   }
+  
+  /* Desktop: Session reported styling */
+  .report-modal-session-reported h3,
+  .report-modal-session-reported p {
+    max-width: 400px;
+    font-size: 21px;
+    font-family: "Barriecito", cursive !important;
+    letter-spacing: 1px;
+  }
 }
 
-/* Mobile: rough.js canvas specific adjustments */
+/* Mobile styles - consolidated */
 @media (max-width: 640px) {
+  .report-modal-container {
+    max-width: 90%;
+    max-height: 90vh;
+    min-height: 380px;
+    width: 360px;
+  }
+  
   .modal-background-canvas {
     width: 360px;
     height: 380px;
@@ -1552,10 +1596,64 @@ html:not(.dark-mode) video {
     max-height: 80vh;
   }
   
-  .report-modal-container {
-    width: 360px;
-    max-width: 90vw;
-    min-height: 380px;
+  .report-modal-question {
+    font-size: 38px;
+    margin: 0 0 30px 0;
+    line-height: 1.1;
+    max-width: 300px;
+  }
+  
+  .report-modal-step1-buttons {
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+  }
+  
+  .report-modal-step1 {
+    margin-top: 30px;
+  }
+  
+  .step2-option-button {
+    width: auto; /* Let the canvas determine its own width */
+  }
+  
+  .report-modal-options {
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .report-modal-option-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    max-width: 260px;
+  }
+  
+  .report-modal-title {
+    font-size: 42px;
+    margin: -5px 0 8px 0;
+  }
+  
+  .report-modal-success {
+    margin-bottom: 20px;
+  }
+  
+  .report-modal-success p {
+    font-size: 20px;
+  }
+  
+  .report-modal-session-reported p {
+    max-width: 330px;
+    font-size: 20px;
+    font-family: "Barriecito", cursive !important;
+    letter-spacing: 2px;
+  }
+  
+  .report-modal-session-reported h3 {
+    font-size: 38px;
   }
 }
 

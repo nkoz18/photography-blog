@@ -22,12 +22,21 @@ const ReportModal = ({ isOpen, imageId, imageName, onClose }) => {
   useEffect(() => {
     if (isOpen && imageId) {
       const wasReported = isImageReported(imageId)
+      
+      // Debug logging to track issue
+      console.log('🔍 Report Modal Debug:', {
+        imageId,
+        imageName,
+        wasReported,
+        currentReportedImages: Array.from(JSON.parse(sessionStorage.getItem('silkytruth_reported_images') || '[]'))
+      })
+      
       setAlreadyReported(wasReported)
       if (wasReported) {
         setSubmitStatus("session-already-reported")
       }
     }
-  }, [isOpen, imageId])
+  }, [isOpen, imageId, imageName])
 
   const handleStep1Submit = (answer) => {
     setIsInPhoto(answer)
@@ -313,7 +322,8 @@ const ReportModal = ({ isOpen, imageId, imageName, onClose }) => {
                           fontSize: '24px',
                           color: 'white',
                           fontFamily: 'Barriecito, cursive',
-                          fontWeight: 'bold'
+                          fontWeight: 'bold',
+                          textShadow: '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000'
                         }}
                       >
                         Z
@@ -340,7 +350,8 @@ const ReportModal = ({ isOpen, imageId, imageName, onClose }) => {
                           fontSize: '18px',
                           color: 'white',
                           fontFamily: 'Barriecito, cursive',
-                          fontWeight: 'bold'
+                          fontWeight: 'bold',
+                          textShadow: '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000'
                         }}
                       >
                         z
@@ -367,7 +378,8 @@ const ReportModal = ({ isOpen, imageId, imageName, onClose }) => {
                           fontSize: '30px',
                           color: 'white',
                           fontFamily: 'Barriecito, cursive',
-                          fontWeight: 'bold'
+                          fontWeight: 'bold',
+                          textShadow: '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000'
                         }}
                       >
                         Z
@@ -555,7 +567,7 @@ const ReportModal = ({ isOpen, imageId, imageName, onClose }) => {
                             className="report-modal-option-wrapper"
                           >
                             <RoughCanvas
-                              width={280}
+                              width={260}
                               height={50}
                               mode="option-button"
                               text={option.label}

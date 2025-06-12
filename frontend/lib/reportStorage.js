@@ -28,7 +28,18 @@ export const getReportedImages = () => {
  */
 export const isImageReported = (imageId) => {
   const reportedImages = getReportedImages()
-  return reportedImages.has(String(imageId))
+  const stringId = String(imageId)
+  const hasReported = reportedImages.has(stringId)
+  
+  // Debug logging
+  console.log('📝 Session Storage Check:', {
+    imageId,
+    stringId,
+    hasReported,
+    allReportedIds: Array.from(reportedImages)
+  })
+  
+  return hasReported
 }
 
 /**
@@ -40,8 +51,17 @@ export const markImageAsReported = (imageId) => {
   
   try {
     const reportedImages = getReportedImages()
-    reportedImages.add(String(imageId))
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(reportedImages)))
+    const stringId = String(imageId)
+    reportedImages.add(stringId)
+    const updatedArray = Array.from(reportedImages)
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(updatedArray))
+    
+    // Debug logging
+    console.log('✅ Marked as reported:', {
+      imageId,
+      stringId,
+      updatedReportedIds: updatedArray
+    })
   } catch (error) {
     console.warn('Failed to save reported image to session storage:', error)
   }

@@ -13,6 +13,7 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
   const [dividerSvg, setDividerSvg] = useState("")
   const [reportModal, setReportModal] = useState({ isOpen: false, imageId: null, imageName: null })
   const [pswpInstance, setPswpInstance] = useState(null)
+  const [currentSlideData, setCurrentSlideData] = useState(null)
 
   // Get Strapi Image URL helper function
   const getImageUrl = useCallback((image) => {
@@ -199,7 +200,39 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
       </div>
       <PhotoSwipeGallery
         withDownloadButton
-        onOpen={(pswp) => setPswpInstance(pswp)}
+        onOpen={(pswp) => {
+          setPswpInstance(pswp)
+          
+          // Set initial slide data
+          const initialIndex = pswp.currIndex || 0
+          const initialPhotoData = galleryPhotos[initialIndex]
+          if (initialPhotoData) {
+            setCurrentSlideData(initialPhotoData)
+          }
+          
+          // Listen for slide changes to track current image
+          pswp.on('change', () => {
+            const currentIndex = pswp.currIndex
+            const currentPhotoData = galleryPhotos[currentIndex]
+            console.log('📸 PhotoSwipe Change Event:', {
+              currentIndex,
+              currentPhotoData: currentPhotoData ? {
+                imageId: currentPhotoData.imageId,
+                imageName: currentPhotoData.imageName
+              } : null,
+              totalPhotos: galleryPhotos.length
+            })
+            if (currentPhotoData) {
+              setCurrentSlideData(currentPhotoData)
+            }
+          })
+          
+          // Clean up when PhotoSwipe closes
+          pswp.on('destroy', () => {
+            setCurrentSlideData(null)
+            setPswpInstance(null)
+          })
+        }}
         uiElements={[
           {
             name: "custom-report-button",
@@ -209,16 +242,32 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
             className: "pswp__button--report",
             title: "Report this image",
             ariaLabel: "Report this image",
-            onClick: (event, el) => {
-              const index = pswpInstance?.currIndex || 0;
-              const photoData = galleryPhotos[index];
+            onClick: (event, el, pswp) => {
+              // Get current slide data directly from PhotoSwipe instance
+              const currentIndex = pswp.currIndex
+              const currentPhotoData = galleryPhotos[currentIndex]
               
-              if (photoData && photoData.imageId) {
+              console.log('🎯 Report Button Clicked:', {
+                currentIndex,
+                galleryPhotosLength: galleryPhotos.length,
+                currentPhotoData: currentPhotoData ? {
+                  imageId: currentPhotoData.imageId,
+                  imageName: currentPhotoData.imageName
+                } : null
+              })
+              
+              if (currentPhotoData && currentPhotoData.imageId) {
                 setReportModal({
                   isOpen: true,
-                  imageId: photoData.imageId,
-                  imageName: photoData.imageName
+                  imageId: currentPhotoData.imageId,
+                  imageName: currentPhotoData.imageName
                 });
+              } else {
+                console.error('❌ No current slide data available for report', {
+                  currentIndex,
+                  galleryPhotosLength: galleryPhotos.length,
+                  currentPhotoData
+                })
               }
             }
           }
