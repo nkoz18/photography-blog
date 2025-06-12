@@ -7,10 +7,12 @@ import HoverDoodle from "./HoverDoodle"
 const Nav = ({ categories, isMenuOpen, toggleMenu }) => {
   const { isDarkMode, toggleDarkMode } = useDarkMode()
   const [menuIconSrc, setMenuIconSrc] = useState("/images/icons/hamburger.svg") // Default fallback
+  const [mounted, setMounted] = useState(false)
 
   // Set a random menu icon on component mount
   useEffect(() => {
     setMenuIconSrc(getRandomMenuIcon())
+    setMounted(true)
   }, [])
 
   // Path to the close icon
@@ -18,7 +20,7 @@ const Nav = ({ categories, isMenuOpen, toggleMenu }) => {
 
   return (
     <div className="uk-container-large uk-align-center">
-      <nav className="uk-navbar-container uk-navbar nav-container">
+      <nav className={`uk-navbar-container uk-navbar nav-container ${isMenuOpen ? "menu-open" : ""}`}>
         <div className="uk-navbar-left">
           <ul className="uk-navbar-nav">
             <li>
@@ -76,7 +78,7 @@ const Nav = ({ categories, isMenuOpen, toggleMenu }) => {
                 }
               >
                 <span className="dark-toggle-inner">
-                  {isDarkMode ? "☀️ light" : "🌙 dark"}
+                  {mounted ? (isDarkMode ? "☀️ light" : "🌙 dark") : "🌙 dark"}
                 </span>
               </a>
             </li>

@@ -135,7 +135,6 @@ const Article = ({ article: staticArticle, categories }) => {
                   "height",
                   "formats",
                   "provider_metadata",
-                  "focalPoint",
                 ],
               },
               images: {
@@ -147,7 +146,6 @@ const Article = ({ article: staticArticle, categories }) => {
                   "height",
                   "formats",
                   "provider_metadata",
-                  "focalPoint",
                 ],
               },
               gallery: {
@@ -163,7 +161,6 @@ const Article = ({ article: staticArticle, categories }) => {
                           "height", 
                           "formats",
                           "provider_metadata",
-                          "focalPoint",
                         ],
                       },
                     },
@@ -185,7 +182,7 @@ const Article = ({ article: staticArticle, categories }) => {
         }
       } catch (error) {
         console.error("Error fetching fresh article data:", error)
-        if (hasToken) {
+        if (isTokenized) {
           // For tokenized URLs, redirect to 404
           router.replace('/404')
           return

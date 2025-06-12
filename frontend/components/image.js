@@ -146,7 +146,13 @@ const Image = ({ image, style, alt }) => {
               const focalPointValue = `${focalPoint.x}% ${focalPoint.y}%`
               // Set the CSS custom property that the stylesheet expects
               imageRef.current.style.setProperty('--focal-point', focalPointValue)
-              console.log(`Applied focal point CSS variable: ${focalPointValue} to image:`, imgSrc)
+              
+              // Debug logging
+              const imageRect = imageRef.current.getBoundingClientRect()
+              console.log(`Applied focal point: ${focalPointValue}`)
+              console.log(`Image dimensions: ${imageRect.width}x${imageRect.height}`)
+              console.log(`Window dimensions: ${window.innerWidth}x${window.innerHeight}`)
+              console.log(`Is mobile viewport:`, window.innerWidth <= 768)
             }
           }}
           onError={async (e) => {
@@ -178,9 +184,8 @@ const Image = ({ image, style, alt }) => {
             }
           }}
           style={isArticleCover ? {
-            // For article cover images: use fixed height with object-fit cover for cropping
+            // For article cover images: let CSS handle responsive heights
             width: "100%",
-            height: "550px",
             maxWidth: "100%", 
             display: "block",
             objectFit: "cover"

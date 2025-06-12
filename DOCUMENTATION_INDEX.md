@@ -13,11 +13,26 @@ Instructions for AI assistants - architecture, commands, and development notes
 
 ## 🔧 Setup & Configuration
 
-### [CLAUDE_CODE_SETUP.md](CLAUDE_CODE_SETUP.md)
-Development environment setup, permissions, and troubleshooting
+### [claude-setup.md](claude-setup.md) ⭐
+**QUICK START** - Single copy/paste command to initialize any new Claude Code session with full context
 
 ### [TESTING_STRATEGY_SUMMARY.md](TESTING_STRATEGY_SUMMARY.md)
 Testing infrastructure and workflow documentation
+
+## 🔍 Live Documentation Access
+
+### Context7 MCP Integration
+Real-time access to comprehensive documentation for all project libraries:
+- **Next.js v11** - Static generation, deployment, AWS Amplify integration
+- **Strapi v4.2.0** - Content management, API endpoints, customization
+- **React 17** - Component lifecycle, hooks, performance optimization
+- **PostgreSQL** - Database configuration, administration, SQL features
+- **Framer Motion v6.5.1** - Animations, gestures, performance
+- **PhotoSwipe v5.4.4** - Gallery configuration, customization
+- **React Markdown v4.2.2** - Parsing, renderers, security
+- **AWS Amplify** - Hosting, build configurations, CI/CD
+
+Access via Context7 MCP tools: `mcp__context7__resolve-library-id` and `mcp__context7__get-library-docs`
 
 ## 🏗️ Technical Context
 

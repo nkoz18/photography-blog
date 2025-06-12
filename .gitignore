@@ -136,11 +136,13 @@ build
 id_rsa*
 id_ed25519*
 
-# Test files with credentials
+# Development directories
+logs/
+scripts/
+
+# Test files with credentials (moved to scripts/)
 test-*.js
 *-test.js
-create-admin-simple.js
-test-batch-upload.js
 
 # API keys and tokens
 api-keys.txt

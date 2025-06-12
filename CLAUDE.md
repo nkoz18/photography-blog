@@ -434,19 +434,60 @@ Only use the predefined Google Fonts:
 10. **Analytics** only loads in production - test locally with `NODE_ENV=production`
 11. **Dark mode enforcement** applies automatically on admin bootstrap - no user intervention needed
 
+## File Organization Standards
+
+### **Logs Directory** (`/logs/`)
+- ✅ **ALL development logs** must go here
+- ✅ **Automatically gitignored** - never committed
+- ✅ **Safe to delete** - logs can be regenerated
+- **Usage**: `npm run develop > logs/backend-dev.log 2>&1 &`
+
+### **Scripts Directory** (`/scripts/`)  
+- ✅ **One-off utilities only** - debugging tools, admin helpers, test scripts
+- ✅ **Automatically gitignored** - never committed (may contain credentials)
+- ✅ **Safe to delete** - temporary development helpers
+- **Usage**: Put any utility script here: `scripts/debug-api.js`
+
+### **Permanent Scripts Location**
+- **Testing workflows** → `tests/` directory
+- **Database operations** → `backend/database-sync/` directory
+- **Core functionality** → Integrate into main codebase
+- **Deployment scripts** → Keep in service directories
+
+### **Developer Guidelines**
+When Claude Code or any developer creates temporary files:
+1. **Logs** → Always output to `logs/` directory
+2. **Debug scripts** → Always create in `scripts/` directory
+3. **Test files** → Use `tests/` directory for permanent tests
+4. **Never scatter** temporary files in project root
+
 ## Recent Changes and Solutions
+
+### Mobile Typography & Image Display Improvements (Complete)
+- **Issues**: 
+  - Mobile cover images excessively zoomed with poor focal point display
+  - Article paragraph text too large on mobile (18px)
+- **Solutions**: 
+  - **Mobile Cover Images**: Implemented responsive height scaling with better focal point proportions:
+    - Desktop: 550px height with focal point cropping
+    - Tablet (768px): 350px height for better proportions  
+    - Mobile (480px): 300px height for optimal display
+  - **Mobile Typography**: Reduced article paragraph font size from 18px to 16px on mobile with improved line height (1.7)
+- **Result**: Better mobile reading experience with properly scaled images and comfortable text size
+- **Status**: ✅ Complete - Mobile display now optimized for both images and text
 
 ### Image Focal Points Implementation (Complete)
 - **Issue**: Focal points were stored in backend but not applied on frontend - images always showed center crop
 - **Solution**: Implemented complete focal point system using CSS `object-fit: cover` + `object-position`
 - **Implementation**:
   - Enhanced `Image` component to extract focal points from multiple data sources
-  - Applied focal points only to article cover images (550px fixed height with cropping)
+  - Applied focal points to article cover images with responsive heights (see Mobile improvements above)
   - Used CSS custom property `--focal-point` with percentage positioning
   - Preserved natural aspect ratio for thumbnail images (no focal point needed)
+  - Enhanced debug logging for mobile viewport testing
 - **Method**: Classic `object-fit: cover` + computed `object-position` percentages (most reliable approach)
-- **Result**: When focal point is set in admin (e.g., 50.67%, 97.71%), that area stays visible in cropped cover images
-- **Status**: ✅ Complete - Focal points now work correctly on article cover images
+- **Result**: When focal point is set in admin (e.g., 50.67%, 97.71%), that area stays visible in cropped cover images across all devices
+- **Status**: ✅ Complete - Focal points now work correctly on article cover images with proper mobile responsiveness
 
 ### Gallery Image Previews in Admin (Complete)
 - **Issue**: Need visual gallery management in Strapi admin for large photo collections
@@ -658,6 +699,51 @@ Additional content includes:
 - Image proxy system provides seamless access to S3-hosted media
 - API permissions are temporarily enabled during import, then secured afterward
 
+## Context7 MCP Documentation Access
+
+### Available Documentation Libraries
+
+The project has Context7 MCP server integrated, providing real-time access to comprehensive documentation for all libraries in use:
+
+#### **Core Framework Documentation**
+- **Next.js v11**: Static generation (`getStaticProps`, `getStaticPaths`), API routes, image optimization, deployment configurations, AWS Amplify integration
+- **Strapi v4.2.0**: Content types, API endpoints, admin panel customization, plugin development, deployment configurations
+- **React 17**: Component lifecycle, hooks, context API, performance optimization, concurrent features
+
+#### **UI/Animation Libraries**
+- **Framer Motion v6.5.1**: Animation APIs, gesture handling, layout animations, performance optimization techniques
+- **PhotoSwipe v5.4.4**: Gallery configuration, event handling, customization options, responsive image display
+- **React Markdown v4.2.2**: Markdown parsing, custom renderers, plugin architecture, security considerations
+
+#### **Database & Infrastructure**
+- **PostgreSQL**: Database configuration, build system options, time zone handling, SQL feature compliance, administration commands
+- **AWS Amplify**: Static site hosting, Next.js build configurations, environment variables, CI/CD pipeline setup
+
+### Using Context7 Tools
+
+When you need library-specific documentation, use these MCP tools:
+
+```javascript
+// 1. First resolve the library ID
+mcp__context7__resolve-library-id({
+  libraryName: "Next.js"  // or "Strapi", "React", etc.
+})
+
+// 2. Then fetch specific documentation
+mcp__context7__get-library-docs({
+  context7CompatibleLibraryID: "/vercel/next.js",  // from step 1
+  topic: "static generation deployment",           // optional focus
+  tokens: 8000                                    // optional token limit
+})
+```
+
+### Key Benefits
+- **Always Up-to-Date**: Documentation is fetched fresh from indexed repositories
+- **Context-Aware**: Can focus on specific topics relevant to current work
+- **Comprehensive**: Covers all major libraries used in the project
+- **On-Demand**: No local storage needed, documentation accessed when required
+
+This eliminates the need to maintain local documentation copies and ensures access to the latest library features and best practices.
 
 ## Deployment Notification Rule
 

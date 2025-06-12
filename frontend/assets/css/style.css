@@ -366,6 +366,14 @@ p {
   transition: color var(--transition-time) ease;
 }
 
+/* Mobile article content font size */
+@media (max-width: 768px) {
+  .uk-article-content p {
+    font-size: 16px;
+    line-height: 1.7;
+  }
+}
+
 /* Fixed article title size to be more reasonable */
 .uk-article-title {
   font-size: 48px;
@@ -509,6 +517,15 @@ p {
 }
 
 @media (max-width: 768px) {
+  /* Mobile cover image - 270px for better proportions */
+  .article-cover-image img {
+    height: 270px !important;
+  }
+  
+  .article-cover-image .image-container {
+    height: 270px !important;
+  }
+
   /* Force single column layout for all article cards on mobile */
   .uk-child-width-1-2\@s > * {
     width: 100% !important;
@@ -627,13 +644,13 @@ p {
     font-size: 40px;
   }
 
-  /* Further reduce cover image height on small screens */
+  /* Small mobile screens - 270px for better proportions */
   .article-cover-image img {
-    height: 250px; /* Increased from 200px for better visibility on small screens */
+    height: 270px !important;
   }
   
   .article-cover-image .image-container {
-    height: 250px !important;
+    height: 270px !important;
   }
   
   /* Further consistent spacing adjustments for very small screens */
@@ -917,7 +934,8 @@ button[aria-label*="download"]:hover,
   margin-right: 8px !important;
 }
 
-a[download] {
+/* Download button margin adjustment for proper alignment */
+.pswp__top-bar a[download] {
   margin-top: 8px !important;
 }
 
@@ -1147,52 +1165,59 @@ html:not(.dark-mode) video {
   align-items: center;
 }
 
-/* Modal background */
-.report-modal-background {
+/* Rough.js modal background */
+.report-modal-rough-background {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: transparent;
-  background-image: url("/images/icons/solid_doodle_box.svg");
-  background-size: contain;
-  background-position: 13px 16px;
-  background-repeat: no-repeat;
-}
-
-/* Close button */
-.report-modal-close-button {
-  position: absolute;
-  top: 55px;
-  right: 62px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  width: 44px;
-  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px;
+}
+
+.modal-background-canvas {
+  display: block;
+}
+
+/* Close button with rough.js */
+.report-modal-close-button {
+  position: absolute;
+  top: -20px;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   z-index: 20;
 }
 
-.report-modal-close-button svg {
-  width: 28px;
-  height: 28px;
+.close-button-canvas {
+  display: block;
+}
+
+.close-button-x {
+  pointer-events: none;
+  user-select: none;
 }
 
 /* Modal content area */
 .report-modal-content {
   position: absolute;
-  top: 80px;
-  left: 80px;
-  right: 80px;
-  bottom: 80px;
+  top: 30px;
+  left: 40px;
+  right: 40px;
+  bottom: 50px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
   z-index: 10;
 }
@@ -1206,6 +1231,7 @@ html:not(.dark-mode) video {
   color: white;
   margin-bottom: 20px;
   font-size: 64px;
+  font-family: "Barriecito", cursive;
 }
 
 .report-modal-title {
@@ -1219,19 +1245,22 @@ html:not(.dark-mode) video {
 .report-modal-success p,
 .report-modal-error p,
 .report-modal-already-reported p,
+.report-modal-session-reported p,
 .report-modal-rate-limited p {
   margin: 0;
   color: white;
   font-size: 16px;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Barriecito", cursive;
   opacity: 0.9;
 }
 
 /* Success state specific styling - narrower and larger text */
 .report-modal-success p {
   font-size: 18px;
-  max-width: 200px;
+  max-width: 300px;
   margin: 0 auto;
+  font-family: "Barriecito", cursive !important;
+  letter-spacing: 1px;
 }
 
 .report-modal-error .status-icon,
@@ -1242,8 +1271,31 @@ html:not(.dark-mode) video {
   font-size: 64px;
 }
 
+.report-modal-session-reported .status-icon {
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.report-modal-session-reported {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 20px;
+}
+
+.report-modal-session-reported p {
+  max-width: 300px;
+  font-size: 18px;
+  font-family: "Barriecito", cursive !important;
+  letter-spacing: 1px;
+}
+
 .report-modal-error h3,
 .report-modal-already-reported h3,
+.report-modal-session-reported h3,
 .report-modal-rate-limited h3 {
   margin: 0 0 12px 0;
   color: white;
@@ -1283,37 +1335,25 @@ html:not(.dark-mode) video {
   display: flex;
   gap: 20px;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
-/* Step 1 buttons (Yes/No) */
-.report-modal-step1-button {
-  padding: 0;
-  background-color: transparent;
-  background-size: contain;
-  background-position: center;
-  background-repeat: no-repeat;
-  color: #ff007f;
-  border: none;
-  font-size: 24px;
-  font-family: "IBM Plex Mono", monospace;
-  font-weight: 600;
+/* Rough.js canvas styling */
+.rough-canvas {
+  display: block;
+}
+
+.rough-canvas-button {
   cursor: pointer;
-  width: 120px;
-  height: 80px;
-  transition: all 0.1s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-.report-modal-step1-button.yes {
-  background-image: url("/images/icons/box_small_white_1.svg");
-  background-position: 10px 3px;
+.rough-canvas-container {
+  position: relative;
+  display: inline-block;
 }
 
-.report-modal-step1-button.no {
-  background-image: url("/images/icons/box_small_white_3.svg");
-  background-position: center;
+.rough-canvas-text {
+  font-family: "Barriecito", cursive !important;
 }
 
 /* Loading spinner */
@@ -1333,119 +1373,70 @@ html:not(.dark-mode) video {
 .report-modal-loading p {
   margin-top: 20px;
   color: white;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Barriecito", cursive;
   font-size: 16px;
 }
 
 /* Step 2 options grid */
 .report-modal-options {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   width: 100%;
+  align-items: center;
 }
 
-/* Step 2 option buttons */
-.report-modal-option-button {
-  padding: 16px 24px;
-  background-color: transparent;
-  color: white;
-  border: none;
-  font-size: 18px;
-  font-family: "IBM Plex Mono", monospace;
-  font-weight: 600;
-  cursor: pointer;
-  text-align: center;
-  transition: all 0.01s ease;
-  background: none;
+/* Step 2 option wrapper */
+.report-modal-option-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 
 /* ============= REPORT MODAL RESPONSIVE STYLES ============= */
 
-/* Mobile overlay padding reduction */
-@media (max-width: 640px) {
-  .report-modal-overlay {
-    padding: 5px !important;
-  }
-}
-
-/* Mobile-first responsive styles for report modal */
+/* Mobile-first responsive styles for rough.js report modal */
 .report-modal-container {
-  /* Mobile: larger container for rotated background - use percentage to match overlay */
+  /* Mobile: container sized for canvas */
   max-width: 90%;
-  max-height: 85vh;
-  min-height: 600px;
-  width: 520px;
+  max-height: 90vh;
+  min-height: 500px;
+  width: 360px;
+  position: relative;
 }
 
 
-.report-modal-close-button {
-  /* Mobile: position close button within rotated larger background */
-  top: 4%;
-  right: 16%;
-  width: 32px;
-  height: 32px;
-  padding: 4px;
-}
-
-.report-modal-close-button svg {
-  width: 20px;
-  height: 20px;
-}
-
-.report-modal-content {
-  /* Mobile: content area within rotated larger background */
-  top: 12%;
-  left: 10%;
-  right: 10%;
-  bottom: 12%;
+/* Mobile: rough.js canvas sizing */
+.modal-background-canvas {
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .report-modal-question {
-  /* Mobile: larger text with constrained width */
+  /* Mobile: question text styling */
   font-size: 38px;
-  margin: 0 0 34px 0;
+  margin: 0 0 30px 0;
   line-height: 1.1;
-  max-width: 200px;
-}
-
-.report-modal-step1 .report-modal-question {
-  margin: 0 0 34px 0;
-}
-
-.report-modal-step2 .report-modal-question {
-  margin: 0 0 34px 0;
-}
-
-.report-modal-step2 {
-  /* Mobile: reduce bottom margin with rotated background */
-  margin-bottom: 15px;
+  max-width: 300px;
 }
 
 /* Mobile: Stack Yes/No buttons vertically */
-.report-modal-step1 > div {
-  display: flex;
+.report-modal-step1-buttons {
   flex-direction: column;
-  gap: 10px;
+  gap: 15px;
   align-items: center;
 }
 
-.report-modal-options {
-  /* Mobile: single column, full width, tighter spacing */
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 6px;
-  width: 100%;
-  margin-left: 0;
-  margin-bottom: 8px;
+/* Mobile: Canvas button sizing */
+.step1-yes-button,
+.step1-no-button {
+  width: auto;
 }
 
-.report-modal-option-button {
-  /* Mobile: larger button text with spacing */
-  padding: 10px 16px;
-  font-size: 18px;
-  margin: 5px 0;
+.step2-option-button {
+  max-width: 280px;
+  width: 100%;
 }
 
 .report-modal-title {
@@ -1462,63 +1453,27 @@ html:not(.dark-mode) video {
 /* Tablet styles */
 @media (min-width: 641px) and (max-width: 960px) {
   .report-modal-container {
-    max-width: 520px;
-    min-height: 320px;
+    max-width: 480px;
+    width: 480px;
+    min-height: 480px;
   }
   
   /* Tablet: Reset Yes/No buttons to horizontal */
-  .report-modal-step1 > div {
-    display: flex;
+  .report-modal-step1-buttons {
     flex-direction: row;
     gap: 20px;
     justify-content: center;
   }
   
-  .report-modal-background {
-    background-position: 10px 14px;
-    transform: none;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-  }
-  
-  .report-modal-close-button {
-    top: 42px;
-    right: 58px;
-    width: 38px;
-    height: 38px;
-    padding: 6px;
-  }
-  
-  .report-modal-close-button svg {
-    width: 24px;
-    height: 24px;
-  }
-  
-  .report-modal-content {
-    top: 65px;
-    left: 65px;
-    right: 65px;
-    bottom: 65px;
+  .modal-background-canvas {
+    width: 480px;
+    height: 480px;
   }
   
   .report-modal-question {
-    font-size: 35px;
-    margin: 0 0 20px 0;
-    max-width: 340px;
-  }
-  
-  .report-modal-step1 .report-modal-question {
-    margin: 25px 10px 24px 0;
-  }
-  
-  .report-modal-step2 .report-modal-question {
-    margin: 0;
-  }
-  
-  .report-modal-step2 {
-    margin-bottom: 20px;
+    font-size: 36px;
+    margin: 0 0 25px 0;
+    max-width: 400px;
   }
   
   .report-modal-options {
@@ -1548,99 +1503,59 @@ html:not(.dark-mode) video {
 /* Desktop styles */
 @media (min-width: 961px) {
   .report-modal-container {
-    max-width: 620px;
-    width: 620px;
-    min-height: 400px;
+    max-width: 560px;
+    width: 560px;
+    min-height: 480px;
   }
   
-  /* Desktop: Reset Yes/No buttons to horizontal */
-  .report-modal-step1 > div {
-    display: flex;
+  /* Desktop: horizontal Yes/No buttons */
+  .report-modal-step1-buttons {
     flex-direction: row;
-    gap: 20px;
+    gap: 30px;
     justify-content: center;
   }
   
-  .report-modal-background {
-    background-position: 13px 16px;
-    transform: none;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-  }
-  
-  .report-modal-close-button {
-    top: 55px;
-    right: 62px;
-    width: 44px;
-    height: 44px;
-    padding: 8px;
-  }
-  
-  .report-modal-close-button svg {
-    width: 28px;
-    height: 28px;
-  }
-  
-  .report-modal-content {
-    top: 80px;
-    left: 80px;
-    right: 80px;
-    bottom: 80px;
+  .modal-background-canvas {
+    width: 560px;
+    height: 480px;
   }
   
   .report-modal-question {
     font-size: 38px;
     line-height: 1.2;
-    max-width: 600px;
-  }
-  
-  .report-modal-step1 .report-modal-question {
-    margin: 40px 0 30px 0;
-  }
-  
-  .report-modal-step2 .report-modal-question {
-    margin: 20px 0 20px 0;
-  }
-  
-  .report-modal-step2 {
-    margin-bottom: 10px;
+    max-width: 500px;
+    margin: 0 0 30px 0;
   }
   
   .report-modal-options {
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    width: 100%;
-    margin-left: 0;
-    margin-bottom: 0;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 15px;
+    max-width: 500px;
   }
   
-  .report-modal-option-button {
-    padding: 16px 24px;
-    font-size: 18px;
+  .report-modal-option-wrapper {
+    width: calc(50% - 7.5px);
   }
   
-  .report-modal-title {
-    font-size: 28px;
-    margin: -10px 0 12px 0;
-  }
-  
-  .report-modal-success {
-    margin-bottom: 20px;
+  .step2-option-button {
+    max-width: 240px;
   }
 }
 
-/* Mobile: rotate and scale background - MUST come after tablet/desktop to override */
+/* Mobile: rough.js canvas specific adjustments */
 @media (max-width: 640px) {
-  .report-modal-background {
-    background-position: 0 9px !important;
-    background-size: 100% 100% !important;
-    transform: rotate(90deg) scale(1.2) !important;
-    width: 120% !important;
-    height: 90% !important;
-    top: 5% !important;
-    left: -10% !important;
+  .modal-background-canvas {
+    width: 360px;
+    height: 380px;
+    max-width: 90vw;
+    max-height: 80vh;
+  }
+  
+  .report-modal-container {
+    width: 360px;
+    max-width: 90vw;
+    min-height: 380px;
   }
 }
 
@@ -1883,8 +1798,8 @@ footer {
   opacity: 0;
   transition: opacity 0.3s ease-in-out;
   pointer-events: none; /* Prevent it from receiving hover events */
-  top: 0;
-  left: 0;
+  top: 5px;
+  left: -5px;
 }
 
 /* Only show X when menu is active - hide by default */
@@ -1918,6 +1833,22 @@ footer {
     display: block;
   }
 
+  /* Fix hamburger button when menu is open - target when nav container has menu-open class */
+  .nav-container.menu-open .hamburger-menu-container {
+    position: fixed !important;
+    top: 15px;
+    right: 15px;
+    z-index: 200;
+  }
+
+  /* Fix the navbar container when menu is open */
+  .nav-container {
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    background-color: var(--navbar-bg);
+  }
+
   /* Hide the navbar by default on mobile */
   .nav-links {
     position: fixed;
@@ -1928,7 +1859,7 @@ footer {
     max-height: 80vh;
     background-color: var(--navbar-bg);
     box-shadow: 0 5px 15px var(--shadow-color);
-    padding: 20px 20px 10px;
+    padding: 10px 20px 10px; /* Add top padding to account for fixed navbar height */
     transition: top 0.3s ease;
     z-index: 100;
     overflow-y: auto;
@@ -1974,6 +1905,11 @@ footer {
     text-align: center;
   }
   
+  /* Remove left padding on the last anchor tag (dark mode toggle) */
+  .nav-links .uk-navbar-nav li:last-child a {
+    padding-left: 0;
+  }
+  
   /* Remove hover effects on mobile - no background changes */
   .nav-links .uk-navbar-nav li a:hover,
   .nav-links .uk-navbar-nav li a:active {
@@ -2002,7 +1938,7 @@ footer {
 /* Extra small devices */
 @media (max-width: 480px) {
   .site-logo {
-    font-size: 24px !important;
+    font-size: 48px !important;
   }
 }
 
@@ -2070,7 +2006,7 @@ html:not(.dark-mode) .dark-toggle-inner {
   html:not(.dark-mode) .dark-toggle-inner {
     display: inline-block;
     padding: 8px 16px;
-    font-size: 24px; /* Increased font size for better readability */
+    font-size: 32px;
     background-color: #333333;
     color: #ffffff;
   }
@@ -2078,7 +2014,7 @@ html:not(.dark-mode) .dark-toggle-inner {
   .dark-mode .dark-toggle-inner {
     display: inline-block;
     padding: 8px 16px;
-    font-size: 24px; /* Increased font size for better readability */
+    font-size: 32px;
     background-color: #efefef;
     color: #1a1a1a;
   }

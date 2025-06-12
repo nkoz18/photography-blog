@@ -1,5 +1,7 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import RoughCanvas from "./RoughCanvas"
+import { isImageReported, markImageAsReported } from "../lib/reportStorage"
 
 const ReportModal = ({ isOpen, imageId, imageName, onClose }) => {
   const [step, setStep] = useState(1) // 1: Are you in this photo?, 2: Why are you reporting?
@@ -7,6 +9,7 @@ const ReportModal = ({ isOpen, imageId, imageName, onClose }) => {
   const [reason, setReason] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState(null)
+  const [alreadyReported, setAlreadyReported] = useState(false)
 
   const reasonOptions = [
     { value: "unflattering", label: "Unflattering" },
@@ -14,6 +17,17 @@ const ReportModal = ({ isOpen, imageId, imageName, onClose }) => {
     { value: "copyright", label: "Copyright" },
     { value: "other", label: "Other" },
   ]
+
+  // Check if image was already reported when modal opens
+  useEffect(() => {
+    if (isOpen && imageId) {
+      const wasReported = isImageReported(imageId)
+      setAlreadyReported(wasReported)
+      if (wasReported) {
+        setSubmitStatus("session-already-reported")
+      }
+    }
+  }, [isOpen, imageId])
 
   const handleStep1Submit = (answer) => {
     setIsInPhoto(answer)
@@ -41,6 +55,8 @@ const ReportModal = ({ isOpen, imageId, imageName, onClose }) => {
       )
 
       if (response.ok) {
+        // Mark image as reported in session storage
+        markImageAsReported(imageId)
         setSubmitStatus("success")
         setTimeout(() => {
           onClose()
@@ -71,6 +87,7 @@ const ReportModal = ({ isOpen, imageId, imageName, onClose }) => {
     setIsInPhoto("")
     setReason("")
     setSubmitStatus(null)
+    setAlreadyReported(false)
   }
 
   const handleClose = () => {
@@ -88,52 +105,111 @@ const ReportModal = ({ isOpen, imageId, imageName, onClose }) => {
           exit={{ opacity: 0 }}
           onClick={handleClose}
         >
-          {/* Background container that matches modal content */}
+          {/* Background container with rough.js canvas */}
           <motion.div
             className="report-modal-container"
-            initial={{ scale: 0.7, y: 80, rotateX: 15 }}
-            animate={{ scale: 1, y: 0, rotateX: 0 }}
-            exit={{ scale: 0.7, y: 80, rotateX: -15, opacity: 0 }}
+            initial={{ 
+              scale: 0.7, 
+              y: 80, 
+              rotateX: 15,
+              x: [0, -2, 2, -1, 1, 0] // Add jittery entrance
+            }}
+            animate={{ 
+              scale: 1, 
+              y: 0, 
+              rotateX: 0,
+              x: 0
+            }}
+            exit={{ 
+              scale: 0.7, 
+              y: 80, 
+              rotateX: -15, 
+              opacity: 0,
+              x: [0, 1, -1, 2, -2, 0] // Add jittery exit
+            }}
             transition={{ 
               type: "spring", 
-              damping: 20, 
-              stiffness: 280,
-              opacity: { duration: 0.2 }
+              damping: 15, // Reduced damping for more jitter
+              stiffness: 350, // Higher stiffness for snappier movement
+              opacity: { duration: 0.2 },
+              x: { duration: 0.4, ease: "easeInOut" }
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Animated background box */}
+            {/* Rough.js animated background box */}
             <AnimatePresence mode="wait">
               <motion.div
-                className="report-modal-background"
-                key={`box-${step}-${submitStatus || 'default'}`}
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.8, opacity: 0 }}
-                transition={{ type: "spring", stiffness: 300, damping: 25 }}
-              />
+                className="report-modal-rough-background"
+                key={`rough-box-${step}-${submitStatus || 'default'}`}
+                initial={{ 
+                  scale: 0.8, 
+                  opacity: 0,
+                  rotate: [0, -1, 1, -0.5, 0.5, 0] // Jittery entrance rotation
+                }}
+                animate={{ 
+                  scale: 1, 
+                  opacity: 1,
+                  rotate: 0
+                }}
+                exit={{ 
+                  scale: 0.8, 
+                  opacity: 0,
+                  rotate: [0, 0.5, -0.5, 1, -1, 0] // Jittery exit rotation
+                }}
+                transition={{ 
+                  type: "spring", 
+                  stiffness: 400, 
+                  damping: 20,
+                  rotate: { duration: 0.3, ease: "easeInOut" }
+                }}
+              >
+                <RoughCanvas 
+                  width={480} 
+                  height={480} 
+                  mode="main" 
+                  roughness={1.5}
+                  className="modal-background-canvas"
+                />
+              </motion.div>
             </AnimatePresence>
             
-            {/* Close button - positioned to stay inside the doodle box */}
-            <motion.button
+            {/* Close button using rough.js */}
+            <motion.div
               className="report-modal-close-button"
               onClick={handleClose}
               whileHover={{ 
+                scale: [1, 1.1, 1],
                 x: [0, -1, 1, -1, 1, 0],
-                transition: { duration: 0.25, repeat: Infinity }
+                transition: { duration: 0.3, repeat: Infinity }
               }}
               whileTap={{ scale: 0.9 }}
+              style={{ cursor: 'pointer' }}
             >
-              <svg
-                width="28"
-                height="28"
-                viewBox="0 0 150 150"
-                fill="white"
-                xmlns="http://www.w3.org/2000/svg"
+              <RoughCanvas 
+                width={36} 
+                height={36} 
+                mode="close-button" 
+                roughness={2.8}
+                className="close-button-canvas"
+              />
+              <div 
+                className="close-button-x"
+                style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  fontSize: '20px',
+                  fontWeight: 'bold',
+                  color: '#ff007f',
+                  fontFamily: 'Barriecito, cursive',
+                  pointerEvents: 'none',
+                  userSelect: 'none'
+                }}
               >
-                <path d="M 22.93 29.22 C 23.98 28.37 25.03 27.53 26.09 26.68 C 29.30 28.39 32.51 30.12 35.70 31.87 C 36.11 30.15 36.54 28.43 36.98 26.72 C 50.58 34.90 62.51 45.41 74.71 55.48 C 86.28 44.84 98.53 34.78 112.04 26.69 C 112.47 28.41 112.88 30.13 113.29 31.86 C 116.79 29.95 120.33 28.10 123.88 26.28 C 124.88 29.04 125.49 31.91 125.86 34.82 C 127.39 34.19 128.93 33.56 130.47 32.95 C 128.60 37.54 127.03 42.71 122.73 45.68 C 112.04 54.18 100.56 61.68 90.46 70.92 C 100.10 81.88 110.07 92.70 117.94 105.05 C 121.58 108.99 120.06 114.35 119.51 119.06 C 115.20 117.86 111.22 121.53 107.35 121.32 C 96.12 109.52 86.38 96.27 74.28 85.26 C 64.60 95.27 54.88 105.31 46.43 116.41 C 44.84 118.25 43.44 120.60 41.06 121.53 C 37.25 120.47 33.63 118.65 29.49 119.06 C 28.94 114.35 27.42 109.00 31.05 105.05 C 38.84 92.63 49.11 82.06 58.59 70.96 C 48.43 61.77 36.96 54.21 26.28 45.66 C 22.06 42.73 20.46 37.67 18.49 33.19 C 20.28 33.81 22.06 34.44 23.85 35.06 C 23.53 33.11 23.22 31.17 22.93 29.22 Z" />
-              </svg>
-            </motion.button>
+                ✕
+              </div>
+            </motion.div>
 
             {/* Content area - properly contained within the doodle box */}
             <div className="report-modal-content">
@@ -186,6 +262,122 @@ const ReportModal = ({ isOpen, imageId, imageName, onClose }) => {
                     </h3>
                     <p>
                       This image has already been reported
+                    </p>
+                  </motion.div>
+                )}
+
+                {submitStatus === "session-already-reported" && (
+                  <motion.div
+                    className="report-modal-session-reported"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                    key="session-already-reported"
+                  >
+                    <motion.div 
+                      className="status-icon sleepy-cat-icon"
+                      initial={{ scale: 0, rotate: -90 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ delay: 0.2, type: "spring", stiffness: 400 }}
+                      style={{ position: 'relative' }}
+                    >
+                      <img 
+                        src="/images/sleepy_cat.gif" 
+                        alt="Sleepy cat" 
+                        style={{
+                          width: '250px',
+                          height: '130px',
+                          objectFit: 'contain'
+                        }}
+                      />
+                      {/* Floating Z's - positioned on left side */}
+                      <motion.div
+                        className="floating-z"
+                        initial={{ opacity: 0, y: 0, x: -30 }}
+                        animate={{ 
+                          opacity: [0, 1, 1, 0],
+                          y: [-10, -30, -40, -50],
+                          x: [-30, -35, -32, -38]
+                        }}
+                        transition={{
+                          duration: 3,
+                          repeat: Infinity,
+                          repeatDelay: 0.5,
+                          ease: "easeInOut"
+                        }}
+                        style={{
+                          position: 'absolute',
+                          top: '20px',
+                          left: '10px',
+                          fontSize: '24px',
+                          color: 'white',
+                          fontFamily: 'Barriecito, cursive',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Z
+                      </motion.div>
+                      <motion.div
+                        className="floating-z"
+                        initial={{ opacity: 0, y: 0, x: -20 }}
+                        animate={{ 
+                          opacity: [0, 1, 1, 0],
+                          y: [-5, -25, -35, -45],
+                          x: [-20, -18, -22, -16]
+                        }}
+                        transition={{
+                          duration: 3,
+                          repeat: Infinity,
+                          repeatDelay: 0.5,
+                          delay: 1,
+                          ease: "easeInOut"
+                        }}
+                        style={{
+                          position: 'absolute',
+                          top: '10px',
+                          left: '40px',
+                          fontSize: '18px',
+                          color: 'white',
+                          fontFamily: 'Barriecito, cursive',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        z
+                      </motion.div>
+                      <motion.div
+                        className="floating-z"
+                        initial={{ opacity: 0, y: 0, x: -15 }}
+                        animate={{ 
+                          opacity: [0, 1, 1, 0],
+                          y: [-15, -35, -45, -55],
+                          x: [-15, -18, -12, -16]
+                        }}
+                        transition={{
+                          duration: 3,
+                          repeat: Infinity,
+                          repeatDelay: 0.5,
+                          delay: 2,
+                          ease: "easeInOut"
+                        }}
+                        style={{
+                          position: 'absolute',
+                          top: '30px',
+                          left: '25px',
+                          fontSize: '30px',
+                          color: 'white',
+                          fontFamily: 'Barriecito, cursive',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Z
+                      </motion.div>
+                    </motion.div>
+                    <h3>
+                      Thanks!
+                    </h3>
+                    <p>
+                      You already submitted a report for this image. We'll make sure to take a look at it and take it down if appropriate.
                     </p>
                   </motion.div>
                 )}
@@ -256,29 +448,59 @@ const ReportModal = ({ isOpen, imageId, imageName, onClose }) => {
                     </h3>
                     
                     <div className="report-modal-step1-buttons">
-                      <motion.button
-                        className="report-modal-step1-button yes"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => handleStep1Submit("yes")}
+                      <motion.div
+                        initial={{ 
+                          opacity: 0, 
+                          y: 20,
+                          x: [0, -1, 1, 0] // Jittery entrance
+                        }}
+                        animate={{ 
+                          opacity: 1, 
+                          y: 0,
+                          x: 0
+                        }}
+                        transition={{ 
+                          delay: 0.2,
+                          x: { duration: 0.2, ease: "easeInOut" }
+                        }}
                       >
-                        Yes
-                      </motion.button>
+                        <RoughCanvas
+                          width={140}
+                          height={60}
+                          mode="yes-button"
+                          text="Yes"
+                          roughness={2.5}
+                          onClick={() => handleStep1Submit("yes")}
+                          className="step1-yes-button"
+                        />
+                      </motion.div>
                       
-                      <motion.button
-                        className="report-modal-step1-button no"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => handleStep1Submit("no")}
+                      <motion.div
+                        initial={{ 
+                          opacity: 0, 
+                          y: 20,
+                          x: [0, 1, -1, 0] // Jittery entrance (opposite direction)
+                        }}
+                        animate={{ 
+                          opacity: 1, 
+                          y: 0,
+                          x: 0
+                        }}
+                        transition={{ 
+                          delay: 0.3,
+                          x: { duration: 0.2, ease: "easeInOut" }
+                        }}
                       >
-                        No
-                      </motion.button>
+                        <RoughCanvas
+                          width={140}
+                          height={60}
+                          mode="no-button"
+                          text="No"
+                          roughness={2.5}
+                          onClick={() => handleStep1Submit("no")}
+                          className="step1-no-button"
+                        />
+                      </motion.div>
                     </div>
                   </motion.div>
                 )}
@@ -314,18 +536,34 @@ const ReportModal = ({ isOpen, imageId, imageName, onClose }) => {
                     ) : (
                       <div className="report-modal-options">
                         {reasonOptions.map((option, index) => (
-                          <motion.button
-                            className="report-modal-option-button"
+                          <motion.div
                             key={option.value}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.1 + (index * 0.1) }}
-                            whileHover={{ scale: 1.08 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => handleStep2Submit(option.value)}
+                            initial={{ 
+                              opacity: 0, 
+                              y: 20,
+                              x: [0, index % 2 === 0 ? -1 : 1, 0] // Alternate jittery directions
+                            }}
+                            animate={{ 
+                              opacity: 1, 
+                              y: 0,
+                              x: 0
+                            }}
+                            transition={{ 
+                              delay: 0.1 + (index * 0.1),
+                              x: { duration: 0.2, ease: "easeInOut" }
+                            }}
+                            className="report-modal-option-wrapper"
                           >
-                            {option.label}
-                          </motion.button>
+                            <RoughCanvas
+                              width={280}
+                              height={50}
+                              mode="option-button"
+                              text={option.label}
+                              roughness={2.5}
+                              onClick={() => handleStep2Submit(option.value)}
+                              className="step2-option-button"
+                            />
+                          </motion.div>
                         ))}
                       </div>
                     )}
