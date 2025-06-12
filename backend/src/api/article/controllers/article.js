@@ -329,6 +329,45 @@ module.exports = createCoreController("api::article.article", ({ strapi }) => ({
     console.log("Updated article", id, "with token:", result.data.attributes.obscurityToken);
     return result;
   },
+
+  async generateToken(ctx) {
+    try {
+      const { id } = ctx.params;
+      
+      // Check if article exists
+      const existingArticle = await strapi.entityService.findOne("api::article.article", id);
+      
+      if (!existingArticle) {
+        return ctx.notFound("Article not found");
+      }
+      
+      // Generate new token or use existing
+      let token = existingArticle.obscurityToken;
+      if (!token) {
+        token = generateObscurityToken();
+        
+        // Update the article with the new token using entityService to bypass permissions
+        await strapi.entityService.update("api::article.article", id, {
+          data: {
+            obscurityToken: token
+          }
+        });
+        
+        console.log("Generated new obscurity token for article", id, ":", token);
+      } else {
+        console.log("Article", id, "already has token:", token);
+      }
+      
+      return {
+        success: true,
+        token: token,
+        message: "Token generated successfully"
+      };
+    } catch (error) {
+      console.error("Error generating token:", error);
+      return ctx.internalServerError("Failed to generate token");
+    }
+  },
 }));
 
 // Helper function to generate 12-character obscurity token

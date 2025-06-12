@@ -19,8 +19,10 @@ const ShareWithClient = () => {
       return null;
     }
 
-    // Always use localhost for development since that's where your frontend is running
-    const baseURL = 'http://localhost:3000';
+    // Use appropriate base URL based on environment
+    const baseURL = process.env.NODE_ENV === 'production' 
+      ? 'https://www.silkytruth.com' 
+      : 'http://localhost:3000';
     return `${baseURL}/article/${article.slug}~${article.obscurityToken}`;
   };
 
@@ -35,27 +37,24 @@ const ShareWithClient = () => {
       // Get the auth token
       const token = auth.getToken();
       
-      // Use the correct Strapi API endpoint to trigger token generation
-      const response = await fetch(`/api/articles/${article.id}`, {
-        method: 'PUT',
+      // Use dedicated token generation endpoint
+      const response = await fetch(`/api/articles/${article.id}/generate-token`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          data: {
-            ...article,
-            // Force a small update to trigger the token generation in the controller
-            updatedAt: new Date().toISOString()
-          }
-        })
+        }
       });
 
       if (response.ok) {
+        const result = await response.json();
+        console.log('Token generated successfully:', result);
         // Refresh the page to show updated data
         window.location.reload();
       } else {
-        alert('Failed to generate share link. Please try again.');
+        const errorData = await response.text();
+        console.error('Failed to generate share link:', response.status, errorData);
+        alert(`Failed to generate share link: ${response.status}. Please check your permissions.`);
       }
     } catch (error) {
       console.error('Error generating share link:', error);

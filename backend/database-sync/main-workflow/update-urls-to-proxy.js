@@ -6,7 +6,7 @@ async function updateUrlsToProxy() {
     port: 5432,
     database: 'postgres',
     user: 'strapi',
-    password: 'localpass',
+    password: process.env.LOCAL_DB_PASSWORD || 'localpass',
   });
 
   try {

@@ -19,5 +19,14 @@ module.exports = {
         auth: false,
       },
     },
+    {
+      method: "POST",
+      path: "/articles/:id/generate-token",
+      handler: "api::article.article.generateToken",
+      config: {
+        policies: [],
+        middlewares: [],
+      },
+    },
   ],
 };

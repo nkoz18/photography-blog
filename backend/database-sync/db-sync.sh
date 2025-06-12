@@ -41,7 +41,7 @@ fi
 # Export from production
 echo "📥 Exporting production database..."
 ssh -i ~/.ssh/ec2-strapi-key-pair.pem ubuntu@44.246.84.130 "
-PGPASSWORD='TmiY7bdr22WCB7N' pg_dump \
+PGPASSWORD='\$PRODUCTION_DB_PASSWORD' pg_dump \
   -h photography-blog-db.ckmckf7lbra5.us-west-2.rds.amazonaws.com \
   -p 5432 -U postgres -d strapi \
   --clean --if-exists \
@@ -81,7 +81,7 @@ echo "✅ Local database reset complete"
 
 # Import data
 echo "📤 Importing production data to local database..."
-if PGPASSWORD='localpass' psql -h localhost -U strapi -d postgres -q < /tmp/production_full_db.sql; then
+if PGPASSWORD="$LOCAL_DB_PASSWORD" psql -h localhost -U strapi -d postgres -q < /tmp/production_full_db.sql; then
     echo "✅ Database import completed successfully"
 else
     echo "❌ Database import failed"

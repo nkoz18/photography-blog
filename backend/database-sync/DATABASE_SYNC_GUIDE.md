@@ -1,5 +1,7 @@
 # Simple Database Sync Guide
 
+⚠️ **SECURITY UPDATE**: All database sync scripts now use environment variables for credentials. Set `LOCAL_DB_PASSWORD` and `PRODUCTION_DB_PASSWORD` before running any sync operations. See SECURITY.md for details.
+
 ## Problem with API-Based Sync
 
 The programmatic API sync has several critical issues:
@@ -66,8 +68,8 @@ sudo -u postgres psql -c "DROP DATABASE IF EXISTS postgres;"
 sudo -u postgres psql -c "CREATE DATABASE postgres;"
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE postgres TO strapi;"
 
-# Import production data
-PGPASSWORD='localpass' psql -h localhost -U strapi -d postgres < /tmp/production_full_db.sql
+# Import production data (using environment variable for security)
+PGPASSWORD="$LOCAL_DB_PASSWORD" psql -h localhost -U strapi -d postgres < /tmp/production_full_db.sql
 
 # Restart backend
 cd backend && nohup npm run develop > ../backend.log 2>&1 &
