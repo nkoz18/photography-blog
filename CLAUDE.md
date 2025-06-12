@@ -433,6 +433,8 @@ Only use the predefined Google Fonts:
 9. **Gallery previews** use image proxy system - ensure backend proxy endpoint is running
 10. **Analytics** only loads in production - test locally with `NODE_ENV=production`
 11. **Dark mode enforcement** applies automatically on admin bootstrap - no user intervention needed
+12. **Report modal testing** - Use `/reset-sessions.html` to clear session storage between tests
+13. **Rough.js report modal** - All components use hand-drawn aesthetic with responsive breakpoints
 
 ## File Organization Standards
 
@@ -522,6 +524,25 @@ When Claude Code or any developer creates temporary files:
   - Eliminated console logging spam
 - **Features**: Persistent dark mode, no user intervention required, clean console
 - **Status**: ✅ Complete - Admin always displays in dark mode
+
+### Report Modal with Rough.js Implementation (Complete)
+- **Issue**: Replace static SVG background in report modal with dynamic hand-drawn rough.js aesthetic
+- **Solution**: Complete rough.js integration with comprehensive responsive design and session tracking
+- **Components**:
+  - RoughCanvas component: `frontend/components/RoughCanvas.js` (dynamic canvas drawing)
+  - Report modal: `frontend/components/ReportModal.js` (rough.js integration + animations)
+  - Session storage: `frontend/lib/reportStorage.js` (prevents duplicate reports)
+  - PhotoSwipe integration: `frontend/components/PhotoSwipeGallery.js` (proper current slide tracking)
+  - Reset utility: `frontend/public/reset-sessions.html` (testing tool)
+- **Features**: 
+  - Hand-drawn rough.js aesthetic with varying roughness levels
+  - Session storage prevents duplicate reports with friendly "sleepy cat" message
+  - Responsive design: mobile (≤640px), tablet (641-960px), desktop (≥961px)
+  - Proper PhotoSwipe current slide tracking using change events
+  - Background scroll prevention for both PhotoSwipe and report modal
+  - Framer Motion animations with jittery entrance/exit effects
+  - Black-outlined floating Z's animation for visual appeal
+- **Status**: ✅ Complete - Fully responsive with proper image tracking and UX polish
 
 ### Client Sharing Feature Implementation (Complete)
 - **Issue**: Need to share unpublished articles with clients for preview/approval
@@ -744,6 +765,41 @@ mcp__context7__get-library-docs({
 - **On-Demand**: No local storage needed, documentation accessed when required
 
 This eliminates the need to maintain local documentation copies and ensures access to the latest library features and best practices.
+
+## Troubleshooting
+
+### Report Modal Issues
+
+**False Positives on "Already Reported":**
+- **Symptoms**: Getting sleepy cat message for images never reported
+- **Cause**: Session storage conflicts or PhotoSwipe current slide tracking issues
+- **Solution**: Visit `http://localhost:3000/reset-sessions.html` to clear session storage
+- **Debug**: Check browser console for detailed logging of image IDs and session state
+
+**Mobile Layout Overflow:**
+- **Symptoms**: Buttons extending beyond modal boundaries on mobile
+- **Cause**: Canvas width constraints or container sizing issues
+- **Solution**: Ensure `.step2-option-button` has `width: auto` in mobile CSS
+- **Debug**: Inspect element to verify canvas width matches container
+
+**Background Scrolling:**
+- **Symptoms**: Page scrolls behind open modal or PhotoSwipe
+- **Cause**: Missing scroll prevention CSS
+- **Solution**: Verify `body:has(.report-modal-overlay)` and `.pswp--open` CSS rules are applied
+- **Debug**: Check if `overflow: hidden` is being applied to body element
+
+**Rough.js Canvas Not Rendering:**
+- **Symptoms**: Blank or broken modal backgrounds
+- **Cause**: SSR issues or device pixel ratio problems
+- **Solution**: Component includes SSR protection and DPR handling
+- **Debug**: Check browser console for canvas-related errors
+
+### PhotoSwipe Integration Issues
+
+**Current Slide Tracking:**
+- **Issue**: Report button sends wrong image ID
+- **Solution**: Uses PhotoSwipe `change` event for reliable tracking
+- **Debug**: Console shows detailed slide change logs with image IDs
 
 ## Deployment Notification Rule
 
