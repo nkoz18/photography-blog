@@ -389,7 +389,7 @@ const ReportModal = ({ isOpen, imageId, imageName, onClose }) => {
                       Thanks!
                     </h3>
                     <p>
-                      You already submitted a report for this image. We'll make sure to take a look at it and take it down if appropriate.
+                      You already submitted a report for this image. We&apos;ll make sure to take a look at it and take it down if appropriate.
                     </p>
                   </motion.div>
                 )}

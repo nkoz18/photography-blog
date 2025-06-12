@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reset Report Sessions</title>
+</head>
+<body>
+    <h1>Reset Report Sessions</h1>
+    <button onclick="resetSessions()">Clear Session Storage</button>
+    <div id="result"></div>
+    
+    <script>
+        function resetSessions() {
+            // Clear all reported images from session storage
+            sessionStorage.removeItem('silkytruth_reported_images');
+            
+            // Show confirmation
+            const resultDiv = document.getElementById('result');
+            const wasCleared = !sessionStorage.getItem('silkytruth_reported_images');
+            
+            if (wasCleared) {
+                resultDiv.innerHTML = '<p style="color: green;">✅ Report session storage cleared! You can now test reporting images again.</p>';
+            } else {
+                resultDiv.innerHTML = '<p style="color: red;">⚠️ Session reset may have failed - please try refreshing the page.</p>';
+            }
+        }
+        
+        // Auto-run on page load
+        window.onload = function() {
+            resetSessions();
+        }
+    </script>
+</body>
+</html>
