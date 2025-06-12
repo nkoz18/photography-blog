@@ -80,6 +80,7 @@ const DownloadAllGalleryButton = ({ galleryPhotos }) => {
       <button
         onClick={downloadAllImages}
         disabled={isDownloading}
+        className="download-all-gallery-button"
         style={{
           display: "flex",
           alignItems: "center",

@@ -1926,6 +1926,12 @@ footer {
 
 /* Mobile navigation styles */
 @media (max-width: 768px) {
+  /* Fix nav container spacing on mobile */
+  .uk-navbar-container.nav-container {
+    margin-bottom: -40px;
+    margin-top: 5px;
+  }
+  
   /* Show hamburger menu on mobile */
   .hamburger-menu-container {
     display: block;
@@ -2108,6 +2114,20 @@ h1.uk-article-title {
 .dark-mode img[src="/images/icons/download.svg"],
 .dark-mode img[src="/images/icons/report.svg"] {
   filter: none !important;
+}
+
+/* Download All button text color fix */
+.download-all-gallery-button {
+  color: #333333 !important; /* Dark text in light mode */
+}
+
+.dark-mode .download-all-gallery-button {
+  color: #ffffff !important; /* White text in dark mode */
+}
+
+/* Override inline styles for the download button text */
+.download-all-gallery-button span {
+  color: inherit !important;
 }
 
 /* ===== SCRIBBLE TOGGLE CSS ===== */
