@@ -14,12 +14,11 @@ const CustomGalleryCSS = () => {
       return;
     }
     
-    // Inject CSS for image preview styling - ONLY for gallery accordions
+    // Inject CSS for image preview styling - simple selectors that work
     const style = document.createElement('style');
     style.textContent = `
-      /* Scoped styles for gallery accordions only - avoid affecting sidebar widgets */
-      [data-strapi-field-name="gallery"] .gallery-preview-image,
-      button[aria-controls^="accordion-content-gallery.gallery_items"] .gallery-preview-image {
+      /* Base styles for gallery preview images - dark mode compatible */
+      .gallery-preview-image {
         height: 280px !important;
         width: auto !important;
         object-fit: contain !important;
@@ -35,9 +34,8 @@ const CustomGalleryCSS = () => {
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
       }
       
-      /* Style for gallery accordion buttons - scoped to avoid conflicts */
-      [data-strapi-field-name="gallery"] .gallery-accordion-button,
-      button[aria-controls^="accordion-content-gallery.gallery_items"].gallery-accordion-button {
+      /* Style for gallery accordion buttons - dark mode compatible */
+      .gallery-accordion-button {
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -52,17 +50,16 @@ const CustomGalleryCSS = () => {
         border-radius: 4px !important;
       }
       
-      /* Style for gallery accordion parents - scoped to gallery field only */
-      [data-strapi-field-name="gallery"] .gallery-accordion-parent {
+      /* Style for gallery accordion parents */
+      .gallery-accordion-parent {
         height: 300px !important;
         min-height: 300px !important;
         max-height: 300px !important;
         overflow: visible !important;
       }
       
-      /* Ensure the button text is positioned properly - scoped */
-      [data-strapi-field-name="gallery"] .gallery-accordion-button span,
-      button[aria-controls^="accordion-content-gallery.gallery_items"].gallery-accordion-button span {
+      /* Ensure the button text is positioned properly - dark mode compatible */
+      .gallery-accordion-button span {
         position: absolute !important;
         top: 10px !important;
         left: 10px !important;
@@ -121,6 +118,9 @@ const CustomGalleryCSS = () => {
       setTimeout(applyGalleryStyles, 100);
     });
     
+    // Also apply styles periodically to ensure they stick
+    const interval = setInterval(applyGalleryStyles, 1000);
+    
     observer.observe(document.body, {
       childList: true,
       subtree: true
@@ -129,6 +129,7 @@ const CustomGalleryCSS = () => {
     return () => {
       document.head.removeChild(style);
       observer.disconnect();
+      clearInterval(interval);
     };
   }, []);
 
@@ -232,19 +233,32 @@ const CustomGalleryCSS = () => {
             return;
           }
           
-          // Build image URL using the proxy system
+          // Build image URL - use direct URLs for local development
           const imageData = galleryItem.image;
           let imageUrl = null;
           
+          // Check if we're in local development (localhost)
+          const isLocal = window.location.hostname === 'localhost';
+          
           // Try thumbnail first, then fall back to full image
           if (imageData.formats?.thumbnail?.url) {
-            // Extract just the filename from the URL
-            const thumbnailPath = imageData.formats.thumbnail.url.split('/').pop();
-            imageUrl = `/api/image-proxy/${thumbnailPath}`;
+            if (isLocal && imageData.formats.thumbnail.url.startsWith('/uploads/')) {
+              // Use direct URL for local images
+              imageUrl = imageData.formats.thumbnail.url;
+            } else {
+              // Use proxy for S3 images
+              const thumbnailPath = imageData.formats.thumbnail.url.split('/').pop();
+              imageUrl = `/api/image-proxy/${thumbnailPath}`;
+            }
           } else if (imageData.url) {
-            // Extract just the filename from the URL
-            const imagePath = imageData.url.split('/').pop();
-            imageUrl = `/api/image-proxy/${imagePath}`;
+            if (isLocal && imageData.url.startsWith('/uploads/')) {
+              // Use direct URL for local images
+              imageUrl = imageData.url;
+            } else {
+              // Use proxy for S3 images
+              const imagePath = imageData.url.split('/').pop();
+              imageUrl = `/api/image-proxy/${imagePath}`;
+            }
           }
           
           if (imageUrl) {

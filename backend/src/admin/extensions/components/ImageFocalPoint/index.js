@@ -16,7 +16,6 @@ import { useNotification } from "@strapi/helper-plugin";
 const ImageContainer = styled.div`
   position: relative;
   width: 100%;
-  max-width: 400px;
   margin-top: 16px;
   margin-bottom: 16px;
   cursor: crosshair;
@@ -25,6 +24,10 @@ const ImageContainer = styled.div`
     width: 100%;
     height: auto;
     display: block;
+    border-radius: 0;
+    border: none;
+    background: none;
+    padding: 0;
   }
 `;
 

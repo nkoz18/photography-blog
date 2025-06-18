@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Typography, Button, Alert } from '@strapi/design-system';
-import { useCMEditViewDataManager, auth } from "@strapi/helper-plugin";
+import { useCMEditViewDataManager, auth, request } from "@strapi/helper-plugin";
 
 const ShareWithClient = () => {
   const { modifiedData, slug, layout } = useCMEditViewDataManager();
@@ -34,31 +34,35 @@ const ShareWithClient = () => {
 
     setIsGenerating(true);
     try {
-      // Get the auth token
+      // Get the current JWT token from Strapi auth
       const token = auth.getToken();
       
-      // Use dedicated token generation endpoint
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
+      // Make the request with explicit headers - use relative URL for admin context
       const response = await fetch(`/api/articles/${article.id}/generate-token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
+          'Authorization': `Bearer ${token}`,
+        },
       });
-
-      if (response.ok) {
-        const result = await response.json();
-        console.log('Token generated successfully:', result);
-        // Refresh the page to show updated data
-        window.location.reload();
-      } else {
-        const errorData = await response.text();
-        console.error('Failed to generate share link:', response.status, errorData);
-        alert(`Failed to generate share link: ${response.status}. Please check your permissions.`);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(`HTTP ${response.status}: ${errorData.error?.message || 'Failed to generate token'}`);
       }
+      
+      const result = await response.json();
+      console.log('Token generated successfully:', result);
+      
+      // Refresh the page to show updated data
+      window.location.reload();
     } catch (error) {
       console.error('Error generating share link:', error);
-      alert('Failed to generate share link. Please try again.');
+      alert(`Failed to generate share link: ${error.message}`);
     } finally {
       setIsGenerating(false);
     }
