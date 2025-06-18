@@ -12,6 +12,45 @@ For comprehensive documentation, see:
 
 ## 🚀 Quick Start (Claude-Specific)
 
+### 🔄 Context7 MCP Documentation Access (CRITICAL - ALWAYS DO FIRST!)
+
+**⚠️ MANDATORY: Before making ANY major updates, ALWAYS check Context7 MCP for current library documentation!**
+
+The Context7 MCP server provides real-time access to up-to-date documentation for all project libraries:
+- **Next.js v11** - Static generation, deployment, AWS Amplify integration
+- **Strapi v4.2.0** - Content management, API endpoints, customization  
+- **React 17** - Component lifecycle, hooks, performance optimization
+- **PostgreSQL** - Database configuration, administration, SQL features
+- **Framer Motion v6.5.1** - Animations, gestures, performance
+- **PhotoSwipe v5.4.4** - Gallery configuration, customization
+- **React Markdown v4.2.2** - Parsing, renderers, security
+- **AWS Amplify** - Hosting, build configurations, CI/CD
+
+**Usage Pattern (REQUIRED):**
+```bash
+# 1. Resolve library ID first
+mcp__context7__resolve-library-id(libraryName: "react")
+
+# 2. Get documentation with specific topic  
+mcp__context7__get-library-docs(
+  context7CompatibleLibraryID: "/reactjs/react.dev",
+  topic: "hooks",
+  tokens: 5000
+)
+```
+
+**Critical Context7 Library IDs:**
+- React: `/reactjs/react.dev`
+- Next.js: Search for "next.js" or "nextjs" 
+- Strapi: Search for "strapi"
+- PostgreSQL: Search for "postgresql"
+
+**Claude Instructions:**
+- **ALWAYS** use Context7 MCP BEFORE starting major feature work
+- **NEVER** assume library behavior - verify with current docs first
+- Use Context7 for debugging complex integration issues
+- Reference Context7 examples for best practices and patterns
+
 ### Development Server Commands
 
 **⚠️ CRITICAL: Never use `timeout` with background processes - it kills servers unpredictably!**
@@ -46,6 +85,49 @@ NODE_OPTIONS=--openssl-legacy-provider USE_CLOUD_BACKEND=true npm run export
 # If export fails, AWS Amplify deployment will fail
 ```
 
+## 🔒 Security Guidelines
+
+### Environment Variables (Set Locally)
+```bash
+export LOCAL_DB_PASSWORD="your_local_postgres_password"
+export PRODUCTION_DB_PASSWORD="your_production_postgres_password"
+export SSH_KEY_PATH="~/.ssh/ec2-strapi-key-pair.pem"
+export PRODUCTION_SERVER="ubuntu@44.246.84.130"
+export PRODUCTION_DB_HOST="photography-blog-db.ckmckf7lbra5.us-west-2.rds.amazonaws.com"
+```
+
+**Critical**: Never commit credentials. All database sync scripts use environment variables.
+
+## ⚠️ AWS Amplify Critical Rules
+
+### Static Export Requirements
+- **MUST use `fallback: false`** in all `getStaticPaths`
+- **NEVER use `getServerSideProps`** (breaks static export)
+- **NEVER create `/pages/api/` routes** (not supported)
+- Test `npm run export` locally before deploying
+
+### CSP Configuration
+Located in `amplify.yml`:
+```yaml
+customHeaders:
+  - pattern: '**/*'
+    headers:
+      - key: 'Content-Security-Policy'
+        value: "default-src 'self' https://api.silkytruth.com; connect-src 'self' https://api.silkytruth.com https://cloud.umami.is https://api-gateway.umami.dev;"
+```
+
+## 📁 File Organization (Claude Rules)
+
+### Logs Directory (`/logs/`)
+- **ALL development logs must go here**
+- Automatically gitignored, safe to delete
+- Usage: `npm run develop > logs/backend.log 2>&1 &`
+
+### Scripts Directory (`/scripts/`)
+- **One-off utilities only** - debugging, admin helpers
+- Automatically gitignored, safe to delete
+- For permanent scripts, use appropriate service directories
+
 ## 🏗️ Project-Specific Features
 
 ### Image Focal Points System
@@ -70,75 +152,6 @@ NODE_OPTIONS=--openssl-legacy-provider USE_CLOUD_BACKEND=true npm run export
 - **Component**: `backend/src/admin/extensions/components/CustomGalleryCSS/index.js`
 - **Function**: Shows 300px image previews in admin accordion items
 - **Dependency**: Local image proxy system for S3-hosted images
-
-## 🎨 UI/UX Style Guide
-
-### Color Palette
-- **Primary**: `#ff007f` (RGB: 255, 0, 127) - Bright magenta/pink
-- **Dark Background**: `#1a1a1a` (RGB: 26, 26, 26)
-
-### Typography (Google Fonts)
-- **Logo**: Barriecito
-- **Headings**: Kirang Haerang  
-- **Body/Readable**: IBM Plex Mono
-
-### Design Rules
-- **NO ROUNDED CORNERS**: Never use `border-radius`
-- **Primary Color**: Use `#ff007f` for all interactive elements
-- **Dark Mode**: Must apply to ALL elements without flash
-
-## 🔒 Security Guidelines
-
-### Environment Variables (Set Locally)
-```bash
-export LOCAL_DB_PASSWORD="your_local_postgres_password"
-export PRODUCTION_DB_PASSWORD="your_production_postgres_password"
-export SSH_KEY_PATH="~/.ssh/ec2-strapi-key-pair.pem"
-export PRODUCTION_SERVER="ubuntu@44.246.84.130"
-export PRODUCTION_DB_HOST="photography-blog-db.ckmckf7lbra5.us-west-2.rds.amazonaws.com"
-```
-
-**Critical**: Never commit credentials. All database sync scripts use environment variables.
-
-## 📁 File Organization (Claude Rules)
-
-### Logs Directory (`/logs/`)
-- **ALL development logs must go here**
-- Automatically gitignored, safe to delete
-- Usage: `npm run develop > logs/backend.log 2>&1 &`
-
-### Scripts Directory (`/scripts/`)
-- **One-off utilities only** - debugging, admin helpers
-- Automatically gitignored, safe to delete
-- For permanent scripts, use appropriate service directories
-
-## ⚠️ AWS Amplify Critical Rules
-
-### Static Export Requirements
-- **MUST use `fallback: false`** in all `getStaticPaths`
-- **NEVER use `getServerSideProps`** (breaks static export)
-- **NEVER create `/pages/api/` routes** (not supported)
-- Test `npm run export` locally before deploying
-
-### CSP Configuration
-Located in `amplify.yml`:
-```yaml
-customHeaders:
-  - pattern: '**/*'
-    headers:
-      - key: 'Content-Security-Policy'
-        value: "default-src 'self' https://api.silkytruth.com; connect-src 'self' https://api.silkytruth.com https://cloud.umami.is https://api-gateway.umami.dev;"
-```
-
-## 🔧 Development Notes
-
-1. **Focal Points**: Consider responsive contexts when modifying image handling
-2. **Batch Uploads**: Must update article's gallery field structure
-3. **Dependencies**: Frontend requires `--legacy-peer-deps`
-4. **Admin Extensions**: Require `npm run build` after modifications
-5. **Gallery Previews**: Depend on local image proxy system
-6. **Analytics**: Only loads in production (`NODE_ENV=production`)
-7. **Report Modal**: Use `/reset-sessions.html` to clear testing data
 
 ## 🚨 Troubleshooting
 
