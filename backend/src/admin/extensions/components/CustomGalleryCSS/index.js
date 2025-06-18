@@ -17,8 +17,9 @@ const CustomGalleryCSS = () => {
     // Inject CSS for image preview styling - ONLY for gallery accordions
     const style = document.createElement('style');
     style.textContent = `
-      /* Base styles for gallery preview images - dark mode compatible */
-      .gallery-preview-image {
+      /* Scoped styles for gallery accordions only - avoid affecting sidebar widgets */
+      [data-strapi-field-name="gallery"] .gallery-preview-image,
+      button[aria-controls^="accordion-content-gallery.gallery_items"] .gallery-preview-image {
         height: 280px !important;
         width: auto !important;
         object-fit: contain !important;
@@ -34,8 +35,9 @@ const CustomGalleryCSS = () => {
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
       }
       
-      /* Style for gallery accordion buttons - dark mode compatible */
-      .gallery-accordion-button {
+      /* Style for gallery accordion buttons - scoped to avoid conflicts */
+      [data-strapi-field-name="gallery"] .gallery-accordion-button,
+      button[aria-controls^="accordion-content-gallery.gallery_items"].gallery-accordion-button {
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -50,16 +52,17 @@ const CustomGalleryCSS = () => {
         border-radius: 4px !important;
       }
       
-      /* Style for gallery accordion parents */
-      .gallery-accordion-parent {
+      /* Style for gallery accordion parents - scoped to gallery field only */
+      [data-strapi-field-name="gallery"] .gallery-accordion-parent {
         height: 300px !important;
         min-height: 300px !important;
         max-height: 300px !important;
         overflow: visible !important;
       }
       
-      /* Ensure the button text is positioned properly - dark mode compatible */
-      .gallery-accordion-button span {
+      /* Ensure the button text is positioned properly - scoped */
+      [data-strapi-field-name="gallery"] .gallery-accordion-button span,
+      button[aria-controls^="accordion-content-gallery.gallery_items"].gallery-accordion-button span {
         position: absolute !important;
         top: 10px !important;
         left: 10px !important;
@@ -75,6 +78,19 @@ const CustomGalleryCSS = () => {
         text-overflow: ellipsis !important;
         white-space: nowrap !important;
         border: 1px solid #32324d !important;
+      }
+      
+      /* Ensure sidebar widgets don't overlap and have proper containment */
+      .edit-view__right-links > div {
+        position: relative !important;
+        overflow: visible !important;
+        margin-bottom: 16px !important;
+      }
+      
+      /* Specific fix for focal point widget container */
+      #focal-point-accordion {
+        position: relative !important;
+        z-index: 1 !important;
       }
     `;
     

@@ -15,7 +15,8 @@ import { useNotification } from "@strapi/helper-plugin";
 
 const ImageContainer = styled.div`
   position: relative;
-  width: 400px;
+  width: 100%;
+  max-width: 400px;
   margin-top: 16px;
   margin-bottom: 16px;
   cursor: crosshair;
