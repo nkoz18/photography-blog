@@ -120,6 +120,13 @@ const drawMoon = (parent, size, isDarkMode) => {
 // The actual React Component
 const ScribbleToggle = ({ isDarkMode, toggleDarkMode }) => {
   const [mounted, setMounted] = useState(false);
+  // Initialize with the actual dark mode state to prevent sliding animation
+  const [initialDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return document.documentElement.classList.contains('dark-mode')
+    }
+    return false
+  });
 
   // We use refs to get direct access to the DOM elements for drawing, which is the "React way".
   const outlineRef = useRef(null);
@@ -138,16 +145,14 @@ const ScribbleToggle = ({ isDarkMode, toggleDarkMode }) => {
     drawMoon(moonRef.current, 32, isDarkMode);
   }, [isDarkMode]); // Redraw when `isDarkMode` changes.
 
-  // The `mounted` state is crucial. Our FOUC script sets the theme class on the
-  // server, but React doesn't know about it during hydration.
-  // We set `checked` to its real `isDarkMode` value only after mounting
-  // to prevent a "hydration mismatch" error.
+  // Use the initial dark mode state before mounting to prevent sliding animation
+  // After mounting, use the prop value for reactivity
   return (
     <div className="switch">
       <input
         type="checkbox"
         id="themeToggle"
-        checked={mounted ? isDarkMode : false}
+        checked={mounted ? isDarkMode : initialDarkMode}
         onChange={toggleDarkMode}
         aria-label="Theme toggle"
       />
