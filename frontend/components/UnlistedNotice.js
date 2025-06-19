@@ -75,7 +75,7 @@ const UnlistedNotice = () => {
         }}
       >
         <span style={{ marginRight: '0.5rem' }}>🔒</span>
-        This article is unlisted and won't appear in search results or navigation.
+        This article is unlisted and won&apos;t appear in search results or navigation.
         Only people with the direct link can view it.
       </div>
     </div>
