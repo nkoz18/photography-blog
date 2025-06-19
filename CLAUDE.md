@@ -192,6 +192,20 @@ customHeaders:
 - **Function**: Shows 300px image previews in admin accordion items
 - **Dependency**: Local image proxy system for S3-hosted images
 
+### Unlisted Articles System
+- **Purpose**: Publish articles that are only accessible via direct link
+- **Backend Field**: `listed` boolean field on Article content type
+- **API Behavior**: `bypassListedFilter=true` parameter allows fetching unlisted articles
+- **Frontend Features**:
+  - Direct URL access for unlisted articles (no 404)
+  - Rough.js styled notice with theme color #ff007f
+  - SEO protection with `noindex, nofollow` meta tags
+  - Responsive notice: 585px desktop, 303px mobile
+- **Key Files**: 
+  - `backend/src/api/article/controllers/article.js` - API filtering logic
+  - `frontend/components/UnlistedNotice.js` - Hand-drawn notice component
+  - `frontend/pages/article/[slug].js` - Client-side fetching with bypass
+
 ## 🚨 Troubleshooting
 
 ### ⚠️ Server Startup Issues (CRITICAL)

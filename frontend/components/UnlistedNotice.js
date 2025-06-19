@@ -49,7 +49,7 @@ const UnlistedNotice = () => {
         marginBottom: '2rem',
         padding: '1.5rem 2rem',
         minHeight: '80px',
-        maxWidth: '600px',
+        maxWidth: '585px',
         margin: '2rem auto'
       }}
     >

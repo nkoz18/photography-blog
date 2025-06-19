@@ -101,6 +101,13 @@ footer {
 }
 
 
+/* Unlisted notice responsive styling */
+@media (max-width: 768px) {
+  .unlisted-notice-container {
+    max-width: 303px !important;
+  }
+}
+
 /* Navigation link styling */
 .nav-link {
   font-family: "Kirang Haerang", cursive !important;

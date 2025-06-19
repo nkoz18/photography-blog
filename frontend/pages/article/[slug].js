@@ -163,7 +163,7 @@ const Article = ({ article: staticArticle, categories, global }) => {
       )}
       
       <div className="uk-section">
-        <div className="uk-container">
+        <div className="uk-container uk-container-large">
           {currentArticle?.attributes ? (
             <>
               {/* Article Cover Image with Focal Point */}
