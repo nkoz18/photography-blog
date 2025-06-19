@@ -33,6 +33,9 @@ const Home = ({ articles: staticArticles, categories: staticCategories, homepage
                 publishedAt: {
                   $notNull: true,
                 },
+                listed: {
+                  $eq: true,
+                },
               },
               populate: {
                 image: { fields: ["url", "alternativeText", "caption"] },
@@ -116,6 +119,9 @@ export async function getStaticProps() {
         filters: {
           publishedAt: {
             $notNull: true,
+          },
+          listed: {
+            $eq: true,
           },
         },
         populate: {

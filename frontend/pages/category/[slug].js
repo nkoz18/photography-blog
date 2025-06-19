@@ -27,6 +27,9 @@ const Category = ({ category: staticCategory, categories: staticCategories }) =>
                   publishedAt: {
                     $notNull: true,
                   },
+                  listed: {
+                    $eq: true,
+                  },
                 },
                 populate: {
                   image: {
@@ -131,6 +134,9 @@ export async function getStaticProps({ params }) {
           filters: {
             publishedAt: {
               $notNull: true,
+            },
+            listed: {
+              $eq: true,
             },
           },
           populate: {

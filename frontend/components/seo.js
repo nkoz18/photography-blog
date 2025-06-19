@@ -34,6 +34,7 @@ const Seo = ({ seo = {} }) => {
     noindex: seoWithDefaults.noindex || false,
     canonicalUrl: seoWithDefaults.canonicalUrl || null,
     isPreview: seoWithDefaults.isPreview || false,
+    metaRobots: seoWithDefaults.metaRobots || null,
   }
 
   return (
@@ -61,16 +62,8 @@ const Seo = ({ seo = {} }) => {
       )}
       {fullSeo.article && <meta property="og:type" content="article" />}
       
-      {/* SEO Protection for Preview/Token URLs */}
-      {fullSeo.isPreview && (
-        <>
-          <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
-          <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
-        </>
-      )}
-      
-      {/* Standard noindex for non-preview pages */}
-      {fullSeo.noindex && !fullSeo.isPreview && <meta name="robots" content="noindex, nofollow" />}
+      {/* Handle robots meta tag for unlisted articles */}
+      <meta name="robots" content={fullSeo.metaRobots || "index, follow"} />
       
       {/* Canonical URL for preview pages */}
       {fullSeo.canonicalUrl && (

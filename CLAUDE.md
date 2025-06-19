@@ -51,6 +51,45 @@ mcp__context7__get-library-docs(
 - Use Context7 for debugging complex integration issues
 - Reference Context7 examples for best practices and patterns
 
+## ⚠️ STRAPI v4.2.0 COMPATIBILITY GUIDE
+
+### ✅ CONFIRMED WORKING Components (Design System v1.1.1):
+- **Box** - `import { Box } from '@strapi/design-system/Box'`
+- **Typography** - `import { Typography } from '@strapi/design-system/Typography'`
+- **TextInput** - `import { TextInput } from '@strapi/design-system/TextInput'`
+- **Button** - `import { Button } from '@strapi/design-system/Button'`
+- **Stack** - `import { Stack } from '@strapi/design-system/Stack'`
+
+### ❌ DO NOT USE (Will cause white screen crashes):
+- **Flex** - Use `Stack` with `horizontal` prop instead
+- **Icons from '@strapi/icons'** - Package may not exist in v4.2.0
+- **Alert component** - Use custom Box styling instead
+- **fontWeight prop** on Typography - Not supported
+- **endAction prop** on TextInput - Not supported
+
+### 📝 CRITICAL IMPORT PATTERN:
+```javascript
+// ✅ ALWAYS USE - Individual imports
+import { Box } from '@strapi/design-system/Box';
+import { Typography } from '@strapi/design-system/Typography';
+
+// ❌ NEVER USE - Combined imports may fail silently
+import { Box, Typography } from '@strapi/design-system';
+```
+
+### 🚨 Component Replacement Guide:
+```javascript
+// ❌ OLD (Breaks in v4.2.0)
+<Flex gap={2}>
+  <Typography fontWeight="bold">Title</Typography>
+</Flex>
+
+// ✅ NEW (Works in v4.2.0)
+<Stack spacing={2} horizontal>
+  <Typography variant="omega">Title</Typography>
+</Stack>
+```
+
 ### Development Server Commands
 
 **⚠️ CRITICAL: Never use `timeout` with background processes - it kills servers unpredictably!**

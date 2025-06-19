@@ -11,14 +11,20 @@ const { UnauthorizedError } = utils.errors;
 module.exports = createCoreController("api::article.article", ({ strapi }) => ({
   // Override the default find method to filter out unlisted articles
   async find(ctx) {
-    // Sanitize the query parameters
-    const sanitizedQueryParams = await this.sanitizeQuery(ctx);
+    // Check if this is for static generation (bypass listed filter)
+    const bypassListedFilter = ctx.query.bypassListedFilter === 'true';
+    
+    if (bypassListedFilter) {
+      // Remove the bypass parameter and use default behavior
+      delete ctx.query.bypassListedFilter;
+      return await super.find(ctx);
+    }
     
     // Add filter to only show listed articles in collections
     const modifiedParams = {
-      ...sanitizedQueryParams,
+      ...ctx.query,
       filters: {
-        ...sanitizedQueryParams.filters,
+        ...ctx.query.filters,
         listed: true
       }
     };
@@ -37,6 +43,7 @@ module.exports = createCoreController("api::article.article", ({ strapi }) => ({
   async findOne(ctx) {
     return await super.findOne(ctx);
   },
+
 
   async batchUploadGalleryImages(ctx) {
     try {
