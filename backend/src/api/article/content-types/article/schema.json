@@ -55,14 +55,11 @@
       "repeatable": false,
       "component": "sections.image-gallery"
     },
-    "obscurityToken": {
-      "type": "string",
+    "listed": {
+      "type": "boolean",
+      "default": false,
       "required": false,
-      "private": false,
-      "unique": true,
-      "minLength": 12,
-      "maxLength": 12,
-      "configurable": false
+      "private": false
     }
   }
 }

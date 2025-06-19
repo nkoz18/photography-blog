@@ -9,7 +9,35 @@ const utils = require("@strapi/utils");
 const { UnauthorizedError } = utils.errors;
 
 module.exports = createCoreController("api::article.article", ({ strapi }) => ({
-  // Keep the default CRUD operations
+  // Override the default find method to filter out unlisted articles
+  async find(ctx) {
+    // Sanitize the query parameters
+    const sanitizedQueryParams = await this.sanitizeQuery(ctx);
+    
+    // Add filter to only show listed articles in collections
+    const modifiedParams = {
+      ...sanitizedQueryParams,
+      filters: {
+        ...sanitizedQueryParams.filters,
+        listed: true
+      }
+    };
+    
+    // Execute the query with the modified parameters
+    const { results, pagination } = await strapi
+      .service('api::article.article')
+      .find(modifiedParams);
+
+    // Sanitize and return the results
+    const sanitizedResults = await this.sanitizeOutput(results, ctx);
+    return this.transformResponse(sanitizedResults, { pagination });
+  },
+
+  // Keep findOne unchanged - allows direct access to any published article
+  async findOne(ctx) {
+    return await super.findOne(ctx);
+  },
+
   async batchUploadGalleryImages(ctx) {
     try {
       console.log("Batch upload endpoint called");
@@ -180,202 +208,4 @@ module.exports = createCoreController("api::article.article", ({ strapi }) => ({
       );
     }
   },
-
-  async findByToken(ctx) {
-    try {
-      const { slug, token } = ctx.params;
-
-      // Input validation
-      if (!slug || !token) {
-        return ctx.badRequest("Both slug and token are required");
-      }
-
-      // Find article by slug and token
-      const articles = await strapi.entityService.findMany("api::article.article", {
-        filters: {
-          slug: { $eq: slug },
-          obscurityToken: { $eq: token },
-        },
-        populate: {
-          categories: {
-            populate: ["image"],
-          },
-          image: true,
-          author: {
-            populate: ["picture"],
-          },
-          gallery: {
-            populate: {
-              gallery_items: {
-                populate: {
-                  image: true,
-                },
-              },
-            },
-          },
-        },
-      });
-
-      if (!articles || articles.length === 0) {
-        return ctx.notFound("Article not found or invalid token");
-      }
-
-      const article = articles[0];
-
-      // Transform populated relations to match REST API format
-      const transformedArticle = { ...article };
-      
-      // Transform image field if it exists
-      if (transformedArticle.image) {
-        transformedArticle.image = {
-          data: {
-            id: transformedArticle.image.id,
-            attributes: transformedArticle.image
-          }
-        };
-      }
-      
-      // Transform author field if it exists
-      if (transformedArticle.author) {
-        transformedArticle.author = {
-          data: {
-            id: transformedArticle.author.id,
-            attributes: transformedArticle.author
-          }
-        };
-      }
-      
-      // Transform categories field if it exists
-      if (transformedArticle.categories) {
-        transformedArticle.categories = {
-          data: transformedArticle.categories.map(cat => ({
-            id: cat.id,
-            attributes: cat
-          }))
-        };
-      }
-      
-      // Transform gallery field if it exists
-      if (transformedArticle.gallery) {
-        const gallery = { ...transformedArticle.gallery };
-        
-        if (gallery.gallery_items) {
-          // Transform gallery_items to match expected structure
-          gallery.gallery_items = gallery.gallery_items.map(item => ({
-            id: item.id,
-            attributes: {
-              ...item,
-              image: item.image ? {
-                data: {
-                  id: item.image.id,
-                  attributes: item.image
-                }
-              } : null
-            }
-          }));
-        }
-        
-        transformedArticle.gallery = {
-          data: {
-            id: gallery.id,
-            attributes: gallery
-          }
-        };
-      }
-
-      // Convert to standard Strapi API format to maintain compatibility with frontend
-      return {
-        data: {
-          id: transformedArticle.id,
-          attributes: transformedArticle
-        }
-      };
-    } catch (error) {
-      console.error("Error finding article by token:", error);
-      return ctx.internalServerError("An error occurred while finding the article");
-    }
-  },
-
-  // Override the default create/update to auto-generate tokens
-  async create(ctx) {
-    // Generate obscurity token if not provided
-    if (!ctx.request.body.data.obscurityToken) {
-      const token = generateObscurityToken();
-      ctx.request.body.data.obscurityToken = token;
-      console.log("Generated new obscurity token for article:", token);
-    }
-    
-    // Call the default create method
-    const result = await super.create(ctx);
-    console.log("Created article with token:", result.data.attributes.obscurityToken);
-    return result;
-  },
-
-  async update(ctx) {
-    const { id } = ctx.params;
-    
-    // Check if article exists and doesn't have a token
-    const existingArticle = await strapi.entityService.findOne("api::article.article", id);
-    
-    if (existingArticle && !existingArticle.obscurityToken) {
-      // Generate token if it doesn't exist
-      const token = generateObscurityToken();
-      ctx.request.body.data.obscurityToken = token;
-      console.log("Generated obscurity token for existing article", id, ":", token);
-    }
-    
-    // Call the default update method
-    const result = await super.update(ctx);
-    console.log("Updated article", id, "with token:", result.data.attributes.obscurityToken);
-    return result;
-  },
-
-  async generateToken(ctx) {
-    try {
-      const { id } = ctx.params;
-      
-      // Check if article exists
-      const existingArticle = await strapi.entityService.findOne("api::article.article", id);
-      
-      if (!existingArticle) {
-        return ctx.notFound("Article not found");
-      }
-      
-      // Generate new token or use existing
-      let token = existingArticle.obscurityToken;
-      if (!token) {
-        token = generateObscurityToken();
-        
-        // Update the article with the new token using entityService to bypass permissions
-        await strapi.entityService.update("api::article.article", id, {
-          data: {
-            obscurityToken: token
-          }
-        });
-        
-        console.log("Generated new obscurity token for article", id, ":", token);
-      } else {
-        console.log("Article", id, "already has token:", token);
-      }
-      
-      return {
-        success: true,
-        token: token,
-        message: "Token generated successfully"
-      };
-    } catch (error) {
-      console.error("Error generating token:", error);
-      return ctx.internalServerError("Failed to generate token");
-    }
-  },
 }));
-
-// Helper function to generate 12-character obscurity token
-function generateObscurityToken() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
-  for (let i = 0; i < 12; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
-}

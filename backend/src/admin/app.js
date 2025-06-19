@@ -1,7 +1,10 @@
 import ImageFocalPoint from "./extensions/components/ImageFocalPoint";
 import BatchImageUpload from "./extensions/components/BatchImageUpload";
-import ShareWithClient from "./extensions/components/ShareWithClient";
+import ShareArticleUrl from "./extensions/components/ShareArticleUrl";
 import CustomGalleryCSS from "./extensions/components/CustomGalleryCSS";
+
+console.log('app.js: Components imported successfully');
+console.log('app.js: ShareArticleUrl type:', typeof ShareArticleUrl);
 
 /**
  * Admin panel customization entry point
@@ -55,10 +58,12 @@ export default {
       Component: BatchImageUpload,
     });
 
+    console.log('app.js: About to inject ShareArticleUrl component');
     app.injectContentManagerComponent("editView", "right-links", {
-      name: "share-with-client",
-      Component: ShareWithClient,
+      name: "share-article-url",
+      Component: ShareArticleUrl,
     });
+    console.log('app.js: ShareArticleUrl component injected successfully');
 
     // Add custom CSS for gallery behavior
     app.injectContentManagerComponent("editView", "right-links", {
