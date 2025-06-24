@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import QRCode from 'qrcode.react';
+import debounce from 'lodash.debounce';
 import { getStrapiURL } from '../../lib/api';
 import RoughCanvas from '../../components/RoughCanvas';
 import TextInputWithPredictions from '../../components/TextInputWithPredictions';
@@ -24,8 +25,44 @@ const EncounterCreator = () => {
   
   const [validationErrors, setValidationErrors] = useState({});
   const [resolvedAddress, setResolvedAddress] = useState(null);
+  const [igStatus, setIgStatus] = useState(null); // null | true | false
+  const [igChecking, setIgChecking] = useState(false);
   
   const inputRef = useRef(null);
+
+  // Debounced Instagram check function
+  const debouncedIgCheck = useRef(
+    debounce(async (handle) => {
+      if (!handle) {
+        setIgStatus(null);
+        return;
+      }
+
+      // Run regex validation first
+      const instagramRegex = /^(?!.*\\.\\.)(?!.*\\.$)[^\\.][a-zA-Z0-9._]{0,29}$/;
+      if (!instagramRegex.test(handle)) {
+        setIgStatus(null); // Don't check invalid formats
+        return;
+      }
+
+      setIgChecking(true);
+      
+      try {
+        const apiUrl = process.env.NODE_ENV === 'development' && !process.env.USE_CLOUD_BACKEND
+          ? 'http://localhost:1337'
+          : getStrapiURL();
+        
+        const response = await fetch(`${apiUrl}/api/instagram/exists?handle=${encodeURIComponent(handle)}`);
+        const { exists } = await response.json();
+        setIgStatus(exists); // true | false | null
+      } catch (error) {
+        console.error('Instagram check error:', error);
+        setIgStatus(null); // Unknown on error
+      }
+      
+      setIgChecking(false);
+    }, 500)
+  ).current;
 
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
@@ -64,7 +101,8 @@ const EncounterCreator = () => {
                 name: formData.name || null,
                 email: formData.email || null,
                 instagram: formData.instagram || null,
-                phone: formData.phone || null
+                phone: formData.phone || null,
+                igConfirmed: igStatus === true ? true : false
               }
             };
           } else {
@@ -76,7 +114,8 @@ const EncounterCreator = () => {
                 name: formData.name || null,
                 email: formData.email || null,
                 instagram: formData.instagram || null,
-                phone: formData.phone || null
+                phone: formData.phone || null,
+                igConfirmed: igStatus === true ? true : false
               }
             };
           }
@@ -131,6 +170,8 @@ const EncounterCreator = () => {
     });
     setValidationErrors({});
     setResolvedAddress(null);
+    setIgStatus(null);
+    setIgChecking(false);
   };
 
   const handleInputChange = (field, value) => {
@@ -142,6 +183,13 @@ const EncounterCreator = () => {
     // Instagram: remove @ if user types it at the beginning
     if (field === 'instagram' && value.startsWith('@')) {
       value = value.substring(1);
+    }
+    
+    // Instagram: trigger existence check
+    if (field === 'instagram') {
+      setIgStatus(null); // Clear previous status
+      setIgChecking(false);
+      debouncedIgCheck(value);
     }
     
     setFormData(prev => ({
@@ -196,6 +244,11 @@ const EncounterCreator = () => {
       ...prev,
       [field]: error
     }));
+    
+    // Also trigger Instagram check on blur
+    if (field === 'instagram' && formData[field]) {
+      debouncedIgCheck(formData[field]);
+    }
   };
   
   const validateForm = () => {
@@ -277,7 +330,7 @@ const EncounterCreator = () => {
             </div>
 
             {/* Instagram Field */}
-            <div style={{ marginBottom: '1rem' }}>
+            <div style={{ marginBottom: '1rem', position: 'relative' }}>
               <input
                 type="text"
                 autoComplete="username"
@@ -288,6 +341,7 @@ const EncounterCreator = () => {
                 style={{
                   width: '100%',
                   padding: '1rem',
+                  paddingRight: '3rem',
                   fontSize: '1rem',
                   border: `2px solid ${validationErrors.instagram ? '#FFE200' : '#ff007f'}`,
                   borderRadius: '0',
@@ -301,6 +355,33 @@ const EncounterCreator = () => {
                   minHeight: '44px' // iOS touch target minimum
                 }}
               />
+              
+              {/* Instagram status badge */}
+              {(formData.instagram && (igStatus !== null || igChecking)) && (
+                <div style={{
+                  position: 'absolute',
+                  right: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  fontSize: '18px',
+                  width: '18px',
+                  height: '18px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  pointerEvents: 'none'
+                }}>
+                  {igChecking ? (
+                    <span style={{ color: '#888', fontSize: '14px' }}>...</span>
+                  ) : igStatus === true ? (
+                    <span style={{ color: '#4ade80' }}>✓</span>
+                  ) : igStatus === false ? (
+                    <span style={{ color: '#f97316' }}>⚠</span>
+                  ) : (
+                    <span style={{ color: '#6b7280' }}>?</span>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Phone Field */}

@@ -1,0 +1,62 @@
+{
+  "kind": "collectionType",
+  "collectionName": "contacts",
+  "info": {
+    "singularName": "contact",
+    "pluralName": "contacts",
+    "displayName": "Contact",
+    "description": "Contact information collected from photo encounters"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "phone": {
+      "type": "string",
+      "regex": "^\\+?[1-9]\\d{1,14}$"
+    },
+    "email": {
+      "type": "email"
+    },
+    "instagram": {
+      "type": "string"
+    },
+    "igConfirmed": {
+      "type": "boolean",
+      "default": false
+    },
+    "tiktok": {
+      "type": "string"
+    },
+    "facebook": {
+      "type": "string"
+    },
+    "youtube": {
+      "type": "string"
+    },
+    "whatsapp": {
+      "type": "string"
+    },
+    "snapchat": {
+      "type": "string"
+    },
+    "smsOptOut": {
+      "type": "boolean",
+      "default": false
+    },
+    "encounters": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::photo-encounter.photo-encounter",
+      "inversedBy": "contacts"
+    },
+    "createdAt": {
+      "type": "datetime"
+    }
+  }
+}
