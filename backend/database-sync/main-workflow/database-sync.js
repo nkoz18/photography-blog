@@ -1,43 +1,9 @@
 #!/usr/bin/env node
 
-const axios = require('axios');
 const fs = require('fs');
+const axios = require('axios');
 
 const PRODUCTION_API = 'https://api.silkytruth.com';
-const LOCAL_API = 'http://localhost:1337';
-
-let localAuthToken = null;
-
-async function authenticateLocal() {
-  console.log('🔐 Authenticating with local Strapi...');
-  
-  // Use environment variables or hardcoded admin credentials for sync
-  const email = process.env.ADMIN_EMAIL || 'admin@example.com';
-  const password = process.env.ADMIN_PASSWORD || 'admin123';
-  
-  console.log('⚠️  Using default admin credentials. Update ADMIN_EMAIL and ADMIN_PASSWORD env vars for custom auth.');
-  
-  try {
-    const response = await axios.post(`${LOCAL_API}/admin/login`, {
-      email,
-      password
-    });
-    
-    localAuthToken = response.data.data.token;
-    console.log('✅ Local authentication successful');
-    return localAuthToken;
-  } catch (error) {
-    console.error('❌ Local authentication failed:', error.response?.data?.error?.message || error.message);
-    console.log('💡 Make sure you have created an admin user with email/password matching the env vars');
-    throw error;
-  }
-}
-
-function getAuthHeaders() {
-  return localAuthToken ? {
-    'Authorization': `Bearer ${localAuthToken}`
-  } : {};
-}
 
 async function exportProductionData() {
   console.log('🔄 Exporting ALL data from production...');
@@ -60,8 +26,14 @@ async function exportProductionData() {
       console.log(`  📥 Fetching ${name}...`);
       
       try {
+        const params = { populate };
+        // For articles, include unlisted ones
+        if (name === 'articles') {
+          params.bypassListedFilter = true;
+        }
+        
         const response = await axios.get(`${PRODUCTION_API}/api/${name}`, {
-          params: { populate }
+          params
         });
         
         if (name === 'global' || name === 'homepage') {
@@ -93,47 +65,63 @@ async function importDataToLocal() {
   console.log('🔄 Importing ALL data to fresh local database...');
   
   try {
-    // Authenticate first
-    await authenticateLocal();
-    
     const data = JSON.parse(fs.readFileSync('/tmp/production_full_export.json', 'utf8'));
+    
+    // Initialize Strapi
+    const strapi = require('@strapi/strapi');
+    const app = strapi({ autoReload: false });
+    await app.load();
     
     // Step 1: Import writers first (referenced by articles)
     if (data.writers && data.writers.length > 0) {
       console.log('  📤 Importing writers...');
       for (const writer of data.writers) {
         try {
-          const response = await axios.post(`${LOCAL_API}/api/writers`, {
-            data: {
-              name: writer.attributes.name,
-              email: writer.attributes.email
-            }
-          }, {
-            headers: getAuthHeaders()
+          const existing = await app.db.query('api::writer.writer').findOne({
+            where: { email: writer.attributes.email }
           });
-          console.log(`    ✅ Created writer: ${writer.attributes.name}`);
+          
+          if (!existing) {
+            await app.db.query('api::writer.writer').create({
+              data: {
+                name: writer.attributes.name,
+                email: writer.attributes.email,
+                publishedAt: writer.attributes.publishedAt
+              }
+            });
+            console.log(`    ✅ Created writer: ${writer.attributes.name}`);
+          } else {
+            console.log(`    ⚠️  Writer already exists: ${writer.attributes.name}`);
+          }
         } catch (error) {
-          console.log(`    ⚠️  Writer ${writer.attributes.name}: ${error.response?.data?.error?.message || error.message}`);
+          console.log(`    ❌ Writer ${writer.attributes.name}: ${error.message}`);
         }
       }
     }
     
-    // Step 2: Import categories (referenced by articles) 
+    // Step 2: Import categories (referenced by articles)
     if (data.categories && data.categories.length > 0) {
       console.log('  📤 Importing categories...');
       for (const category of data.categories) {
         try {
-          const response = await axios.post(`${LOCAL_API}/api/categories`, {
-            data: {
-              name: category.attributes.name,
-              slug: category.attributes.slug
-            }
-          }, {
-            headers: getAuthHeaders()
+          const existing = await app.db.query('api::category.category').findOne({
+            where: { slug: category.attributes.slug }
           });
-          console.log(`    ✅ Created category: ${category.attributes.name}`);
+          
+          if (!existing) {
+            await app.db.query('api::category.category').create({
+              data: {
+                name: category.attributes.name,
+                slug: category.attributes.slug,
+                publishedAt: category.attributes.publishedAt
+              }
+            });
+            console.log(`    ✅ Created category: ${category.attributes.name}`);
+          } else {
+            console.log(`    ⚠️  Category already exists: ${category.attributes.name}`);
+          }
         } catch (error) {
-          console.log(`    ⚠️  Category ${category.attributes.name}: ${error.response?.data?.error?.message || error.message}`);
+          console.log(`    ❌ Category ${category.attributes.name}: ${error.message}`);
         }
       }
     }
@@ -143,76 +131,84 @@ async function importDataToLocal() {
       console.log('  📤 Importing photo-encounters...');
       for (const encounter of data['photo-encounters']) {
         try {
-          const response = await axios.post(`${LOCAL_API}/api/photo-encounters`, {
-            data: {
-              slug: encounter.attributes.slug,
-              lat: encounter.attributes.lat,
-              lng: encounter.attributes.lng,
-              address: encounter.attributes.address,
-              placeName: encounter.attributes.placeName,
-              status: encounter.attributes.status,
-              timestamp: encounter.attributes.timestamp,
-              publishedAt: encounter.attributes.publishedAt
-              // Skip media relations for now since we don't have the files locally
-            }
-          }, {
-            headers: getAuthHeaders()
+          const existing = await app.db.query('api::photo-encounter.photo-encounter').findOne({
+            where: { slug: encounter.attributes.slug }
           });
-          console.log(`    ✅ Created photo-encounter: ${encounter.attributes.slug}`);
+          
+          if (!existing) {
+            await app.db.query('api::photo-encounter.photo-encounter').create({
+              data: {
+                slug: encounter.attributes.slug,
+                lat: encounter.attributes.lat,
+                lng: encounter.attributes.lng,
+                address: encounter.attributes.address,
+                placeName: encounter.attributes.placeName,
+                status: encounter.attributes.status,
+                timestamp: encounter.attributes.timestamp,
+                publishedAt: encounter.attributes.publishedAt
+              }
+            });
+            console.log(`    ✅ Created photo-encounter: ${encounter.attributes.slug}`);
+          } else {
+            console.log(`    ⚠️  Photo-encounter already exists: ${encounter.attributes.slug}`);
+          }
         } catch (error) {
-          console.log(`    ⚠️  Photo-encounter ${encounter.attributes.slug}: ${error.response?.data?.error?.message || error.message}`);
+          console.log(`    ❌ Photo-encounter ${encounter.attributes.slug}: ${error.message}`);
         }
       }
     }
     
-    // Step 4: Import contacts (independent content)  
+    // Step 4: Import contacts (independent content)
     if (data.contacts && data.contacts.length > 0) {
       console.log('  📤 Importing contacts...');
       for (const contact of data.contacts) {
         try {
-          const response = await axios.post(`${LOCAL_API}/api/contacts`, {
+          // Create contact without checking for duplicates since contacts can legitimately be duplicated
+          await app.db.query('api::contact.contact').create({
             data: {
               phone: contact.attributes.phone,
               email: contact.attributes.email,
               instagram: contact.attributes.instagram,
               smsOptOut: contact.attributes.smsOptOut,
               publishedAt: contact.attributes.publishedAt
-              // Skip encounter relations for now - will need separate linking step
             }
-          }, {
-            headers: getAuthHeaders()
           });
           console.log(`    ✅ Created contact: ${contact.attributes.email || contact.attributes.phone || contact.id}`);
         } catch (error) {
-          console.log(`    ⚠️  Contact ${contact.id}: ${error.response?.data?.error?.message || error.message}`);
+          console.log(`    ❌ Contact ${contact.id}: ${error.message}`);
         }
       }
     }
     
     // Step 5: Get local writers and categories for mapping
     console.log('  🔗 Getting local references for articles...');
-    const localWriters = await axios.get(`${LOCAL_API}/api/writers`, {
-      headers: getAuthHeaders()
-    });
-    const localCategories = await axios.get(`${LOCAL_API}/api/categories`, {
-      headers: getAuthHeaders()
-    });
+    const localWriters = await app.db.query('api::writer.writer').findMany();
+    const localCategories = await app.db.query('api::category.category').findMany();
     
     const writerMap = {};
-    localWriters.data.data.forEach(writer => {
-      writerMap[writer.attributes.name] = writer.id;
+    localWriters.forEach(writer => {
+      writerMap[writer.name] = writer.id;
     });
     
     const categoryMap = {};
-    localCategories.data.data.forEach(category => {
-      categoryMap[category.attributes.slug] = category.id;
+    localCategories.forEach(category => {
+      categoryMap[category.slug] = category.id;
     });
     
-    // Step 4: Import articles with proper relations
+    // Step 6: Import articles with proper relations
     if (data.articles && data.articles.length > 0) {
       console.log('  📤 Importing articles...');
       for (const article of data.articles) {
         try {
+          const existing = await app.db.query('api::article.article').findOne({
+            where: { slug: article.attributes.slug }
+          });
+          
+          if (existing) {
+            console.log(`    ⚠️  Article already exists: ${article.attributes.title}`);
+            continue;
+          }
+          
           // Map author relation
           let authorId = null;
           if (article.attributes.author?.data?.attributes?.name) {
@@ -233,51 +229,73 @@ async function importDataToLocal() {
             description: article.attributes.description,
             content: article.attributes.content,
             slug: article.attributes.slug,
+            listed: article.attributes.listed !== undefined ? article.attributes.listed : true,
             publishedAt: article.attributes.publishedAt,
-            author: authorId,
-            categories: categoryIds
-            // Skip image relations for now since we don't have the files locally
+            author: authorId
           };
           
-          const response = await axios.post(`${LOCAL_API}/api/articles`, {
+          const createdArticle = await app.db.query('api::article.article').create({
             data: articleData
-          }, {
-            headers: getAuthHeaders()
           });
+          
+          // Connect categories
+          if (categoryIds.length > 0) {
+            await app.db.query('api::article.article').update({
+              where: { id: createdArticle.id },
+              data: {
+                categories: categoryIds
+              }
+            });
+          }
+          
           console.log(`    ✅ Created article: ${article.attributes.title}`);
         } catch (error) {
-          console.log(`    ⚠️  Article ${article.attributes.title}: ${error.response?.data?.error?.message || error.message}`);
+          console.log(`    ❌ Article ${article.attributes.title}: ${error.message}`);
         }
       }
     }
     
-    // Step 5: Import global settings (single-type, use PUT)
+    // Step 7: Import global settings (single-type)
     if (data.global) {
       console.log('  📤 Importing global settings...');
       try {
-        const response = await axios.put(`${LOCAL_API}/api/global`, {
+        await app.db.query('api::global.global').update({
+          where: { id: 1 },
           data: data.global.attributes
-        }, {
-          headers: getAuthHeaders()
         });
         console.log('    ✅ Updated global settings');
       } catch (error) {
-        console.log(`    ⚠️  Global settings: ${error.response?.data?.error?.message || error.message}`);
+        try {
+          // If update fails, try creating
+          await app.db.query('api::global.global').create({
+            data: data.global.attributes
+          });
+          console.log('    ✅ Created global settings');
+        } catch (createError) {
+          console.log(`    ❌ Global settings: ${createError.message}`);
+        }
       }
     }
     
-    // Step 6: Import homepage (single-type, use PUT)
+    // Step 8: Import homepage (single-type)
     if (data.homepage) {
       console.log('  📤 Importing homepage...');
       try {
-        const response = await axios.put(`${LOCAL_API}/api/homepage`, {
+        await app.db.query('api::homepage.homepage').update({
+          where: { id: 1 },
           data: data.homepage.attributes
-        }, {
-          headers: getAuthHeaders()
         });
         console.log('    ✅ Updated homepage');
       } catch (error) {
-        console.log(`    ⚠️  Homepage: ${error.response?.data?.error?.message || error.message}`);
+        try {
+          // If update fails, try creating
+          await app.db.query('api::homepage.homepage').create({
+            data: data.homepage.attributes
+          });
+          console.log('    ✅ Created homepage');
+        } catch (createError) {
+          console.log(`    ❌ Homepage: ${createError.message}`);
+        }
       }
     }
     
@@ -290,6 +308,8 @@ async function importDataToLocal() {
     console.log(`   Contacts: ${data.contacts?.length || 0}`);
     console.log(`   Global: ${data.global ? '✅' : '❌'}`);
     console.log(`   Homepage: ${data.homepage ? '✅' : '❌'}`);
+    
+    await app.destroy();
     
   } catch (error) {
     console.error('❌ Import failed:', error.message);
@@ -314,7 +334,7 @@ async function main() {
   } else if (action === 'sync' || !action) {
     await fullSync();
   } else {
-    console.log('Usage: node full-sync.js [export|import|sync]');
+    console.log('Usage: node database-sync.js [export|import|sync]');
     console.log('  export - Export all data from production');
     console.log('  import - Import all data to local');
     console.log('  sync   - Export then import (default)');

@@ -48,6 +48,58 @@ const TypingHeading = ({ text, startTyping }) => {
   );
 };
 
+// Error typing text component for validation messages
+const ErrorTypingText = ({ text, startTyping }) => {
+  const [displayedText, setDisplayedText] = useState('');
+  const [showCursor, setShowCursor] = useState(false);
+
+  useEffect(() => {
+    if (!startTyping || !text) return;
+
+    // Reset when text changes
+    setDisplayedText('');
+    let currentIndex = 0;
+    setShowCursor(true);
+    
+    const typingInterval = setInterval(() => {
+      if (currentIndex <= text.length) {
+        setDisplayedText(text.slice(0, currentIndex));
+        currentIndex++;
+      } else {
+        clearInterval(typingInterval);
+        setShowCursor(false);
+      }
+    }, 50);
+
+    return () => clearInterval(typingInterval);
+  }, [text, startTyping]);
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      style={{ 
+        fontSize: '0.9rem',
+        lineHeight: '1.4',
+        fontFamily: '"IBM Plex Mono", monospace',
+        textAlign: 'center',
+        color: '#ff6b6b'
+      }}
+    >
+      {displayedText}
+      {showCursor && (
+        <motion.span
+          animate={{ opacity: [1, 0, 1] }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          style={{ marginLeft: '2px' }}
+        >
+          |
+        </motion.span>
+      )}
+    </motion.div>
+  );
+};
+
 // Sequential typing text component that stacks content
 const SequentialTypingText = ({ texts, encounter, startTyping }) => {
   const [completedTexts, setCompletedTexts] = useState([]);
@@ -173,11 +225,11 @@ const SequentialTypingText = ({ texts, encounter, startTyping }) => {
   return (
     <motion.div 
       style={{ 
-        fontSize: '1.1rem', // Slightly smaller
-        lineHeight: '1.6', 
+        fontSize: '1rem', // Smaller
+        lineHeight: '1.5', 
         fontFamily: '"IBM Plex Mono", monospace',
         textAlign: 'left',
-        minHeight: '8rem' // Reserve more space to prevent jumping
+        minHeight: '7.5rem' // More space to prevent jumping when second sentence appears
       }}
     >
       {/* Show completed texts */}
@@ -253,6 +305,10 @@ const EncounterPage = () => {
   const [error, setError] = useState('');
   const [showContactRequirement, setShowContactRequirement] = useState(false);
   const [animationsComplete, setAnimationsComplete] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({
+    email: false,
+    instagram: false
+  });
 
   useEffect(() => {
     console.log('🔍 [Router Debug] useEffect triggered');
@@ -408,8 +464,33 @@ const EncounterPage = () => {
     }
   };
 
+  const validateEmail = (email) => {
+    if (!email) return true; // Empty is valid
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validateInstagram = (handle) => {
+    if (!handle) return true; // Empty is valid
+    const instagramRegex = /^(?!.*\.\.)[a-zA-Z0-9._]{1,30}$/;
+    return instagramRegex.test(handle);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate fields
+    const newFieldErrors = {
+      email: formData.email && !validateEmail(formData.email),
+      instagram: formData.instagram && !validateInstagram(formData.instagram)
+    };
+    
+    setFieldErrors(newFieldErrors);
+    
+    // Check if there are validation errors
+    if (newFieldErrors.email || newFieldErrors.instagram) {
+      return;
+    }
     
     // Validate at least one contact method
     if (!formData.phone && !formData.email && !formData.instagram) {
@@ -473,7 +554,13 @@ const EncounterPage = () => {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '20px',
-      fontFamily: '"Kirang Haerang", cursive'
+      fontFamily: '"Kirang Haerang", cursive',
+      overflow: 'hidden',
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0
     }}>
       <Seo 
         seo={{
@@ -526,7 +613,7 @@ const EncounterPage = () => {
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ delay: 0.1, duration: 0.8, type: "spring", bounce: 0.4 }}
-              style={{ marginBottom: '1rem', position: 'relative', width: '140px', height: '140px', margin: '0 auto 1rem auto' }}
+              style={{ marginBottom: '0.5rem', position: 'relative', width: '140px', height: '140px', margin: '0 auto 0.5rem auto' }}
             >
               <canvas
                 ref={photoContainerRef}
@@ -560,13 +647,13 @@ const EncounterPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.8 }}
               style={{ 
-                fontSize: '2rem', 
-                marginBottom: '2rem', 
+                fontSize: '1.8rem', 
+                marginBottom: '0.5rem', 
                 color: '#ff007f',
                 textShadow: '0 0 20px rgba(255, 0, 127, 0.3)',
                 fontFamily: '"Kirang Haerang", cursive !important',
                 textAlign: 'center',
-                minHeight: '3rem' // Reserve space to prevent jumping
+                minHeight: '2.5rem' // Reserve space to prevent jumping
               }}
             >
               <TypingHeading 
@@ -579,6 +666,7 @@ const EncounterPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.8 }}
               onAnimationComplete={() => setAnimationsComplete(true)}
+              style={{ marginBottom: '1rem' }}
             >
               <SequentialTypingText encounter={encounter} startTyping={animationsComplete} />
             </motion.div>
@@ -595,17 +683,21 @@ const EncounterPage = () => {
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.9, duration: 0.6 }}
-              style={{ marginBottom: '1.5rem' }}
+              style={{ marginBottom: '1rem' }}
             >
               <input
-                type="tel"
-                placeholder="📱 Phone number (optional)"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                type="text"
+                placeholder="👤 Your name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onBlur={(e) => {
+                  const firstName = e.target.value.trim().split(' ')[0];
+                  setUserName(firstName);
+                }}
                 style={{
                   width: '100%',
-                  padding: '1rem',
-                  fontSize: '1rem',
+                  padding: '0.6rem',
+                  fontSize: '0.9rem',
                   border: '2px solid #333',
                   borderRadius: '0',
                   background: '#222',
@@ -615,7 +707,11 @@ const EncounterPage = () => {
                   fontFamily: '"IBM Plex Mono", monospace'
                 }}
                 onFocus={(e) => e.target.style.borderColor = '#ff007f'}
-                onBlur={(e) => e.target.style.borderColor = '#333'}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#333';
+                  const firstName = e.target.value.trim().split(' ')[0];
+                  setUserName(firstName);
+                }}
               />
             </motion.div>
 
@@ -623,17 +719,17 @@ const EncounterPage = () => {
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1.1, duration: 0.6 }}
-              style={{ marginBottom: '1.5rem' }}
+              style={{ marginBottom: '1rem' }}
             >
               <input
-                type="email"
-                placeholder="📧 Email address (optional)"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                type="tel"
+                placeholder="📱 Phone number (optional)"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 style={{
                   width: '100%',
-                  padding: '1rem',
-                  fontSize: '1rem',
+                  padding: '0.6rem',
+                  fontSize: '0.9rem',
                   border: '2px solid #333',
                   borderRadius: '0',
                   background: '#222',
@@ -651,18 +747,23 @@ const EncounterPage = () => {
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1.3, duration: 0.6 }}
-              style={{ marginBottom: '1.5rem' }}
+              style={{ marginBottom: '1rem' }}
             >
               <input
-                type="text"
-                placeholder="📷 Instagram handle (optional)"
-                value={formData.instagram}
-                onChange={(e) => setFormData({ ...formData, instagram: e.target.value.replace('@', '') })}
+                type="email"
+                placeholder="📧 Email address (optional)"
+                value={formData.email}
+                onChange={(e) => {
+                  setFormData({ ...formData, email: e.target.value });
+                  if (fieldErrors.email) {
+                    setFieldErrors({ ...fieldErrors, email: false });
+                  }
+                }}
                 style={{
                   width: '100%',
-                  padding: '1rem',
-                  fontSize: '1rem',
-                  border: '2px solid #333',
+                  padding: '0.6rem',
+                  fontSize: '0.9rem',
+                  border: `2px solid ${fieldErrors.email ? '#ff6b6b' : '#333'}`,
                   borderRadius: '0',
                   background: '#222',
                   color: '#fff',
@@ -670,28 +771,44 @@ const EncounterPage = () => {
                   boxSizing: 'border-box',
                   fontFamily: '"IBM Plex Mono", monospace'
                 }}
-                onFocus={(e) => e.target.style.borderColor = '#ff007f'}
-                onBlur={(e) => e.target.style.borderColor = '#333'}
+                onFocus={(e) => e.target.style.borderColor = fieldErrors.email ? '#ff6b6b' : '#ff007f'}
+                onBlur={(e) => e.target.style.borderColor = fieldErrors.email ? '#ff6b6b' : '#333'}
               />
             </motion.div>
 
-            {error && (
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4 }}
-                style={{ 
-                  color: '#ff6b6b', 
-                  marginBottom: '1rem', 
-                  padding: '0.5rem',
-                  textAlign: 'center',
+            <motion.div 
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 1.5, duration: 0.6 }}
+              style={{ marginBottom: '1rem' }}
+            >
+              <input
+                type="text"
+                placeholder="📷 Instagram handle (optional)"
+                value={formData.instagram}
+                onChange={(e) => {
+                  setFormData({ ...formData, instagram: e.target.value.replace('@', '') });
+                  if (fieldErrors.instagram) {
+                    setFieldErrors({ ...fieldErrors, instagram: false });
+                  }
+                }}
+                style={{
+                  width: '100%',
+                  padding: '0.6rem',
                   fontSize: '0.9rem',
+                  border: `2px solid ${fieldErrors.instagram ? '#ff6b6b' : '#333'}`,
+                  borderRadius: '0',
+                  background: '#222',
+                  color: '#fff',
+                  transition: 'border-color 0.3s',
+                  boxSizing: 'border-box',
                   fontFamily: '"IBM Plex Mono", monospace'
                 }}
-              >
-                {error}
-              </motion.div>
-            )}
+                onFocus={(e) => e.target.style.borderColor = fieldErrors.instagram ? '#ff6b6b' : '#ff007f'}
+                onBlur={(e) => e.target.style.borderColor = fieldErrors.instagram ? '#ff6b6b' : '#333'}
+              />
+            </motion.div>
+
 
             <motion.div 
               initial={{ opacity: 0, y: 30 }}
@@ -730,23 +847,23 @@ const EncounterPage = () => {
                 {submitting ? 'Submitting...' : 'Submit'}
               </div>
             </motion.div>
+            
+            {/* Pre-allocated space for error message to prevent jumping */}
+            <div style={{ 
+              minHeight: '3rem', 
+              marginTop: '1rem',
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'center'
+            }}>
+              {(error || showContactRequirement) && (
+                <ErrorTypingText 
+                  text={error || 'Please provide at least one way to contact you'}
+                  startTyping={true}
+                />
+              )}
+            </div>
           </motion.form>
-
-          {showContactRequirement && (
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 0.7, y: 0 }}
-              transition={{ duration: 0.4 }}
-              style={{ 
-                textAlign: 'center', 
-                fontSize: '0.9rem', 
-                color: '#ccc',
-                fontFamily: '"Kirang Haerang", cursive'
-              }}
-            >
-              At least one contact method required
-            </motion.div>
-          )}
         </motion.div>
       )}
 

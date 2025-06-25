@@ -26,10 +26,6 @@
     "instagram": {
       "type": "string"
     },
-    "igConfirmed": {
-      "type": "boolean",
-      "default": false
-    },
     "tiktok": {
       "type": "string"
     },

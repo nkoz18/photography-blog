@@ -51,7 +51,7 @@ module.exports = {
     return memo(key, +process.env.PLACES_CACHE_TTL_MINUTES || 1440, async () => {
       const url = new URL('https://maps.googleapis.com/maps/api/place/details/json');
       url.searchParams.append('place_id', placeId);
-      url.searchParams.append('fields', 'formatted_address,name,geometry');
+      url.searchParams.append('fields', 'formatted_address,name,geometry,place_id,address_components,types,international_phone_number,website,rating,opening_hours');
       url.searchParams.append('key', process.env.GOOGLE_GEO_API_KEY);
 
       const res = await fetch(url);

@@ -280,7 +280,18 @@ const EncounterCreator = () => {
     return Object.keys(errors).length === 0;
   };
 
-  const qrUrl = `https://silkytruth.com/x/${slug}`;
+  const baseUrl = process.env.NODE_ENV === 'development' && !process.env.USE_CLOUD_BACKEND
+    ? `http://localhost:3000/x/${slug}`
+    : `https://silkytruth.com/x/${slug}`;
+  
+  // Add URL parameters for form pre-population
+  const urlParams = new URLSearchParams();
+  if (formData.name && formData.name.trim()) urlParams.append('name', formData.name.trim());
+  if (formData.email && formData.email.trim()) urlParams.append('email', formData.email.trim());
+  if (formData.instagram && formData.instagram.trim()) urlParams.append('instagram', formData.instagram.trim());
+  if (formData.phone && formData.phone.trim()) urlParams.append('phone', formData.phone.trim());
+  
+  const qrUrl = urlParams.toString() ? `${baseUrl}?${urlParams.toString()}` : baseUrl;
 
   return (
     <div style={{ 

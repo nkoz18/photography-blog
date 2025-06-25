@@ -1,0 +1,60 @@
+{
+  "kind": "collectionType",
+  "collectionName": "photo_encounters",
+  "info": {
+    "singularName": "photo-encounter",
+    "pluralName": "photo-encounters",
+    "displayName": "Photo Encounter",
+    "description": "Street photography encounters with GPS location and contact info"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "slug": {
+      "type": "uid",
+      "required": true,
+      "targetField": "address"
+    },
+    "timestamp": {
+      "type": "datetime",
+      "default": "${new Date().toISOString()}"
+    },
+    "lat": {
+      "type": "decimal",
+      "required": true
+    },
+    "lng": {
+      "type": "decimal", 
+      "required": true
+    },
+    "address": {
+      "type": "string",
+      "required": true
+    },
+    "placeName": {
+      "type": "string"
+    },
+    "placeData": {
+      "type": "json",
+      "description": "Complete Google Places API response data"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["pending", "ready", "archived"],
+      "default": "pending"
+    },
+    "media": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": ["images"]
+    },
+    "contacts": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::contact.contact",
+      "mappedBy": "encounters"
+    }
+  }
+}
