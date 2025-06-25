@@ -353,11 +353,11 @@ const SequentialTypingText = ({ texts, encounter, startTyping }) => {
   return (
     <motion.div 
       style={{ 
-        fontSize: '1rem', // Smaller
+        fontSize: '0.9rem', // Smaller
         lineHeight: '1.5', 
         fontFamily: '"IBM Plex Mono", monospace',
         textAlign: 'left',
-        minHeight: '7.5rem' // More space to prevent jumping when second sentence appears
+        minHeight: '6rem' // More space to prevent jumping when second sentence appears
       }}
     >
       {/* Show completed texts */}
@@ -375,7 +375,7 @@ const SequentialTypingText = ({ texts, encounter, startTyping }) => {
               key={element.key}
               style={{ color: element.isLocation ? '#FFE200' : 'inherit' }}
             >
-              {element.char}
+              {element.char === '\n' ? <br /> : element.char}
             </span>
           ))}
           {showCursor && !showBlinkingQuestion && (
@@ -730,13 +730,13 @@ const EncounterPage = () => {
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            style={{ textAlign: 'center', marginBottom: '2rem' }}
+            style={{ textAlign: 'center', marginBottom: '1rem' }}
           >
             <motion.div 
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ delay: 0.1, duration: 0.8, type: "spring", bounce: 0.4 }}
-              style={{ marginBottom: '0.5rem', position: 'relative', width: '140px', height: '140px', margin: '0 auto 0.5rem auto' }}
+              style={{ marginBottom: '1rem', position: 'relative', width: '140px', height: '140px', margin: '0 auto 1rem auto' }}
             >
               <canvas
                 ref={photoContainerRef}
@@ -771,12 +771,13 @@ const EncounterPage = () => {
               transition={{ delay: 0.3, duration: 0.8 }}
               style={{ 
                 fontSize: '1.8rem', 
-                marginBottom: '0.5rem', 
+                marginBottom: '1rem', 
                 color: '#ff007f',
                 textShadow: '0 0 20px rgba(255, 0, 127, 0.3)',
                 fontFamily: '"Kirang Haerang", cursive !important',
                 textAlign: 'center',
-                minHeight: '2.5rem' // Reserve space to prevent jumping
+                minHeight: '2.5rem', // Reserve space to prevent jumping
+                marginTop: '0rem'
               }}
             >
               <TypingHeading 
@@ -789,7 +790,7 @@ const EncounterPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.8 }}
               onAnimationComplete={() => setAnimationsComplete(true)}
-              style={{ marginBottom: '1rem' }}
+              style={{ marginBottom: '0.5rem' }}
             >
               <SequentialTypingText encounter={encounter} startTyping={animationsComplete} />
             </motion.div>
@@ -819,7 +820,7 @@ const EncounterPage = () => {
                 }}
                 style={{
                   width: '100%',
-                  padding: '0.6rem',
+                  padding: '0.5rem',
                   fontSize: '0.9rem',
                   border: '2px solid #333',
                   borderRadius: '0',
@@ -851,7 +852,7 @@ const EncounterPage = () => {
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 style={{
                   width: '100%',
-                  padding: '0.6rem',
+                  padding: '0.5rem',
                   fontSize: '0.9rem',
                   border: '2px solid #333',
                   borderRadius: '0',
@@ -884,7 +885,7 @@ const EncounterPage = () => {
                 }}
                 style={{
                   width: '100%',
-                  padding: '0.6rem',
+                  padding: '0.5rem',
                   fontSize: '0.9rem',
                   border: `2px solid ${fieldErrors.email ? '#ff6b6b' : '#333'}`,
                   borderRadius: '0',
@@ -917,7 +918,7 @@ const EncounterPage = () => {
                 }}
                 style={{
                   width: '100%',
-                  padding: '0.6rem',
+                  padding: '0.5rem',
                   fontSize: '0.9rem',
                   border: `2px solid ${fieldErrors.instagram ? '#ff6b6b' : '#333'}`,
                   borderRadius: '0',
@@ -1027,13 +1028,13 @@ const EncounterPage = () => {
           
           {/* Pre-allocated space for body text */}
           <div style={{ 
-            minHeight: '8rem', 
-            marginBottom: '2rem',
-            fontSize: '1rem', 
-            lineHeight: '1.5', 
+            minHeight: '9rem', 
+            marginBottom: '1.5rem',
+            fontSize: '0.95rem', 
+            lineHeight: '1.4', 
             fontFamily: '"IBM Plex Mono", monospace',
             textAlign: 'left',
-            padding: '0 1rem'
+            padding: '0 0.5rem'
           }}>
             <ThankYouTypingText startTyping={thankYouAnimationsComplete} formData={formData} />
           </div>
