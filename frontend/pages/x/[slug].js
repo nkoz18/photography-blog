@@ -403,16 +403,8 @@ const SequentialTypingText = ({ texts, encounter, startTyping }) => {
 };
 
 const EncounterPage = () => {
-  console.log('🔍 [Component Debug] EncounterPage rendering');
-  
   const router = useRouter();
   const { slug } = router.query;
-  
-  console.log('🔍 [Component Debug] Router state:', {
-    isReady: router.isReady,
-    query: router.query,
-    slug: slug
-  });
   const [step, setStep] = useState('loading');
   const [encounter, setEncounter] = useState(null);
   const [formData, setFormData] = useState({
@@ -442,16 +434,9 @@ const EncounterPage = () => {
   const [randomWord, setRandomWord] = useState('');
 
   useEffect(() => {
-    console.log('🔍 [Router Debug] useEffect triggered');
-    console.log('🔍 [Router Debug] router.isReady:', router.isReady);
-    console.log('🔍 [Router Debug] slug:', slug);
-    console.log('🔍 [Router Debug] router.query:', router.query);
-    
-    if (slug) {
-      console.log('🔍 [Router Debug] Slug available, calling fetchEncounter');
+    // For mobile compatibility, check if slug exists even if router.isReady is false
+    if (slug && slug !== '') {
       fetchEncounter();
-    } else {
-      console.log('🔍 [Router Debug] No slug available yet');
     }
   }, [slug]);
   
@@ -519,9 +504,6 @@ const EncounterPage = () => {
       const urlParams = new URLSearchParams(window.location.search);
       const preFilledData = {};
       
-      console.log('🔍 [URL Debug] Full URL:', window.location.href);
-      console.log('🔍 [URL Debug] Search params:', window.location.search);
-      console.log('🔍 [URL Debug] URLSearchParams entries:', [...urlParams.entries()]);
       
       // Get data from URL params
       if (urlParams.get('name')) {
@@ -529,49 +511,36 @@ const EncounterPage = () => {
         // Extract first name for greeting
         const firstName = urlParams.get('name').split(' ')[0];
         setUserName(firstName);
-        console.log('🔍 [URL Debug] Found name:', urlParams.get('name'), 'First name:', firstName);
       }
       if (urlParams.get('phone')) {
         preFilledData.phone = urlParams.get('phone');
-        console.log('🔍 [URL Debug] Found phone:', urlParams.get('phone'));
       }
       if (urlParams.get('email')) {
         preFilledData.email = urlParams.get('email');
-        console.log('🔍 [URL Debug] Found email:', urlParams.get('email'));
       }
       if (urlParams.get('instagram')) {
         preFilledData.instagram = urlParams.get('instagram');
-        console.log('🔍 [URL Debug] Found instagram:', urlParams.get('instagram'));
       }
       
       // Also check encounter attributes if available
       if (encounter) {
-        console.log('🔍 [URL Debug] Encounter attributes:', encounter.attributes);
         if (encounter.attributes.contactPhone && !preFilledData.phone) preFilledData.phone = encounter.attributes.contactPhone;
         if (encounter.attributes.contactEmail && !preFilledData.email) preFilledData.email = encounter.attributes.contactEmail;
         if (encounter.attributes.contactInstagram && !preFilledData.instagram) preFilledData.instagram = encounter.attributes.contactInstagram;
       }
       
-      console.log('🔍 [URL Debug] Final preFilledData:', preFilledData);
-      
       if (Object.keys(preFilledData).length > 0) {
         setFormData(prev => ({ ...prev, ...preFilledData }));
-        console.log('🔍 [URL Debug] Updated form data');
       }
     }
   }, [slug, encounter]);
 
   const fetchEncounter = async () => {
     try {
-      console.log('🔍 [Fetch Debug] Starting fetchEncounter with slug:', slug);
-      
-      const apiUrl = process.env.NODE_ENV === 'development' && !process.env.USE_CLOUD_BACKEND
-        ? 'http://localhost:1337'
-        : getStrapiURL();
+      const apiUrl = getStrapiURL();
 
       // Add cache-busting and optimize for speed
       const url = `${apiUrl}/api/photo-encounters?filters[slug]=${slug}&populate=*`;
-      console.log('🔍 [Fetch Debug] API URL:', url);
       
       const response = await fetch(url, {
         method: 'GET',
@@ -585,12 +554,7 @@ const EncounterPage = () => {
         cache: 'no-store'
       });
       
-      console.log('🔍 [Fetch Debug] Response status:', response.status);
-      console.log('🔍 [Fetch Debug] Response ok:', response.ok);
-      
       if (!response.ok) {
-        const errorText = await response.text();
-        console.log('🔍 [Fetch Debug] Error response:', errorText);
         throw new Error(`Encounter not found (${response.status})`);
       }
 

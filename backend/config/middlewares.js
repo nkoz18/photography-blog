@@ -38,7 +38,8 @@ module.exports = ({ env }) => [
         "https://www.silkytruth.com",
         "https://silkytruth.com", 
         "http://localhost:3000",
-        "http://localhost:1337"
+        "http://localhost:1337",
+        "http://192.168.1.27:3000"
       ],
       credentials: true,
       methods: ["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"],

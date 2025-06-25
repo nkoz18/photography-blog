@@ -45,9 +45,8 @@ export async function fetchAPI(path, urlParamsObject = {}, options = {}) {
   // Build request URL
   const queryString = qs.stringify(urlParamsObject)
 
-  // Always use the full API URL, especially for static export
-  const apiBaseUrl =
-    process.env.NEXT_PUBLIC_STRAPI_API_URL || "https://api.silkytruth.com"
+  // Use the getStrapiURL function to get the correct API base URL
+  const apiBaseUrl = getStrapiURL()
 
   // Make sure path starts with /api
   const apiPath = path.startsWith("/api") ? path : `/api${path}`
@@ -57,10 +56,6 @@ export async function fetchAPI(path, urlParamsObject = {}, options = {}) {
     queryString ? `?${queryString}` : ""
   }`
 
-  // Log the API request in development for debugging
-  if (process.env.NODE_ENV === "development" || typeof window !== "undefined") {
-    console.log(`Fetching API: ${requestUrl}`)
-  }
 
   try {
     // Fetch data from Strapi
