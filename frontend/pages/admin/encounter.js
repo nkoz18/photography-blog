@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import QRCode from 'qrcode.react';
-import debounce from 'lodash.debounce';
 import { getStrapiURL } from '../../lib/api';
 import RoughCanvas from '../../components/RoughCanvas';
 import TextInputWithPredictions from '../../components/TextInputWithPredictions';
@@ -25,44 +24,27 @@ const EncounterCreator = () => {
   
   const [validationErrors, setValidationErrors] = useState({});
   const [resolvedAddress, setResolvedAddress] = useState(null);
-  const [igStatus, setIgStatus] = useState(null); // null | true | false
-  const [igChecking, setIgChecking] = useState(false);
   
   const inputRef = useRef(null);
 
-  // Debounced Instagram check function
-  const debouncedIgCheck = useRef(
-    debounce(async (handle) => {
-      if (!handle) {
-        setIgStatus(null);
-        return;
-      }
-
-      // Run regex validation first
-      const instagramRegex = /^(?!.*\\.\\.)(?!.*\\.$)[^\\.][a-zA-Z0-9._]{0,29}$/;
-      if (!instagramRegex.test(handle)) {
-        setIgStatus(null); // Don't check invalid formats
-        return;
-      }
-
-      setIgChecking(true);
-      
+  // Auto-save form data to localStorage to prevent data loss
+  useEffect(() => {
+    const savedData = localStorage.getItem('encounterFormData');
+    if (savedData) {
       try {
-        const apiUrl = process.env.NODE_ENV === 'development' && !process.env.USE_CLOUD_BACKEND
-          ? 'http://localhost:1337'
-          : getStrapiURL();
-        
-        const response = await fetch(`${apiUrl}/api/instagram/exists?handle=${encodeURIComponent(handle)}`);
-        const { exists } = await response.json();
-        setIgStatus(exists); // true | false | null
-      } catch (error) {
-        console.error('Instagram check error:', error);
-        setIgStatus(null); // Unknown on error
+        const parsed = JSON.parse(savedData);
+        setFormData(parsed);
+      } catch (e) {
+        console.warn('Failed to restore form data:', e);
       }
-      
-      setIgChecking(false);
-    }, 500)
-  ).current;
+    }
+  }, []);
+
+  // Save form data whenever it changes
+  useEffect(() => {
+    localStorage.setItem('encounterFormData', JSON.stringify(formData));
+  }, [formData]);
+
 
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
@@ -97,12 +79,13 @@ const EncounterCreator = () => {
               lat: resolvedAddress.lat,
               lng: resolvedAddress.lng,
               manualAddress: resolvedAddress.formatted_address,
+              placeName: resolvedAddress.name,
+              placeData: resolvedAddress.placeData,
               contactData: {
                 name: formData.name || null,
                 email: formData.email || null,
                 instagram: formData.instagram || null,
-                phone: formData.phone || null,
-                igConfirmed: igStatus === true ? true : false
+                phone: formData.phone ? formData.phone.replace(/[^0-9+]/g, '') : null
               }
             };
           } else {
@@ -114,8 +97,7 @@ const EncounterCreator = () => {
                 name: formData.name || null,
                 email: formData.email || null,
                 instagram: formData.instagram || null,
-                phone: formData.phone || null,
-                igConfirmed: igStatus === true ? true : false
+                phone: formData.phone ? formData.phone.replace(/[^0-9+]/g, '') : null
               }
             };
           }
@@ -137,6 +119,9 @@ const EncounterCreator = () => {
           setAddress(data.address);
           setPlaceName(data.placeName);
           setStep('qr');
+          
+          // Clear saved form data after successful submission
+          localStorage.removeItem('encounterFormData');
         } catch (err) {
           setError(`Failed to create encounter: ${err.message}`);
           setStep('create');
@@ -170,26 +155,41 @@ const EncounterCreator = () => {
     });
     setValidationErrors({});
     setResolvedAddress(null);
-    setIgStatus(null);
-    setIgChecking(false);
+    
+    // Clear saved form data when creating another encounter
+    localStorage.removeItem('encounterFormData');
   };
 
   const handleInputChange = (field, value) => {
     // Phone number: only allow numbers, spaces, hyphens, parentheses, and plus
     if (field === 'phone') {
       value = value.replace(/[^0-9\s\-\(\)\+]/g, '');
+      
+      // Enforce maximum length (15 digits max based on E.164 international format)
+      const cleanPhone = value.replace(/[^0-9]/g, '');
+      if (cleanPhone.length > 15) {
+        // Truncate to keep only the first 15 digits while preserving formatting
+        const truncatedDigits = cleanPhone.substring(0, 15);
+        let formattedValue = '';
+        let digitIndex = 0;
+        
+        // Rebuild the formatted string with only the allowed digits
+        for (let i = 0; i < value.length && digitIndex < truncatedDigits.length; i++) {
+          const char = value[i];
+          if (/[0-9]/.test(char)) {
+            formattedValue += truncatedDigits[digitIndex];
+            digitIndex++;
+          } else {
+            formattedValue += char;
+          }
+        }
+        value = formattedValue;
+      }
     }
     
     // Instagram: remove @ if user types it at the beginning
     if (field === 'instagram' && value.startsWith('@')) {
       value = value.substring(1);
-    }
-    
-    // Instagram: trigger existence check
-    if (field === 'instagram') {
-      setIgStatus(null); // Clear previous status
-      setIgChecking(false);
-      debouncedIgCheck(value);
     }
     
     setFormData(prev => ({
@@ -206,6 +206,13 @@ const EncounterCreator = () => {
     }
   };
 
+  // Helper function to check if Instagram handle is valid for link button
+  const isValidInstagramHandle = (handle) => {
+    if (!handle) return false;
+    const instagramRegex = /^(?!.*\.\.)(?!.*\.$)[^\.][a-zA-Z0-9._]{0,29}$/;
+    return instagramRegex.test(handle);
+  };
+
   const validateField = (field, value) => {
     if (!value) return null; // All fields are optional
     
@@ -217,12 +224,17 @@ const EncounterCreator = () => {
       case 'phone':
         // Remove all non-numeric characters for validation
         const cleanPhone = value.replace(/[^0-9]/g, '');
+        console.log(`🔍 [Phone Validation] Original: "${value}", Clean: "${cleanPhone}", Length: ${cleanPhone.length}`);
+        
         if (cleanPhone.length < 10) {
+          console.log(`🔍 [Phone Validation] Too short: ${cleanPhone.length} < 10`);
           return 'Phone number must have at least 10 digits';
         }
         if (cleanPhone.length > 15) {
+          console.log(`🔍 [Phone Validation] Too long: ${cleanPhone.length} > 15`);
           return 'Phone number is too long';
         }
+        console.log(`🔍 [Phone Validation] Valid phone number`);
         return null;
         
       case 'instagram':
@@ -239,16 +251,16 @@ const EncounterCreator = () => {
   };
 
   const handleFieldBlur = (field) => {
-    const error = validateField(field, formData[field]);
+    const value = formData[field];
+    console.log(`🔍 [Field Blur] Field: "${field}", Value: "${value}"`);
+    
+    const error = validateField(field, value);
+    console.log(`🔍 [Field Blur] Validation result for "${field}": ${error || 'No error'}`);
+    
     setValidationErrors(prev => ({
       ...prev,
       [field]: error
     }));
-    
-    // Also trigger Instagram check on blur
-    if (field === 'instagram' && formData[field]) {
-      debouncedIgCheck(formData[field]);
-    }
   };
   
   const validateForm = () => {
@@ -272,7 +284,7 @@ const EncounterCreator = () => {
 
   return (
     <div style={{ 
-      minHeight: '100vh', 
+      height: '100vh', 
       background: '#000', 
       color: '#fff',
       display: 'flex',
@@ -280,7 +292,9 @@ const EncounterCreator = () => {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '20px',
-      fontFamily: '"IBM Plex Mono", monospace'
+      fontFamily: '"IBM Plex Mono", monospace',
+      overflow: 'hidden',
+      boxSizing: 'border-box'
     }}>
       {step === 'create' && (
         <motion.div
@@ -341,7 +355,7 @@ const EncounterCreator = () => {
                 style={{
                   width: '100%',
                   padding: '1rem',
-                  paddingRight: '3rem',
+                  paddingRight: isValidInstagramHandle(formData.instagram) ? '60px' : '1rem',
                   fontSize: '1rem',
                   border: `2px solid ${validationErrors.instagram ? '#FFE200' : '#ff007f'}`,
                   borderRadius: '0',
@@ -356,31 +370,38 @@ const EncounterCreator = () => {
                 }}
               />
               
-              {/* Instagram status badge */}
-              {(formData.instagram && (igStatus !== null || igChecking)) && (
-                <div style={{
-                  position: 'absolute',
-                  right: '12px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  fontSize: '18px',
-                  width: '18px',
-                  height: '18px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  pointerEvents: 'none'
-                }}>
-                  {igChecking ? (
-                    <span style={{ color: '#888', fontSize: '14px' }}>...</span>
-                  ) : igStatus === true ? (
-                    <span style={{ color: '#4ade80' }}>✓</span>
-                  ) : igStatus === false ? (
-                    <span style={{ color: '#f97316' }}>⚠</span>
-                  ) : (
-                    <span style={{ color: '#6b7280' }}>?</span>
-                  )}
-                </div>
+              {/* Instagram link button */}
+              {isValidInstagramHandle(formData.instagram) && (
+                <button
+                  type="button"
+                  onClick={() => window.open(`https://instagram.com/${formData.instagram}`, '_blank', 'noopener,noreferrer')}
+                  style={{
+                    position: 'absolute',
+                    right: '2px',
+                    top: '2px',
+                    bottom: '2px',
+                    width: '54px',
+                    background: '#ff007f',
+                    border: 'none',
+                    borderRadius: '0',
+                    color: '#fff',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '24px',
+                    lineHeight: '1',
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                    paddingBottom: '6px'
+                  }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = '#e6006b'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = '#ff007f'}
+                  title={`Open @${formData.instagram} on Instagram`}
+                >
+                  {/* Instagram icon using Unicode */}
+                  📷
+                </button>
               )}
             </div>
 
@@ -589,12 +610,18 @@ const EncounterCreator = () => {
             marginBottom: '2rem',
             textAlign: 'left'
           }}>
-            <div style={{ marginBottom: '0.5rem' }}>
-              <strong>Location:</strong> {address}
-            </div>
-            {placeName && (
+            {placeName ? (
+              <>
+                <div style={{ marginBottom: '0.5rem' }}>
+                  <strong>Place:</strong> {placeName}
+                </div>
+                <div style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: '#ccc' }}>
+                  <strong>Address:</strong> {address}
+                </div>
+              </>
+            ) : (
               <div style={{ marginBottom: '0.5rem' }}>
-                <strong>Place:</strong> {placeName}
+                <strong>Location:</strong> {address}
               </div>
             )}
             <div style={{ marginBottom: '0.5rem' }}>
@@ -628,7 +655,7 @@ const EncounterCreator = () => {
                 left: 0,
                 width: '400px',
                 height: '60px',
-                fontSize: '1rem',
+                fontSize: '1.5rem',
                 background: 'transparent',
                 color: '#fff',
                 border: 'none',
@@ -638,7 +665,8 @@ const EncounterCreator = () => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 margin: 0,
-                padding: 0
+                padding: 0,
+                fontFamily: '"Kirang Haerang", cursive'
               }}
             >
               <span style={{ fontFamily: '"Kirang Haerang", cursive !important' }}>

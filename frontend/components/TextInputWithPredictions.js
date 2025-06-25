@@ -169,19 +169,25 @@ const TextInputWithPredictions = ({
       console.log('🔍 [Selection] Result data:', data.result);
       
       if (data.status === 'OK' && data.result) {
+        // Create a comprehensive resolved object with all Places API data
         const resolved = {
+          // Core fields for backward compatibility
           formatted_address: data.result.formatted_address,
           name: data.result.name,
           lat: data.result.geometry.location.lat,
-          lng: data.result.geometry.location.lng
+          lng: data.result.geometry.location.lng,
+          
+          // Complete Places API data for storage
+          placeData: data.result
         };
         
-        console.log('🔍 [Selection] Created resolved address object:', resolved);
+        console.log('🔍 [Selection] Created comprehensive resolved address object:', resolved);
+        console.log('🔍 [Selection] Full Places API data:', data.result);
         
         setResolvedAddress(resolved);
         onResolvedAddressChange?.(resolved);
         
-        console.log('🔍 [Selection] Updated state with resolved address');
+        console.log('🔍 [Selection] Updated state with complete resolved address');
       } else {
         console.log('🔍 [Selection] No valid result in place details response');
       }
