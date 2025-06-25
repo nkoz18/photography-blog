@@ -139,6 +139,11 @@ id_ed25519*
 # Development directories
 logs/
 scripts/
+screenshots/
+
+# Cursor IDE files
+.cursor/
+.cursorignore
 
 # Test files with credentials (moved to scripts/)
 test-*.js

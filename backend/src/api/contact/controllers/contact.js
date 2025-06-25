@@ -16,11 +16,21 @@ module.exports = createCoreController('api::contact.contact', ({ strapi }) => ({
     
     try {
       const encounter = await strapi.entityService.findMany('api::photo-encounter.photo-encounter', {
-        filters: { slug: encounterSlug }
+        filters: { slug: encounterSlug },
+        populate: { contacts: true }
       });
       
       if (!encounter || encounter.length === 0) {
         return ctx.notFound('Encounter not found');
+      }
+      
+      const encounterData = encounter[0];
+      
+      // Check if there's already a contact associated with this encounter
+      let existingContact = null;
+      if (encounterData.contacts && encounterData.contacts.length > 0) {
+        // Use the first contact as the "primary" contact for this encounter
+        existingContact = encounterData.contacts[0];
       }
       
       const contactData = {
@@ -33,17 +43,28 @@ module.exports = createCoreController('api::contact.contact', ({ strapi }) => ({
         youtube: youtube || null,
         whatsapp: whatsapp || null,
         snapchat: snapchat || null,
-        encounters: [encounter[0].id]
+        encounters: [encounterData.id]
       };
       
-      const contact = await strapi.entityService.create('api::contact.contact', {
-        data: contactData
-      });
+      let contact;
+      if (existingContact) {
+        // Update existing contact
+        contact = await strapi.entityService.update('api::contact.contact', existingContact.id, {
+          data: contactData
+        });
+        strapi.log.info(`Updated existing contact ${existingContact.id} for encounter ${encounterSlug}`);
+      } else {
+        // Create new contact
+        contact = await strapi.entityService.create('api::contact.contact', {
+          data: contactData
+        });
+        strapi.log.info(`Created new contact ${contact.id} for encounter ${encounterSlug}`);
+      }
       
-      return { success: true, contactId: contact.id };
+      return { success: true, contactId: contact.id, updated: !!existingContact };
     } catch (error) {
-      strapi.log.error('Failed to create contact:', error);
-      return ctx.internalServerError('Failed to create contact');
+      strapi.log.error('Failed to create/update contact:', error);
+      return ctx.internalServerError('Failed to create/update contact');
     }
   }
 }));
