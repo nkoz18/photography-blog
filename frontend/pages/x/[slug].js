@@ -814,10 +814,6 @@ const EncounterPage = () => {
                 placeholder="👤 Your name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                onBlur={(e) => {
-                  const firstName = e.target.value.trim().split(' ')[0];
-                  setUserName(firstName);
-                }}
                 style={{
                   width: '100%',
                   padding: '0.5rem',
