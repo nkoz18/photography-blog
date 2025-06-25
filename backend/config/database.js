@@ -1,35 +1,22 @@
 const path = require('path');
 
 module.exports = ({ env }) => {
-  // Use SQLite for local development, PostgreSQL for production
-  if (env('NODE_ENV') === 'development') {
-    return {
-      connection: {
-        client: 'sqlite',
-        connection: {
-          filename: path.join(__dirname, '..', '.tmp', 'data.db'),
-        },
-        useNullAsDefault: true,
-      },
-    };
-  }
-  
-  // Production database settings
+  // Always use PostgreSQL to match production (no more SQLite in development)
   return {
     connection: {
       client: 'postgres',
       connection: {
-        host: env('DATABASE_HOST'),
-        port: env.int('DATABASE_PORT'),
-        database: env('DATABASE_NAME'),
-        user: env('DATABASE_USERNAME'),
-        password: env('DATABASE_PASSWORD'),
+        host: env('DATABASE_HOST', 'localhost'),
+        port: env.int('DATABASE_PORT', 5432),
+        database: env('DATABASE_NAME', 'strapi'),
+        user: env('DATABASE_USERNAME', 'strapi'),
+        password: env('DATABASE_PASSWORD', 'localpass'),
         schema: env('DATABASE_SCHEMA', 'public'),
-        ssl: {
+        ssl: env('NODE_ENV') === 'production' ? {
           rejectUnauthorized: env.bool('DATABASE_SSL_SELF', false),
-        },
+        } : false,
       },
-      debug: true,
+      debug: false,
       useNullAsDefault: true,
       acquireConnectionTimeout: 1000000,
     },
