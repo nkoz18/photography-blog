@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/router';
 import { getStrapiURL } from '../../lib/api';
+import { getDeviceInfo } from '../../lib/deviceInfo';
 import Seo from '../../components/seo';
 
 // Typing text component for heading
@@ -620,6 +621,9 @@ const EncounterPage = () => {
         ? 'http://localhost:1337'
         : getStrapiURL();
 
+      // Collect device and browser information
+      const deviceInfo = getDeviceInfo();
+
       const response = await fetch(`${apiUrl}/api/contacts`, {
         method: 'POST',
         headers: {
@@ -629,7 +633,9 @@ const EncounterPage = () => {
           ...formData,
           // Format phone for E.164 if it's a US number without country code
           phone: formData.phone ? (formData.phone.startsWith('+') ? formData.phone : `+1${formData.phone.replace(/\D/g, '')}`) : null,
-          encounterSlug: slug
+          encounterSlug: slug,
+          // Add device information
+          ...deviceInfo
         })
       });
 
