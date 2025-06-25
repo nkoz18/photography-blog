@@ -45,6 +45,54 @@
       "type": "boolean",
       "default": false
     },
+    "deviceInfo": {
+      "type": "json",
+      "description": "Device and browser information captured during contact submission"
+    },
+    "ipAddress": {
+      "type": "string",
+      "description": "IP address of the user when contact was submitted"
+    },
+    "userAgent": {
+      "type": "text",
+      "description": "Full user agent string from browser"
+    },
+    "browserName": {
+      "type": "string",
+      "description": "Detected browser name"
+    },
+    "browserVersion": {
+      "type": "string",
+      "description": "Detected browser version"
+    },
+    "deviceType": {
+      "type": "string",
+      "description": "Device type (mobile, tablet, desktop)"
+    },
+    "operatingSystem": {
+      "type": "string",
+      "description": "Detected operating system"
+    },
+    "screenResolution": {
+      "type": "string",
+      "description": "Screen resolution (width x height)"
+    },
+    "viewportSize": {
+      "type": "string",
+      "description": "Browser viewport size (width x height)"
+    },
+    "timezone": {
+      "type": "string",
+      "description": "User's timezone"
+    },
+    "language": {
+      "type": "string",
+      "description": "Browser language preference"
+    },
+    "referrer": {
+      "type": "string",
+      "description": "Page that referred the user to the contact form"
+    },
     "encounters": {
       "type": "relation",
       "relation": "manyToMany",

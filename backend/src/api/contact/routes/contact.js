@@ -7,5 +7,8 @@ module.exports = createCoreRouter('api::contact.contact', {
     create: {
       auth: false,
     },
+    update: {
+      auth: false,
+    },
   },
 });

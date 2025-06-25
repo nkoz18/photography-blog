@@ -4,7 +4,11 @@ const { createCoreController } = require('@strapi/strapi').factories;
 
 module.exports = createCoreController('api::contact.contact', ({ strapi }) => ({
   async create(ctx) {
-    const { name, phone, email, instagram, tiktok, facebook, youtube, whatsapp, snapchat, encounterSlug } = ctx.request.body;
+    const { 
+      name, phone, email, instagram, tiktok, facebook, youtube, whatsapp, snapchat, encounterSlug,
+      deviceInfo, userAgent, browserName, browserVersion, deviceType, operatingSystem,
+      screenResolution, viewportSize, timezone, language, referrer
+    } = ctx.request.body;
     
     if (!phone && !email && !instagram && !tiktok && !facebook && !youtube && !whatsapp && !snapchat) {
       return ctx.badRequest('At least one contact method is required');
@@ -33,6 +37,13 @@ module.exports = createCoreController('api::contact.contact', ({ strapi }) => ({
         existingContact = encounterData.contacts[0];
       }
       
+      // Get IP address from request
+      const ipAddress = ctx.request.ip || 
+                       ctx.request.headers['x-forwarded-for'] || 
+                       ctx.request.headers['x-real-ip'] || 
+                       ctx.request.connection?.remoteAddress ||
+                       'unknown';
+
       const contactData = {
         name: name,
         phone: phone || null,
@@ -43,6 +54,19 @@ module.exports = createCoreController('api::contact.contact', ({ strapi }) => ({
         youtube: youtube || null,
         whatsapp: whatsapp || null,
         snapchat: snapchat || null,
+        // Device and browser information
+        deviceInfo: deviceInfo || null,
+        ipAddress: ipAddress,
+        userAgent: userAgent || ctx.request.headers['user-agent'] || null,
+        browserName: browserName || null,
+        browserVersion: browserVersion || null,
+        deviceType: deviceType || null,
+        operatingSystem: operatingSystem || null,
+        screenResolution: screenResolution || null,
+        viewportSize: viewportSize || null,
+        timezone: timezone || null,
+        language: language || ctx.request.headers['accept-language'] || null,
+        referrer: referrer || ctx.request.headers['referer'] || null,
         encounters: [encounterData.id]
       };
       
