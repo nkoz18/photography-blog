@@ -1,19 +1,22 @@
 import React, { useEffect, useState, useCallback } from "react"
+import { createPortal } from "react-dom"
 import "photoswipe/dist/photoswipe.css"
 import { Gallery as PhotoSwipeGallery, Item } from "react-photoswipe-gallery"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { getStrapiURL } from "../lib/api"
 import Image from "next/image"
 import { getRandomDivider } from "../lib/randomAssets"
 import ReportModal from "./ReportModal"
 import DownloadAllGalleryButton from "./DownloadAllGalleryButton"
 
-const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
+const PhotoSwipeGalleryComponent = ({ galleryData, images, initialIndex = 0, articleSlug }) => {
   const [galleryPhotos, setGalleryPhotos] = useState([])
   const [dividerSvg, setDividerSvg] = useState("")
   const [reportModal, setReportModal] = useState({ isOpen: false, imageId: null, imageName: null })
   const [pswpInstance, setPswpInstance] = useState(null)
   const [currentSlideData, setCurrentSlideData] = useState(null)
+  const [shouldOpenAtIndex, setShouldOpenAtIndex] = useState(null)
+  const [notification, setNotification] = useState({ show: false, x: 0, y: 0 })
 
   // Get Strapi Image URL helper function
   const getImageUrl = useCallback((image) => {
@@ -183,7 +186,28 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
 
     // Select a random divider
     setDividerSvg(getRandomDivider())
-  }, [processImages])
+    
+    // If initialIndex is provided and photos are loaded, prepare to open gallery
+    if (initialIndex > 0 && photos.length > initialIndex) {
+      setShouldOpenAtIndex(initialIndex)
+    }
+  }, [processImages, initialIndex])
+  
+  // Open gallery at specific index when photos are ready
+  useEffect(() => {
+    if (shouldOpenAtIndex !== null && galleryPhotos.length > 0) {
+      // Small delay to ensure gallery is fully rendered
+      const timer = setTimeout(() => {
+        const targetItem = document.querySelector(`[data-gallery-index="${shouldOpenAtIndex}"]`)
+        if (targetItem) {
+          targetItem.click()
+        }
+        setShouldOpenAtIndex(null)
+      }, 100)
+      
+      return () => clearTimeout(timer)
+    }
+  }, [shouldOpenAtIndex, galleryPhotos])
 
   // Return null if no images to display
   if (!galleryPhotos || galleryPhotos.length === 0) {
@@ -236,7 +260,7 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
         uiElements={[
           {
             name: "custom-report-button",
-            order: 7,
+            order: 8,
             isButton: true,
             html: `<div class="pswp__icn"></div>`,
             className: "pswp__button--report",
@@ -268,6 +292,42 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
                   galleryPhotosLength: galleryPhotos.length,
                   currentPhotoData
                 })
+              }
+            }
+          },
+          {
+            name: "custom-share-button",
+            order: 7,
+            isButton: true,
+            html: `<div class="pswp__icn"></div>`,
+            className: "pswp__button--share",
+            title: "Share this image",
+            ariaLabel: "Share this image",
+            onClick: (event, el, pswp) => {
+              const currentIndex = pswp.currIndex
+              const imageNumber = currentIndex + 1
+              const shareUrl = `${window.location.origin}/article/${articleSlug}#image-${imageNumber}`
+              
+              // Get cursor position for notification - position to the left of cursor
+              const x = event.clientX - 10  // Position to the left of the cursor
+              const y = event.clientY
+              
+              // Copy to clipboard
+              if (navigator.clipboard) {
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                  // Show notification
+                  console.log('📋 Share notification triggered at:', { x, y })
+                  setNotification({ show: true, x, y })
+                  setTimeout(() => {
+                    setNotification({ show: false, x: 0, y: 0 })
+                  }, 2000)
+                }).catch(() => {
+                  // Fallback - open share dialog or show URL
+                  prompt('Copy this URL to share:', shareUrl)
+                })
+              } else {
+                // Fallback for older browsers
+                prompt('Copy this URL to share:', shareUrl)
               }
             }
           }
@@ -312,6 +372,7 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
                     ref={ref}
                     onClick={open}
                     className="gallery-item-container"
+                    data-gallery-index={index}
                     initial={{ 
                       opacity: 0, 
                       y: 30,
@@ -394,6 +455,41 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
         onClose={() => setReportModal({ isOpen: false, imageId: null, imageName: null })}
       />
 
+      {/* Copy Notification - Render to document body to appear above PhotoSwipe */}
+      {typeof window !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {notification.show && (
+            <motion.div
+              initial={{ opacity: 0, y: -10, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.9 }}
+              transition={{ duration: 0.2 }}
+              style={{
+                position: 'fixed',
+                left: notification.x,
+                top: notification.y,
+                transform: 'translateX(-100%) translateY(-50%)',
+                backgroundColor: '#ff007f',
+                color: 'white',
+                padding: '8px 12px',
+                borderRadius: '0px',
+                fontSize: '14px',
+                fontFamily: '"IBM Plex Mono", monospace',
+                fontWeight: '500',
+                pointerEvents: 'none',
+                zIndex: 999999,
+                whiteSpace: 'nowrap',
+                boxShadow: '0 2px 6px rgba(255, 0, 127, 0.3)',
+                border: '1px solid rgba(255, 255, 255, 0.2)'
+              }}
+            >
+              Link copied to clipboard!
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
       {/* Custom CSS to fix PhotoSwipe transparency bug */}
       <style jsx global>{`
         .pswp__img {
@@ -412,6 +508,20 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images }) => {
         /* Ensure images maintain full opacity */
         .pswp__zoom-wrap {
           opacity: 1 !important;
+        }
+        
+        /* Share Button - match other PhotoSwipe buttons */
+        .pswp__button--share .pswp__icn {
+          background: url('/images/icons/share.svg') no-repeat center !important;
+          background-size: 32px 32px !important;
+          opacity: 0.85 !important;
+          transition: opacity 0.2s ease, filter 0.2s ease !important;
+          margin-left: 8px !important; /* Consistent spacing like zoom button */
+        }
+
+        .pswp__button--share:hover .pswp__icn {
+          opacity: 1 !important;
+          filter: brightness(1.2) !important;
         }
         
         /* Report Button - match other PhotoSwipe buttons */
