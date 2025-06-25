@@ -48,6 +48,134 @@ const TypingHeading = ({ text, startTyping }) => {
   );
 };
 
+// Thank you typing text component
+const ThankYouTypingText = ({ startTyping, formData }) => {
+  const [completedTexts, setCompletedTexts] = useState([]);
+  const [currentTextIndex, setCurrentTextIndex] = useState(0);
+  const [typedElements, setTypedElements] = useState([]);
+  const [isTypingComplete, setIsTypingComplete] = useState(false);
+
+  // Determine contact method based on hierarchy: phone > email > instagram
+  const getContactMethod = () => {
+    if (formData.phone) return "text you";
+    if (formData.email) return "email you"; 
+    if (formData.instagram) return "hit you up on IG";
+    return "get in touch"; // fallback
+  };
+
+  const createStyledElements = (text) => {
+    const elements = [];
+    const targetText = '_passed_lives_';
+    
+    if (!text.includes(targetText)) {
+      return text.split('').map((char, index) => ({ char, isHighlight: false, key: index }));
+    }
+    
+    // Split text and apply yellow color to _passed_lives_
+    const parts = text.split(targetText);
+    let elementIndex = 0;
+    
+    // Before target text
+    if (parts[0]) {
+      parts[0].split('').forEach(char => {
+        elements.push({ char, isHighlight: false, key: elementIndex++ });
+      });
+    }
+    
+    // Target text (yellow)
+    targetText.split('').forEach(char => {
+      elements.push({ char, isHighlight: true, key: elementIndex++ });
+    });
+    
+    // After target text
+    if (parts[1]) {
+      parts[1].split('').forEach(char => {
+        elements.push({ char, isHighlight: false, key: elementIndex++ });
+      });
+    }
+    
+    return elements;
+  };
+
+  const textSequence = [
+    `I'll ${getContactMethod()} when your photos are ready.`,
+    "Please follow me on Instagram at _passed_lives_ for more street photography!"
+  ];
+
+  useEffect(() => {
+    if (!startTyping || currentTextIndex >= textSequence.length) return;
+
+    const currentText = textSequence[currentTextIndex];
+    const isLastText = currentTextIndex === textSequence.length - 1;
+    
+    const startDelay = currentTextIndex === 0 ? 1000 : 500; 
+    
+    const timer = setTimeout(() => {
+      let charIndex = 0;
+      setTypedElements([]);
+      setIsTypingComplete(false);
+      
+      const styledElements = createStyledElements(currentText);
+      
+      const typingInterval = setInterval(() => {
+        if (charIndex <= currentText.length) {
+          setTypedElements(styledElements.slice(0, charIndex));
+          charIndex++;
+        } else {
+          clearInterval(typingInterval);
+          setIsTypingComplete(true);
+          
+          if (isLastText) {
+            // Final text stays
+          } else {
+            // Add to completed texts and move to next
+            setTimeout(() => {
+              setCompletedTexts(prev => [...prev, currentText]);
+              setTypedElements([]);
+              setCurrentTextIndex(prev => prev + 1);
+            }, 800);
+          }
+        }
+      }, 50);
+
+      return () => clearInterval(typingInterval);
+    }, startDelay);
+
+    return () => clearTimeout(timer);
+  }, [currentTextIndex, startTyping]);
+
+  return (
+    <div>
+      {/* Show completed texts */}
+      {completedTexts.map((text, index) => (
+        <div key={index} style={{ marginBottom: '0.5rem' }}>
+          {text}
+        </div>
+      ))}
+      
+      {/* Show currently typing text */}
+      {currentTextIndex < textSequence.length && (
+        <div>
+          {typedElements.map(element => (
+            <span key={element.key} style={{ color: element.isHighlight ? '#FFE200' : 'inherit' }}>
+              {element.char}
+            </span>
+          ))}
+          {!isTypingComplete && (
+            <motion.span
+              animate={{ opacity: [1, 0, 1] }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              style={{ marginLeft: '2px' }}
+            >
+              |
+            </motion.span>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Error typing text component for validation messages
 const ErrorTypingText = ({ text, startTyping }) => {
   const [displayedText, setDisplayedText] = useState('');
@@ -300,6 +428,7 @@ const EncounterPage = () => {
   });
   const submitButtonRef = useRef(null);
   const photoContainerRef = useRef(null);
+  const thankYouButtonRef = useRef(null);
   const [userName, setUserName] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -309,6 +438,8 @@ const EncounterPage = () => {
     email: false,
     instagram: false
   });
+  const [thankYouAnimationsComplete, setThankYouAnimationsComplete] = useState(false);
+  const [randomWord, setRandomWord] = useState('');
 
   useEffect(() => {
     console.log('🔍 [Router Debug] useEffect triggered');
@@ -326,7 +457,7 @@ const EncounterPage = () => {
   
   // Initialize rough canvas elements (client-side only)
   useEffect(() => {
-    if (typeof window !== 'undefined' && step === 'form') {
+    if (typeof window !== 'undefined' && (step === 'form' || step === 'thank-you')) {
       import('roughjs/bundled/rough.esm').then((roughModule) => {
         const rough = roughModule.default;
         
@@ -359,6 +490,23 @@ const EncounterPage = () => {
             strokeWidth: 4,
             roughness: 2,
             bowing: 3
+          });
+        }
+        
+        // Draw rough thank you button
+        if (thankYouButtonRef.current) {
+          const canvas = thankYouButtonRef.current;
+          const rc = rough.canvas(canvas);
+          const ctx = canvas.getContext('2d');
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          
+          rc.rectangle(10, 10, canvas.width - 20, canvas.height - 20, {
+            fill: '#ff007f',
+            fillStyle: 'solid',
+            stroke: '#ff007f',
+            strokeWidth: 3,
+            roughness: 1.5,
+            bowing: 2
           });
         }
       }).catch(console.error);
@@ -515,6 +663,8 @@ const EncounterPage = () => {
         },
         body: JSON.stringify({
           ...formData,
+          // Format phone for E.164 if it's a US number without country code
+          phone: formData.phone ? (formData.phone.startsWith('+') ? formData.phone : `+1${formData.phone.replace(/\D/g, '')}`) : null,
           encounterSlug: slug
         })
       });
@@ -523,6 +673,15 @@ const EncounterPage = () => {
         throw new Error('Failed to save contact information');
       }
 
+      // Select random word for thank you page
+      const coolWords = [
+        'Perfect', 'Sweet', 'Dope', 'Far Out', 'Tubular', 'Psychedelic', 'Hell Ya', 'Sick', 'Rad', 'Fire', 
+        'Lit', 'Stellar', 'Gucci', 'Epic', 'Killer', 'Bet', 'Slay', 'Iconic', 'Wicked', 'Tight', 'Ace', 
+        'Fresh', 'Groovy', 'Vibe Check Passed', 'Legit', 'On Point', "Chef's Kiss", "Bussin'", 'Legendary', 
+        "Vibin'", 'Fuego', 'Banger', 'Yasss', 'Mad Chill', 'Clean', 'Snatched', "Poppin'", 'Chillax', 'Golden'
+      ];
+      const selectedWord = coolWords[Math.floor(Math.random() * coolWords.length)];
+      setRandomWord(selectedWord);
       setStep('thank-you');
     } catch (err) {
       setError(err.message);
@@ -533,8 +692,8 @@ const EncounterPage = () => {
 
   const handleInstagramDeepLink = () => {
     // Try to open Instagram app, fallback to web
-    const appUrl = 'instagram://user?username=silkytruth';
-    const webUrl = 'https://instagram.com/silkytruth';
+    const appUrl = 'instagram://user?username=_passed_lives_';
+    const webUrl = 'https://instagram.com/_passed_lives_';
     
     window.location.href = appUrl;
     
@@ -872,7 +1031,7 @@ const EncounterPage = () => {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6 }}
-          style={{ textAlign: 'center', maxWidth: '400px' }}
+          style={{ textAlign: 'center', maxWidth: '400px', width: '100%' }}
         >
           <motion.div 
             initial={{ scale: 0 }}
@@ -882,59 +1041,86 @@ const EncounterPage = () => {
           >
             🎉
           </motion.div>
-          <motion.h2 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-            style={{ 
-              color: '#ff007f', 
-              marginBottom: '1rem',
-              textShadow: '0 0 20px rgba(255, 0, 127, 0.3)',
-              fontFamily: '"Kirang Haerang", cursive'
-            }}
-          >
-            Perfect!
-          </motion.h2>
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.6 }}
-            style={{ 
-              fontSize: '1.1rem', 
-              lineHeight: '1.6', 
-              marginBottom: '2rem',
-              opacity: 0.9,
-              fontFamily: '"Kirang Haerang", cursive'
-            }}
-          >
-            I&apos;ll text you when your photos are ready. Feel free to follow me on Instagram for more street photography!
-          </motion.p>
           
-          <motion.button
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.6 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleInstagramDeepLink}
-            style={{
-              padding: '1rem 2rem',
-              fontSize: '1.1rem',
-              background: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '0',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem',
-              margin: '0 auto',
-              fontFamily: '"Kirang Haerang", cursive'
-            }}
-          >
-            📷 Follow @silkytruth
-          </motion.button>
+          {/* Pre-allocated space for heading */}
+          <div style={{ minHeight: '4rem', marginBottom: '1rem' }}>
+            <motion.h2 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+              onAnimationComplete={() => setThankYouAnimationsComplete(true)}
+              style={{ 
+                color: '#ff007f', 
+                textShadow: '0 0 20px rgba(255, 0, 127, 0.3)',
+                fontFamily: '"Kirang Haerang", cursive',
+                fontSize: '3rem',
+                margin: 0
+              }}
+            >
+              <TypingHeading text={randomWord + '!'} startTyping={thankYouAnimationsComplete} />
+            </motion.h2>
+          </div>
+          
+          {/* Pre-allocated space for body text */}
+          <div style={{ 
+            minHeight: '8rem', 
+            marginBottom: '2rem',
+            fontSize: '1rem', 
+            lineHeight: '1.5', 
+            fontFamily: '"IBM Plex Mono", monospace',
+            textAlign: 'left',
+            padding: '0 1rem'
+          }}>
+            <ThankYouTypingText startTyping={thankYouAnimationsComplete} formData={formData} />
+          </div>
+          
+          {/* Pre-allocated space for button */}
+          <div style={{ minHeight: '80px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 4, duration: 0.6 }}
+              style={{ position: 'relative', width: '100%' }}
+            >
+              <canvas
+                ref={thankYouButtonRef}
+                width={400}
+                height={60}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '60px',
+                  pointerEvents: 'none'
+                }}
+              />
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleInstagramDeepLink}
+                style={{
+                  position: 'relative',
+                  width: '100%',
+                  height: '60px',
+                  fontSize: '1.5rem',
+                  background: 'transparent',
+                  color: '#fff',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: 0,
+                  padding: 0,
+                  fontFamily: '"Kirang Haerang", cursive',
+                  zIndex: 1
+                }}
+              >
+                Follow me on Instagram
+              </motion.button>
+            </motion.div>
+          </div>
         </motion.div>
       )}
 

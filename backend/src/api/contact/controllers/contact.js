@@ -6,10 +6,6 @@ module.exports = createCoreController('api::contact.contact', ({ strapi }) => ({
   async create(ctx) {
     const { name, phone, email, instagram, tiktok, facebook, youtube, whatsapp, snapchat, encounterSlug } = ctx.request.body;
     
-    if (!name) {
-      return ctx.badRequest('Name is required');
-    }
-    
     if (!phone && !email && !instagram && !tiktok && !facebook && !youtube && !whatsapp && !snapchat) {
       return ctx.badRequest('At least one contact method is required');
     }
