@@ -43,7 +43,7 @@ module.exports = createCoreController('api::report.report', ({ strapi }) => ({
       }
 
       // Check if this IP already reported this image
-      const existingReport = await strapi.entityService.findMany('api::report.report', {
+      const existingReport = await strapi.documents('api::report.report').findMany({
         filters: {
           reportedImage: reportedImageId,
           ipAddress: clientIP
@@ -55,7 +55,9 @@ module.exports = createCoreController('api::report.report', ({ strapi }) => ({
       }
 
       // Verify the image exists
-      const image = await strapi.entityService.findOne('plugin::upload.file', reportedImageId);
+      const image = await strapi.documents('plugin::upload.file').findOne({
+        documentId: "__TODO__"
+      });
       if (!image) {
         return ctx.notFound('Image not found');
       }
@@ -73,7 +75,7 @@ module.exports = createCoreController('api::report.report', ({ strapi }) => ({
         status: 'pending'
       };
 
-      const report = await strapi.entityService.create('api::report.report', {
+      const report = await strapi.documents('api::report.report').create({
         data: reportData,
         populate: ['reportedImage']
       });
@@ -117,7 +119,8 @@ module.exports = createCoreController('api::report.report', ({ strapi }) => ({
         reviewedBy: adminUser.id
       };
 
-      const updatedReport = await strapi.entityService.update('api::report.report', id, {
+      const updatedReport = await strapi.documents('api::report.report').update({
+        documentId: "__TODO__",
         data: updateData,
         populate: ['reportedImage', 'reviewedBy']
       });
@@ -143,7 +146,7 @@ module.exports = createCoreController('api::report.report', ({ strapi }) => ({
     try {
       const { query } = ctx;
       
-      const reports = await strapi.entityService.findMany('api::report.report', {
+      const reports = await strapi.documents('api::report.report').findMany({
         ...query,
         populate: {
           reportedImage: true,
@@ -169,7 +172,9 @@ module.exports = createCoreController('api::report.report', ({ strapi }) => ({
     try {
       const { id } = ctx.params;
       
-      const report = await strapi.entityService.findOne('api::report.report', id, {
+      const report = await strapi.documents('api::report.report').findOne({
+        documentId: "__TODO__",
+
         populate: {
           reportedImage: true,
           reviewedBy: {

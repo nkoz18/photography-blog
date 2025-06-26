@@ -120,8 +120,8 @@ const renderGalleryLayout = (galleryItems) => {
       </div>
       <div
         className="uk-grid uk-child-width-1-3@m uk-child-width-1-2@s uk-child-width-1-1@xs"
-        uk-grid
-        uk-lightbox="animation: fade"
+        data-uk-grid
+        data-uk-lightbox="animation: fade"
         suppressHydrationWarning
       >
         {galleryItems}

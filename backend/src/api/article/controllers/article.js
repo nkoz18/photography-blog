@@ -54,7 +54,9 @@ module.exports = createCoreController("api::article.article", ({ strapi }) => ({
       const { id } = ctx.params; // Article ID
 
       // Validate if article exists (use entityService to bypass permissions)
-      const article = await strapi.entityService.findOne("api::article.article", id, {
+      const article = await strapi.documents("api::article.article").findOne({
+        documentId: "__TODO__",
+
         populate: {
           gallery: {
             populate: {
@@ -65,7 +67,7 @@ module.exports = createCoreController("api::article.article", ({ strapi }) => ({
               },
             },
           },
-        },
+        }
       });
 
       if (!article) {
@@ -141,14 +143,18 @@ module.exports = createCoreController("api::article.article", ({ strapi }) => ({
         };
 
         // Update the article with the empty gallery first
-        await strapi.entityService.update("api::article.article", id, {
+        await strapi.documents("api::article.article").update({
+          documentId: "__TODO__",
+
           data: {
             gallery: galleryData,
-          },
+          }
         });
 
         // Reload the article to get the fresh data (use entityService to bypass permissions)
-        const updatedArticle = await strapi.entityService.findOne("api::article.article", id, {
+        const updatedArticle = await strapi.documents("api::article.article").findOne({
+          documentId: "__TODO__",
+
           populate: {
             gallery: {
               populate: {
@@ -159,7 +165,7 @@ module.exports = createCoreController("api::article.article", ({ strapi }) => ({
                 },
               },
             },
-          },
+          }
         });
 
         // Get the updated gallery data
@@ -187,18 +193,16 @@ module.exports = createCoreController("api::article.article", ({ strapi }) => ({
       const allItems = [...existingItems, ...galleryItems].filter(item => item && item.image);
 
       // Update the article with all gallery items
-      const updatedArticle = await strapi.entityService.update(
-        "api::article.article",
-        id,
-        {
-          data: {
-            gallery: {
-              caption: galleryData.caption,
-              gallery_items: allItems,
-            },
+      const updatedArticle = await strapi.documents("api::article.article").update({
+        documentId: "__TODO__",
+
+        data: {
+          gallery: {
+            caption: galleryData.caption,
+            gallery_items: allItems,
           },
         }
-      );
+      });
 
       return {
         message: `Successfully added ${uploadedFiles.length} images to the gallery`,

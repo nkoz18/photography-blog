@@ -19,7 +19,7 @@ module.exports = createCoreController('api::contact.contact', ({ strapi }) => ({
     }
     
     try {
-      const encounter = await strapi.entityService.findMany('api::photo-encounter.photo-encounter', {
+      const encounter = await strapi.documents('api::photo-encounter.photo-encounter').findMany({
         filters: { slug: encounterSlug },
         populate: { contacts: true }
       });
@@ -73,13 +73,14 @@ module.exports = createCoreController('api::contact.contact', ({ strapi }) => ({
       let contact;
       if (existingContact) {
         // Update existing contact
-        contact = await strapi.entityService.update('api::contact.contact', existingContact.id, {
+        contact = await strapi.documents('api::contact.contact').update({
+          documentId: "__TODO__",
           data: contactData
         });
         strapi.log.info(`Updated existing contact ${existingContact.id} for encounter ${encounterSlug}`);
       } else {
         // Create new contact
-        contact = await strapi.entityService.create('api::contact.contact', {
+        contact = await strapi.documents('api::contact.contact').create({
           data: contactData
         });
         strapi.log.info(`Created new contact ${contact.id} for encounter ${encounterSlug}`);

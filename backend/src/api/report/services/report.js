@@ -11,7 +11,7 @@ module.exports = createCoreService('api::report.report', ({ strapi }) => ({
    * Get reports for a specific image
    */
   async getReportsForImage(imageId) {
-    return await strapi.entityService.findMany('api::report.report', {
+    return await strapi.documents('api::report.report').findMany({
       filters: {
         reportedImage: imageId
       },
@@ -24,7 +24,7 @@ module.exports = createCoreService('api::report.report', ({ strapi }) => ({
    * Get pending reports
    */
   async getPendingReports() {
-    return await strapi.entityService.findMany('api::report.report', {
+    return await strapi.documents('api::report.report').findMany({
       filters: {
         status: 'pending'
       },
@@ -42,14 +42,14 @@ module.exports = createCoreService('api::report.report', ({ strapi }) => ({
    * Get report statistics
    */
   async getReportStats() {
-    const totalReports = await strapi.entityService.count('api::report.report');
-    const pendingReports = await strapi.entityService.count('api::report.report', {
+    const totalReports = await strapi.documents('api::report.report').count();
+    const pendingReports = await strapi.documents('api::report.report').count({
       filters: { status: 'pending' }
     });
-    const approvedReports = await strapi.entityService.count('api::report.report', {
+    const approvedReports = await strapi.documents('api::report.report').count({
       filters: { status: 'approved' }
     });
-    const rejectedReports = await strapi.entityService.count('api::report.report', {
+    const rejectedReports = await strapi.documents('api::report.report').count({
       filters: { status: 'rejected' }
     });
 
@@ -65,7 +65,7 @@ module.exports = createCoreService('api::report.report', ({ strapi }) => ({
    * Check if image has been reported
    */
   async isImageReported(imageId) {
-    const reports = await strapi.entityService.findMany('api::report.report', {
+    const reports = await strapi.documents('api::report.report').findMany({
       filters: {
         reportedImage: imageId
       }

@@ -45,7 +45,7 @@ module.exports = createCoreController('api::photo-encounter.photo-encounter', ({
       const timestamp = Date.now();
       const slug = `${slugBase}-${timestamp}`;
       
-      const encounter = await strapi.entityService.create('api::photo-encounter.photo-encounter', {
+      const encounter = await strapi.documents('api::photo-encounter.photo-encounter').create({
         data: {
           slug,
           lat: parseFloat(lat),
@@ -61,7 +61,7 @@ module.exports = createCoreController('api::photo-encounter.photo-encounter', ({
       // If contact data was provided, create a contact and link it to the encounter
       let contactId = null;
       if (contactData && (contactData.name || contactData.email || contactData.instagram || contactData.phone)) {
-        const contact = await strapi.entityService.create('api::contact.contact', {
+        const contact = await strapi.documents('api::contact.contact').create({
           data: {
             name: contactData.name || null,
             email: contactData.email || null,
@@ -73,7 +73,9 @@ module.exports = createCoreController('api::photo-encounter.photo-encounter', ({
         contactId = contact.id;
         
         // Update encounter to link the contact
-        await strapi.entityService.update('api::photo-encounter.photo-encounter', encounter.id, {
+        await strapi.documents('api::photo-encounter.photo-encounter').update({
+          documentId: "__TODO__",
+
           data: {
             contacts: [contactId]
           }

@@ -14,7 +14,6 @@ const nextConfig = {
     ],
     unoptimized: true, // Keep for compatibility
   },
-  swcMinify: false,
   trailingSlash: true,
   assetPrefix: "",
   // Enable SSR/ISR for dynamic encounter pages and better SEO

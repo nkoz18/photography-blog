@@ -5,6 +5,7 @@
     "@next/next/no-img-element": "off",
     "react-hooks/exhaustive-deps": "warn",
     "react-hooks/rules-of-hooks": "warn",
-    "jsx-a11y/alt-text": "warn"
+    "jsx-a11y/alt-text": "warn",
+    "react/no-unknown-property": ["error", { "ignore": ["jsx", "global", "uk-grid", "uk-lightbox"] }]
   }
 }
