@@ -541,7 +541,7 @@ const EncounterPage = () => {
       const apiUrl = getStrapiURL();
 
       // Add cache-busting and optimize for speed
-      const url = `${apiUrl}/api/photo-encounters?filters[slug]=${slug}&populate=*`;
+      const url = `${apiUrl}/api/photo-encounters?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=*`;
       
       const response = await fetch(url, {
         method: 'GET',

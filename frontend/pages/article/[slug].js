@@ -8,14 +8,87 @@ import { getStrapiMedia } from "../../lib/media"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
 import UnlistedNotice from "../../components/UnlistedNotice"
+import { Gallery as PhotoSwipeGallery, useGallery } from "react-photoswipe-gallery"
 
-// Import PhotoSwipeGallery with dynamic import to avoid SSR issues
-const PhotoSwipeGallery = dynamic(
+// Import PhotoSwipeGalleryComponent with dynamic import to avoid SSR issues
+const PhotoSwipeGalleryComponent = dynamic(
   () => import("../../components/PhotoSwipeGallery"),
   {
     ssr: false,
   }
 )
+
+// Inner component that uses the gallery hook
+const ArticleContent = ({ currentArticle, loading, router }) => {
+  const gallery = useGallery()
+  const { isReady } = router
+
+  // Handle deep linking to specific gallery images
+  useEffect(() => {
+    if (!isReady || !gallery) return
+
+    const m = window.location.hash.match(/^#image-(\d+)$/)
+    if (m) {
+      const idx = Number(m[1]) - 1 // slides are 0-based
+      if (idx >= 0) {
+        // Small delay to ensure gallery is fully rendered
+        setTimeout(() => {
+          gallery.open(idx)
+        }, 500)
+      }
+    }
+  }, [isReady, gallery])
+
+  return (
+    <>
+      {/* Article Cover Image with Focal Point */}
+      {currentArticle.attributes.image && (
+        <div
+          className="article-cover-image"
+          style={{
+            marginBottom: "2rem",
+            maxWidth: "100%",
+            overflow: "hidden",
+            // Ensure minimum height to show focal point effect
+            minHeight: "300px",
+          }}
+        >
+          <Image
+            image={currentArticle.attributes.image}
+            alt={currentArticle.attributes.title || "Article featured image"}
+          />
+        </div>
+      )}
+
+      {/* Article Title and Content */}
+      <h1 className="uk-article-title">{currentArticle.attributes.title}</h1>
+      {currentArticle.attributes.author?.data?.attributes && (
+        <p className="article-author">
+          by {currentArticle.attributes.author.data.attributes.name}
+        </p>
+      )}
+      <div className="uk-article-content">
+        <ReactMarkdown
+          source={currentArticle.attributes.content}
+          escapeHtml={false}
+        />
+      </div>
+
+      {/* PhotoSwipe Gallery - Uses either new gallery component or legacy images */}
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <p>Loading latest gallery content...</p>
+        </div>
+      ) : (
+        <PhotoSwipeGalleryComponent
+          galleryData={currentArticle.attributes.gallery}
+          images={currentArticle.attributes.images}
+          articleSlug={router.query.slug || currentArticle.attributes.slug}
+        />
+      )}
+    </>
+  )
+}
 
 const Article = ({ article: staticArticle, categories, global }) => {
   const router = useRouter()
@@ -165,53 +238,13 @@ const Article = ({ article: staticArticle, categories, global }) => {
       <div className="uk-section">
         <div className="uk-container uk-container-large">
           {currentArticle?.attributes ? (
-            <>
-              {/* Article Cover Image with Focal Point */}
-              {currentArticle.attributes.image && (
-                <div
-                  className="article-cover-image"
-                  style={{
-                    marginBottom: "2rem",
-                    maxWidth: "100%",
-                    overflow: "hidden",
-                    // Ensure minimum height to show focal point effect
-                    minHeight: "300px",
-                  }}
-                >
-                  <Image
-                    image={currentArticle.attributes.image}
-                    alt={currentArticle.attributes.title || "Article featured image"}
-                  />
-                </div>
-              )}
-
-              {/* Article Title and Content */}
-              <h1 className="uk-article-title">{currentArticle.attributes.title}</h1>
-              {currentArticle.attributes.author?.data?.attributes && (
-                <p className="article-author">
-                  by {currentArticle.attributes.author.data.attributes.name}
-                </p>
-              )}
-              <div className="uk-article-content">
-                <ReactMarkdown
-                  source={currentArticle.attributes.content}
-                  escapeHtml={false}
-                />
-              </div>
-
-              {/* PhotoSwipe Gallery - Uses either new gallery component or legacy images */}
-              {loading ? (
-                <div style={{ textAlign: 'center', padding: '2rem' }}>
-                  <p>Loading latest gallery content...</p>
-                </div>
-              ) : (
-                <PhotoSwipeGallery
-                  galleryData={currentArticle.attributes.gallery}
-                  images={currentArticle.attributes.images}
-                  articleSlug={router.query.slug || currentArticle.attributes.slug}
-                />
-              )}
-            </>
+            <PhotoSwipeGallery>
+              <ArticleContent 
+                currentArticle={currentArticle} 
+                loading={loading} 
+                router={router} 
+              />
+            </PhotoSwipeGallery>
           ) : (
             <div style={{ textAlign: 'center', padding: '4rem 0' }}>
               <p>Loading article content...</p>
