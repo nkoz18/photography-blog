@@ -187,20 +187,28 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images, initialIndex = 0, art
     // Select a random divider
     setDividerSvg(getRandomDivider())
     
-    // If initialIndex is provided and photos are loaded, prepare to open gallery
-    if (initialIndex > 0 && photos.length > initialIndex) {
-      setShouldOpenAtIndex(initialIndex)
-    }
-
-    // Handle deep linking from URL hash (#image-n)
+    // Handle deep linking - URL hash takes priority over initialIndex prop
+    let targetIndex = null
+    
+    // First check for URL hash (#image-n) - this takes priority
     if (typeof window !== 'undefined' && photos.length > 0) {
       const m = window.location.hash.match(/^#image-(\d+)$/)
       if (m) {
         const idx = Number(m[1]) - 1 // slides are 0-based
         if (idx >= 0 && idx < photos.length) {
-          setShouldOpenAtIndex(idx)
+          targetIndex = idx
         }
       }
+    }
+    
+    // Fall back to initialIndex prop if no hash is present
+    if (targetIndex === null && initialIndex > 0 && photos.length > initialIndex) {
+      targetIndex = initialIndex
+    }
+    
+    // Set the target index if we have one
+    if (targetIndex !== null) {
+      setShouldOpenAtIndex(targetIndex)
     }
   }, [processImages, initialIndex])
   

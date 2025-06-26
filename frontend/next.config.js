@@ -17,8 +17,8 @@ const nextConfig = {
   swcMinify: false,
   trailingSlash: true,
   assetPrefix: "",
-  // Use static export for Amplify compatibility, but implement client-side data fetching
-  output: "export",
+  // Enable SSR/ISR for dynamic encounter pages and better SEO
+  // Amplify will auto-detect and provision Lambda@Edge functions
   env: {
     NEXT_PUBLIC_STRAPI_API_URL:
       process.env.USE_CLOUD_BACKEND === "true"
@@ -29,8 +29,6 @@ const nextConfig = {
         ? "https://api.silkytruth.com" // Secure connection to backend
         : process.env.NEXT_PUBLIC_STRAPI_API_URL || "http://127.0.0.1:1337",
   },
-  // We can't use rewrites with next export, so we're removing this
-  // and will handle CORS and routing differently
   distDir: ".next",
 }
 

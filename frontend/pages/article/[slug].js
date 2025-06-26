@@ -243,13 +243,13 @@ export async function getStaticPaths() {
           slug: article.attributes.slug,
         },
       })),
-      fallback: false, // Must be false for static export
+      fallback: 'blocking', // Enable ISR - generates new articles on-demand
     }
   } catch (error) {
     console.error("Error in getStaticPaths:", error)
     return {
       paths: [],
-      fallback: false,
+      fallback: 'blocking',
     }
   }
 }
@@ -328,7 +328,7 @@ export async function getStaticProps({ params }) {
         categories: categoriesRes.data,
         global: globalRes.data,
       },
-      // No revalidate needed with static export + client-side fetching
+      revalidate: 60, // ISR: regenerate page every 60 seconds if requested
     }
   } catch (error) {
     console.error('Error in getStaticProps:', error)
