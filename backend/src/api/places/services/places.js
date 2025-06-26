@@ -1,5 +1,7 @@
 'use strict';
 
+const fetch = require('node-fetch');
+
 const cache = new Map(); // key → { data, expires }
 
 function memo(key, ttlMinutes, fetcher) {
@@ -42,6 +44,12 @@ module.exports = {
 
       const res = await fetch(url);
       const json = await res.json();
+      
+      if (json.status !== 'OK') {
+        console.error('Google Places API Error:', json.status, json.error_message);
+        throw new Error(`Google Places API Error: ${json.status} - ${json.error_message || 'Unknown error'}`);
+      }
+      
       return json.predictions || [];
     });
   },
@@ -56,6 +64,12 @@ module.exports = {
 
       const res = await fetch(url);
       const json = await res.json();
+      
+      if (json.status !== 'OK') {
+        console.error('Google Places API Error:', json.status, json.error_message);
+        throw new Error(`Google Places API Error: ${json.status} - ${json.error_message || 'Unknown error'}`);
+      }
+      
       return json.result || {};
     });
   },

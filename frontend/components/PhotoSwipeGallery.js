@@ -510,13 +510,21 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images, initialIndex = 0, art
           opacity: 1 !important;
         }
         
+        /* Consistent spacing for all PhotoSwipe buttons */
+        .pswp__top-bar .pswp__button {
+          margin-right: 12px !important;
+        }
+        
+        .pswp__top-bar .pswp__button:last-child {
+          margin-right: 0 !important;
+        }
+        
         /* Share Button - match other PhotoSwipe buttons */
         .pswp__button--share .pswp__icn {
           background: url('/images/icons/share.svg') no-repeat center !important;
           background-size: 32px 32px !important;
           opacity: 0.85 !important;
           transition: opacity 0.2s ease, filter 0.2s ease !important;
-          margin-left: 8px !important; /* Consistent spacing like zoom button */
         }
 
         .pswp__button--share:hover .pswp__icn {
@@ -530,7 +538,6 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images, initialIndex = 0, art
           background-size: 32px 32px !important;
           opacity: 0.85 !important;
           transition: opacity 0.2s ease, filter 0.2s ease !important;
-          margin-left: 8px !important; /* Consistent spacing like zoom button */
         }
 
         .pswp__button--report:hover .pswp__icn {
@@ -538,8 +545,26 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images, initialIndex = 0, art
           filter: brightness(1.2) !important;
         }
         
+        /* Hide the native download button SVG and use CSS background like other buttons */
+        .pswp__button--download .pswp__icn svg {
+          display: none !important;
+        }
+
+        .pswp__button--download .pswp__icn {
+          background: url('/images/icons/download.svg') no-repeat center !important;
+          background-size: 32px 32px !important;
+          opacity: 0.85 !important;
+          transition: opacity 0.2s ease, filter 0.2s ease !important;
+          width: 32px !important;
+          height: 32px !important;
+        }
+
+        .pswp__button--download:hover .pswp__icn {
+          opacity: 1 !important;
+          filter: brightness(1.2) !important;
+        }
+
         /* Make other icons larger to match report icon height */
-        .pswp__button--download .pswp__icn,
         .pswp__button--zoom .pswp__icn,
         .pswp__button--close .pswp__icn {
           background-size: 36px 36px !important;
@@ -548,11 +573,6 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images, initialIndex = 0, art
         /* Larger counter font */
         .pswp__counter {
           font-size: 18px !important;
-        }
-        
-        /* Ensure consistent spacing for all PhotoSwipe buttons */
-        .pswp__top-bar .pswp__icn {
-          margin-left: 8px !important;
         }
       `}</style>
     </div>

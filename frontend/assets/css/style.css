@@ -1687,7 +1687,7 @@ html:not(.dark-mode) video {
   height: auto; /* Always use auto height to maintain aspect ratio */
   overflow: visible; /* Allow image to determine container size */
   position: relative;
-  margin-bottom: 15px;
+  margin-bottom: 20px; /* Consistent spacing across all devices */
 }
 
 .article-item .article-image img {
@@ -1706,7 +1706,7 @@ html:not(.dark-mode) video {
   }
   
   .article-item .article-image {
-    margin-bottom: 20px;
+    margin-bottom: 20px; /* Consistent with base rule */
   }
   
   /* Article title size on desktop */
@@ -1722,7 +1722,7 @@ html:not(.dark-mode) video {
   }
   
   .article-item .article-image {
-    margin-bottom: 18px;
+    margin-bottom: 20px; /* Consistent with base rule */
   }
   
   /* Nav link size on tablet - more reasonable size */
@@ -1745,7 +1745,7 @@ html:not(.dark-mode) video {
   }
   
   .article-item .article-image {
-    margin-bottom: 12px; /* Consistent spacing between image and title */
+    margin-bottom: 20px; /* Consistent with base rule */
   }
   
   /* Ensure mobile articles stack properly */
