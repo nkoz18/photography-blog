@@ -177,6 +177,7 @@ async function importSeedData() {
     article: ["find", "findOne"],
     category: ["find", "findOne"],
     writer: ["find", "findOne"],
+    "photo-encounter": ["find", "findOne"],
   });
 
   // Create all entries
