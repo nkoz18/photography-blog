@@ -2,8 +2,8 @@ import React from "react"
 import Card from "./card"
 
 const Articles = ({ articles }) => {
-  // Use original distribution logic
-  const leftArticlesCount = Math.ceil(articles.length / 5)
+  // Improved distribution logic for more balanced columns
+  const leftArticlesCount = Math.ceil(articles.length / 2)
   const leftArticles = articles.slice(0, leftArticlesCount)
   const rightArticles = articles.slice(leftArticlesCount, articles.length)
 
