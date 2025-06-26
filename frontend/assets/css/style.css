@@ -188,7 +188,7 @@ h6,
 /* Increased title size for home and category pages */
 #title {
   letter-spacing: 0.4px;
-  font-size: 40px; /* Increased from 28px to 40px */
+  font-size: 44px; /* Increased from 40px for better prominence */
   line-height: 1.2;
   margin-top: 5px;
   margin-bottom: 15px;
@@ -504,7 +504,7 @@ p {
 
 /* Article item styling */
 .article-item {
-  margin-bottom: 40px;
+  margin-bottom: 30px; /* Consistent spacing between article cards */
 }
 
 .article-content {
@@ -520,7 +520,7 @@ p {
 /* Mobile responsive fixes */
 @media (max-width: 1200px) {
   #title {
-    font-size: 36px; /* Responsive scaling for #title */
+    font-size: 40px; /* Responsive scaling for #title */
   }
 }
 
@@ -584,7 +584,7 @@ p {
 
   /* Slightly increase article title size on mobile */
   #title {
-    font-size: 32px; /* Increased from 30px */
+    font-size: 36px; /* Increased from 32px for better readability */
   }
 
   .uk-article-title {
@@ -641,7 +641,7 @@ p {
 @media (max-width: 480px) {
   /* Further increase on smaller screens */
   #title {
-    font-size: 28px; /* Increased from 26px */
+    font-size: 32px; /* Increased from 28px for better visibility */
   }
 
   .uk-article-title {
@@ -1711,14 +1711,14 @@ html:not(.dark-mode) video {
   
   /* Article title size on desktop */
   #title {
-    font-size: 40px !important; /* Set to 40px for desktop */
+    font-size: 44px !important; /* Increased from 40px for better prominence */
   }
 }
 
 /* Tablet: Full width thumbnails with aspect ratio maintained */
 @media (min-width: 641px) and (max-width: 960px) {
   .article-item {
-    margin-bottom: 0; /* Remove bottom margin on tablet */
+    margin-bottom: 30px; /* Consistent spacing between article cards */
   }
   
   .article-item .article-image {
@@ -1732,7 +1732,7 @@ html:not(.dark-mode) video {
   
   /* Article title size on tablet */
   #title {
-    font-size: 32px !important; /* Set to 32px for tablet */
+    font-size: 36px !important; /* Increased from 32px for better readability */
   }
 }
 
@@ -1740,7 +1740,7 @@ html:not(.dark-mode) video {
 @media (max-width: 640px) {
   .article-item {
     width: 100% !important;
-    margin-bottom: 0; /* Remove bottom margin for consistent spacing */
+    margin-bottom: 30px; /* Consistent spacing between article cards */
     display: block;
   }
   
@@ -1752,7 +1752,7 @@ html:not(.dark-mode) video {
   .uk-child-width-1-2\@s > .article-item,
   .uk-child-width-1-2\@m > .article-item {
     width: 100% !important;
-    margin-bottom: 0;
+    margin-bottom: 30px; /* Consistent spacing between article cards */
   }
   
   /* Remove UIKit grid margins on mobile for consistent spacing */
