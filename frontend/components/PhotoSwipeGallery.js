@@ -191,6 +191,17 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images, initialIndex = 0, art
     if (initialIndex > 0 && photos.length > initialIndex) {
       setShouldOpenAtIndex(initialIndex)
     }
+
+    // Handle deep linking from URL hash (#image-n)
+    if (typeof window !== 'undefined' && photos.length > 0) {
+      const m = window.location.hash.match(/^#image-(\d+)$/)
+      if (m) {
+        const idx = Number(m[1]) - 1 // slides are 0-based
+        if (idx >= 0 && idx < photos.length) {
+          setShouldOpenAtIndex(idx)
+        }
+      }
+    }
   }, [processImages, initialIndex])
   
   // Open gallery at specific index when photos are ready
@@ -552,11 +563,11 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images, initialIndex = 0, art
 
         .pswp__button--download .pswp__icn {
           background: url('/images/icons/download.svg') no-repeat center !important;
-          background-size: 32px 32px !important;
+          background-size: 36px 36px !important;
           opacity: 0.85 !important;
           transition: opacity 0.2s ease, filter 0.2s ease !important;
-          width: 32px !important;
-          height: 32px !important;
+          width: 36px !important;
+          height: 36px !important;
         }
 
         .pswp__button--download:hover .pswp__icn {
