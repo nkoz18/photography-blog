@@ -10,9 +10,9 @@ applications:
             - npm ci --legacy-peer-deps
         build:
           commands:
-            - 'USE_CLOUD_BACKEND=true NEXT_PUBLIC_STRAPI_API_URL=https://api.silkytruth.com STRAPI_API_URL=https://api.silkytruth.com npm run build && npm run export'
+            - 'USE_CLOUD_BACKEND=true NEXT_PUBLIC_STRAPI_API_URL=https://api.silkytruth.com STRAPI_API_URL=https://api.silkytruth.com npm run build'
       artifacts:
-        baseDirectory: frontend/out
+        baseDirectory: frontend/.next
         files:
           - '**/*'
       cache:
