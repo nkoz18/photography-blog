@@ -6,7 +6,7 @@ Fix database sync issues where Japanese Friendship Garden article was missing fo
 ## Critical Database Configuration Discovery
 
 ### Production Database Configuration
-- **Host**: photography-blog-db.ckmckf7lbra5.us-west-2.rds.amazonaws.com (AWS RDS)
+- **Host**: [Set via PRODUCTION_DB_HOST environment variable]
 - **Database Name**: `strapi` (confirmed production database name)
 - **User**: `postgres`
 - **Port**: 5432

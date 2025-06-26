@@ -1,52 +1,52 @@
 # Database Sync Scripts
 
-## Current Scripts (Cleaned Up)
+## Current Production Script
 
-### ✅ Recommended: `data-down-schema-up.sh`
+### ✅ `improved-data-down-schema-up.sh`
 **Production-ready "data down / schema up" workflow**
-- Pulls production data via SSH (data flows down ⬇️)
-- Applies local schema changes (schema flows up ⬆️)
-- Handles new contact/encounter tables that don't exist in production
-- Clean import with no duplicates or conflicts
 
-### `sync-only.sh`
-**Simple data-only sync**
-- Assumes database is already set up
-- Just syncs production data to local
-- No schema changes
+**What it does:**
+- ⬇️ **Data Down**: Exports production database via SSH and imports to clean local database
+- ⬆️ **Schema Up**: Starts Strapi to detect and apply local schema changes (contacts, encounters)
+- 🧹 **Clean Process**: Stops servers, clears all caches, creates fresh database
+- 🔐 **Secure**: Uses environment variables, no hardcoded credentials
+- 📊 **Reliable**: Pre-flight checks, error handling, comprehensive logging
 
-### `rds-snapshot-sync.sh` (Experimental)
-**Uses RDS snapshot directly**
-- Creates temporary RDS instance from snapshot
-- More complex but uses latest snapshot data
-- Requires AWS permissions for RDS instance creation
-
-### `simple-snapshot-sync.sh` (Incomplete)
-**Attempted S3 export approach**
-- RDS snapshot → S3 export → Local import
-- Note: RDS exports create Parquet files, not SQL dumps
-- Needs additional conversion tools
+**Features:**
+- Dry-run mode (`--dry-run`)
+- Custom snapshot ID (`--snapshot-id`)
+- Comprehensive pre-flight validation
+- Passwordless sudo requirements check
+- SSH and RDS connectivity verification
+- Complete cache clearing (Strapi + Next.js)
+- Clean database import with no duplicates
+- Schema migration detection and verification
 
 ## Usage
 
 ```bash
-# Recommended workflow
-cd backend/database-sync
-./data-down-schema-up.sh
-
-# Simple data sync only
-./sync-only.sh
-```
-
-## Environment Variables Required
-
-```bash
-export LOCAL_DB_PASSWORD="localpass"
+# Set up environment (see PRE-RUN-CHECKLIST.md)
+export LOCAL_DB_PASSWORD="your_local_password"
 export PRODUCTION_DB_PASSWORD="your_production_password"
 export SSH_KEY_PATH="~/.ssh/ec2-strapi-key-pair.pem"
-export PRODUCTION_SERVER="ubuntu@44.246.84.130"
-export PRODUCTION_DB_HOST="photography-blog-db.ckmckf7lbra5.us-west-2.rds.amazonaws.com"
+export PRODUCTION_SERVER="ubuntu@your.server.ip"
+export PRODUCTION_DB_HOST="your-db.region.rds.amazonaws.com"
+
+# Run the sync
+cd backend/database-sync
+./improved-data-down-schema-up.sh
+
+# Options
+./improved-data-down-schema-up.sh --dry-run                    # Test without changes
+./improved-data-down-schema-up.sh --snapshot-id db6252025      # Use specific snapshot
 ```
+
+## Before Running
+
+1. **Read the checklist**: `PRE-RUN-CHECKLIST.md`
+2. **Set environment variables**: See `.env.sync-template`
+3. **Ensure passwordless sudo**: `sudo visudo` to add postgres permissions
+4. **Test SSH access**: Verify key and server connectivity
 
 ## Pattern: Data Down / Schema Up
 
