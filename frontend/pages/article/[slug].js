@@ -208,6 +208,7 @@ const Article = ({ article: staticArticle, categories, global }) => {
                 <PhotoSwipeGallery
                   galleryData={currentArticle.attributes.gallery}
                   images={currentArticle.attributes.images}
+                  articleSlug={router.query.slug || currentArticle.attributes.slug}
                 />
               )}
             </>
