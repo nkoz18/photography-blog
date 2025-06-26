@@ -577,6 +577,18 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images, initialIndex = 0, art
           width: 36px !important;
           height: 36px !important;
         }
+        
+        /* Ensure download icon works on mobile by forcing background image */
+        @media (max-width: 768px) {
+          .pswp__button--download .pswp__icn::before {
+            content: '' !important;
+            display: block !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: url('/images/icons/download.svg') no-repeat center !important;
+            background-size: 32px 32px !important;
+          }
+        }
 
         .pswp__button--download:hover .pswp__icn {
           opacity: 1 !important;
@@ -589,9 +601,11 @@ const PhotoSwipeGalleryComponent = ({ galleryData, images, initialIndex = 0, art
           background-size: 36px 36px !important;
         }
         
-        /* Larger counter font */
+        /* Larger counter font with no line breaks */
         .pswp__counter {
           font-size: 18px !important;
+          white-space: nowrap !important;
+          min-width: auto !important;
         }
       `}</style>
     </div>
