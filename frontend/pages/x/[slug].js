@@ -1138,7 +1138,21 @@ const EncounterPage = () => {
 };
 
 // AWS Amplify Static Export Strategy:
-// No getStaticPaths/getStaticProps - pure client-side for instant updates
-// This ensures NEW encounters work immediately without CDN cache delays
+// Required for static export - prevents Next.js default 404s
+// Since this is a dynamic data-fetching page, we use empty static paths
+// with fallback: false to ensure proper 404 routing
+
+export async function getStaticPaths() {
+  return {
+    paths: [],
+    fallback: false
+  }
+}
+
+export async function getStaticProps() {
+  return {
+    notFound: true
+  }
+}
 
 export default EncounterPage;
